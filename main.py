@@ -18,10 +18,10 @@ paper = {"title": "How are topics born? Understanding the research dynamics prec
         }
 
 paper = {"title": "semantic web artificial intelligence",
-         "abstract": "Scholarly data, Topic emergence detection, Empirical study, Research trend detection, Topic discovery, Digital libraries"
+         "abstract": "Scholarly-data, Topic emergence detection, Empirical study, Research trend detection, Topic discovery(TD), Digital libraries"
         }
 
-result = CSO.cso_matcher(paper, cso, format = 'json')
+result = CSO.cso_matcher(paper, cso, format = 'json', num_siblings = 1)
 
 print(result)
 

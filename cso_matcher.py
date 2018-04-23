@@ -33,9 +33,11 @@ def load_cso(file):
         
         
 
-def cso_matcher(paper, cso, format="text"):
+def cso_matcher(paper, cso, format="text", num_siblings=2):
     from nltk import ngrams
     from nltk.tokenize import word_tokenize
+    from nltk.tokenize import RegexpTokenizer
+    from nltk.corpus import stopwords
     
     """
     Given a paper it returns the topics.
@@ -49,8 +51,24 @@ def cso_matcher(paper, cso, format="text"):
         paper = ""
         for key in list(t_paper.keys()):
             paper = paper + t_paper[key] + " "
+            
+            
     
+    """ preprocessing
+    """    
+    paper = paper.lower()
+    tokenizer = RegexpTokenizer(r'[\w\-\(\)]*')
+    tokens = tokenizer.tokenize(paper)
+    filtered_words = [w for w in tokens if not w in stopwords.words('english')]
+    paper =  " ".join(filtered_words)
+    
+    
+    """ analysing grams
+    """
     found_topics=[]
+    
+    word_list = paper.split(" ")
+    filtered_words = [word for word in word_list if word not in stopwords.words('english')]
     
     word = ngrams(word_tokenize(paper,preserve_line=True), 1)
     for grams in word:
@@ -66,7 +84,21 @@ def cso_matcher(paper, cso, format="text"):
     for grams in trigrams:
         if(" ".join(grams) in cso['topics']):
             found_topics.append(" ".join(grams)) 
-
+            
+    """ analysing similarity
+    """
+    found_topics = statistic_similarity(paper)
     
+    """ extract more concepts from the ontology
+    """
+    found_topics = climb_ontology(found_topics,cso,num_siblings=num_siblings)
 
     return (found_topics)
+
+
+
+def climb_ontology(found_topics,cso,num_siblings=2):
+    return (found_topics)
+
+def statistic_similarity(paper):
+    return (paper)
