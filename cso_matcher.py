@@ -5,9 +5,17 @@ Created on Mon Apr 23 15:16:13 2018
 
 @author: angelosalatino
 """
+import csv
+import itertools
+from nltk.tokenize import RegexpTokenizer
+from nltk.corpus import stopwords
+from nltk import ngrams
+from nltk.tokenize import word_tokenize
+import Levenshtein.StringMatcher as ls
+    
    
 def load_cso(file):
-    import csv
+   
     with open(file) as ontoFile:
         topics = {}
         parents = {}
@@ -33,11 +41,8 @@ def load_cso(file):
         
         
 
-def cso_matcher(paper, cso, format="text", num_siblings=2):
-    from nltk import ngrams
-    from nltk.tokenize import word_tokenize
-    from nltk.tokenize import RegexpTokenizer
-    from nltk.corpus import stopwords
+def cso_matcher(paper, cso, format="text", num_siblings=2, min_similarity=0.85):
+
     
     """
     Given a paper it returns the topics.
@@ -62,32 +67,10 @@ def cso_matcher(paper, cso, format="text", num_siblings=2):
     filtered_words = [w for w in tokens if not w in stopwords.words('english')]
     paper =  " ".join(filtered_words)
     
-    
-    """ analysing grams
-    """
-    found_topics=[]
-    
-    word_list = paper.split(" ")
-    filtered_words = [word for word in word_list if word not in stopwords.words('english')]
-    
-    word = ngrams(word_tokenize(paper,preserve_line=True), 1)
-    for grams in word:
-      if(word in cso['topics']):
-            found_topics.append(word) 
-
-    bigrams = ngrams(word_tokenize(paper,preserve_line=True), 2)
-    for grams in bigrams:
-        if(" ".join(grams) in cso['topics']):
-            found_topics.append(" ".join(grams)) 
-      
-    trigrams = ngrams(word_tokenize(paper,preserve_line=True), 3)
-    for grams in trigrams:
-        if(" ".join(grams) in cso['topics']):
-            found_topics.append(" ".join(grams)) 
             
-    """ analysing similarity
+    """ analysing similarity with terms in the ontology
     """
-    found_topics = statistic_similarity(found_topics)
+    found_topics = statistic_similarity(paper,cso,min_similarity)
     
     """ extract more concepts from the ontology
     """
@@ -97,25 +80,76 @@ def cso_matcher(paper, cso, format="text", num_siblings=2):
 
 
 
-def climb_ontology(found_topics,cso,num_siblings=2):
-    from itertools import combinations
-    combinations = combinations(range(len(found_topics)), num_siblings) # generates all possible combinations
+def statistic_similarity(paper, cso, min_similarity):
+    """ analysing grams
+    """
+    found_topics={}
+    
+    #result = [key for key, value in cso['topics'].items() if key.startswith("seman")]
+    
+    words = ngrams(word_tokenize(paper,preserve_line=True), 1)
+    for grams in words:
+        gram = " ".join(grams)
+        topics = [key for key, _ in cso['topics'].items() if key.startswith(gram[:3])]
+        for topic in topics:
+            m = ls.StringMatcher(None, topic, gram).ratio()
+            if(m >= min_similarity):
+                if(topic in found_topics):
+                    found_topics[topic].append({'matched':gram, 'similarity':m})
+                else:
+                    found_topics[topic] = [{'matched':gram, 'similarity':m}]
+
+    bigrams = ngrams(word_tokenize(paper,preserve_line=True), 2)
+    for grams in bigrams:
+        gram = " ".join(grams)
+        topics = [key for key, _ in cso['topics'].items() if key.startswith(gram[:3])]
+        for topic in topics:
+            m = ls.StringMatcher(None, topic, gram).ratio()
+            if(m >= min_similarity):
+                if(topic in found_topics):
+                    found_topics[topic].append({'matched':gram, 'similarity':m})
+                else:
+                    found_topics[topic] = [{'matched':gram, 'similarity':m}] 
+      
+    trigrams = ngrams(word_tokenize(paper,preserve_line=True), 3)
+    for grams in trigrams:
+        gram = " ".join(grams)
+        topics = [key for key, _ in cso['topics'].items() if key.startswith(gram[:3])]
+        for topic in topics:
+            m = ls.StringMatcher(None, topic, gram).ratio()
+            if(m >= min_similarity):
+                if(topic in found_topics):
+                    found_topics[topic].append({'matched':gram, 'similarity':m})
+                else:
+                    found_topics[topic] = [{'matched':gram, 'similarity':m}]
+            
+    return (found_topics)
+
+
+def climb_ontology(found_topics,cso,num_siblings):
+    
+    keys = list(found_topics.keys())
+    combinations = itertools.combinations(range(len(keys)), num_siblings) # generates all possible combinations
     for combination in combinations:
         all_parents = {}
         for val in combination:
-            parents = cso['parents'][found_topics[val]]
-            for parent in parents:
-                if(parent in all_parents):
-                    ++all_parents[parent]
-                else:
-                    all_parents[parent] = 1
+            if(keys[val] in cso['parents']):
+                parents = cso['parents'][keys[val]]
+                for parent in parents:
+                    if(parent in all_parents):
+                        ++all_parents[parent]
+                    else:
+                        all_parents[parent] = 1
+                    
         for parent, times in all_parents.items():    
             if(times == num_siblings):
                 if(parent not in found_topics):
-                    found_topics.append(parent)
+                    found_topics[parent] = [{'matched':times, 'similarity':'null'}]
         all_parents.clear()
             
     return (found_topics)
 
-def statistic_similarity(paper):
-    return (paper)
+
+def clear_explanation(found_topics, cso):
+    topics = list(found_topics.keys()) 
+    return topics

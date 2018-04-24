@@ -17,12 +17,15 @@ paper = {"title": "How are topics born? Understanding the research dynamics prec
          "keywords": "Scholarly data, Topic emergence detection, Empirical study, Research trend detection, Topic discovery, Digital libraries"
         }
 
-paper = {"title": "semantic web artificial intelligence",
-         "abstract": "Scholarly-data, Topic emergence detection, Empirical study, Research trend detection, Topic discovery(TD), Digital libraries"
+paper = {"title": "Detection of Embryonic Research Topics by Analysing Semantic Topic Networks",
+         "abstract": "Being aware of new research topics is an important asset for anybody involved in the research environment, including researchers, academic publishers and institutional funding bodies. In recent years, the amount of scholarly data available on the web has increased steadily, allowing the development of several approaches for detecting emerging research topics and assessing their trends. However, current methods focus on the detection of topics which are already associated with a label or a substantial number of documents. In this paper, we address instead the issue of detecting embryonic topics, which do not possess these characteristics yet. We suggest that it is possible to forecast the emergence of novel research topics even at such early stage and demonstrate that the emergence of a new topic can be anticipated by analysing the dynamics of pre-existing topics. We present an approach to evaluate such dynamics and an experiment on a sample of 3 million research papers, which confirms our hypothesis. In particular, we found that the pace of collaboration in sub-graphs of topics that will give rise to novel topics is significantly higher than the one in the control group.",
+         "keywords": "Scholarly Data, Research Trend Detection, Topic Emergence Detection, Topic Discovery, Semantic Web, Ontology"
         }
 
-result = CSO.cso_matcher(paper, cso, format = 'json', num_siblings = 2)
+result = CSO.cso_matcher(paper, cso, format = 'json', num_siblings = 2, min_similarity=0.9)
+
+topics = CSO.clear_explanation(result, cso)
 
 print(result)
-
+print(topics)
 
