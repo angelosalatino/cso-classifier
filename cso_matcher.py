@@ -16,12 +16,12 @@ def load_cso(file):
         for triple in ontology:
             if(triple[1] == 'klink:broaderGeneric'):
                 if(triple[2] in parents):
-                    parents[triple[2]].append([triple[0]])
+                    parents[triple[2]].append(triple[0])
                 else:
                     parents[triple[2]] = [triple[0]]
             elif(triple[1] == 'klink:relatedEquivalent'):
                 if(triple[2] in same_as):
-                    same_as[triple[2]].append([triple[0]])
+                    same_as[triple[2]].append(triple[0])
                 else:
                     same_as[triple[2]] = [triple[0]]
             elif(triple[1] == 'rdfs:label'):
@@ -87,7 +87,7 @@ def cso_matcher(paper, cso, format="text", num_siblings=2):
             
     """ analysing similarity
     """
-    found_topics = statistic_similarity(paper)
+    found_topics = statistic_similarity(found_topics)
     
     """ extract more concepts from the ontology
     """
@@ -98,6 +98,23 @@ def cso_matcher(paper, cso, format="text", num_siblings=2):
 
 
 def climb_ontology(found_topics,cso,num_siblings=2):
+    from itertools import combinations
+    combinations = combinations(range(len(found_topics)), num_siblings) # generates all possible combinations
+    for combination in combinations:
+        all_parents = {}
+        for val in combination:
+            parents = cso['parents'][found_topics[val]]
+            for parent in parents:
+                if(parent in all_parents):
+                    ++all_parents[parent]
+                else:
+                    all_parents[parent] = 1
+        for parent, times in all_parents.items():    
+            if(times == num_siblings):
+                if(parent not in found_topics):
+                    found_topics.append(parent)
+        all_parents.clear()
+            
     return (found_topics)
 
 def statistic_similarity(paper):

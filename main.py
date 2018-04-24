@@ -21,7 +21,7 @@ paper = {"title": "semantic web artificial intelligence",
          "abstract": "Scholarly-data, Topic emergence detection, Empirical study, Research trend detection, Topic discovery(TD), Digital libraries"
         }
 
-result = CSO.cso_matcher(paper, cso, format = 'json', num_siblings = 1)
+result = CSO.cso_matcher(paper, cso, format = 'json', num_siblings = 2)
 
 print(result)
 
