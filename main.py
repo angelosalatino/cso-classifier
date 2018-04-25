@@ -7,6 +7,7 @@ Created on Mon Apr 23 15:17:24 2018
 """
 
 import cso_annotator as CSO
+import json
 
 file = "ComputerScienceOntology.csv"
 
@@ -25,9 +26,9 @@ paper = {"title": "Detection of Embryonic Research Topics by Analysing Semantic 
         }
 
 # provides the topics within the paper with an explanation
-result = CSO.cso_annotator(paper, cso, format = 'json', num_siblings = 1, min_similarity=0.9)
-print(result)
+result = CSO.cso_annotator(paper, cso, format = 'json', num_children = 1, min_similarity=0.9)
+json.dumps(result)
 
 # removes related equivalent topics and removes the explanation
 topics = CSO.clear_explanation(result, cso)
-print(topics)
+json.dumps(topics)

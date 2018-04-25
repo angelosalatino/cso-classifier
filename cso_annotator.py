@@ -42,7 +42,7 @@ def load_cso(file):
         
         
 
-def cso_annotator(paper, cso, format="text", num_siblings=2, min_similarity=0.85):
+def cso_annotator(paper, cso, format="text", num_children=2, min_similarity=0.85):
 
     
     """
@@ -75,7 +75,7 @@ def cso_annotator(paper, cso, format="text", num_siblings=2, min_similarity=0.85
     
     """ extract more concepts from the ontology
     """
-    found_topics = climb_ontology(found_topics,cso,num_siblings=num_siblings)
+    found_topics = climb_ontology(found_topics,cso,num_children=num_children)
     
 
     return (found_topics)
@@ -87,8 +87,8 @@ def statistic_similarity(paper, cso, min_similarity):
     """
     found_topics={}
     
-    words = ngrams(word_tokenize(paper,preserve_line=True), 1)
-    for grams in words:
+    unigrams = ngrams(word_tokenize(paper,preserve_line=True), 1)
+    for grams in unigrams:
         gram = " ".join(grams)
         topics = [key for key, _ in cso['topics'].items() if key.startswith(gram[:4])]
         for topic in topics:
@@ -126,10 +126,10 @@ def statistic_similarity(paper, cso, min_similarity):
     return (found_topics)
 
 
-def climb_ontology(found_topics,cso,num_siblings):
+def climb_ontology(found_topics,cso,num_children):
     
     keys = list(found_topics.keys())
-    combinations = itertools.combinations(range(len(keys)), num_siblings) # generates all possible combinations
+    combinations = itertools.combinations(range(len(keys)), num_children) # generates all possible combinations
     for combination in combinations:
         all_parents = {}
         for val in combination:
@@ -142,7 +142,7 @@ def climb_ontology(found_topics,cso,num_siblings):
                         all_parents[parent] = [keys[val]]
                     
         for parent, children in all_parents.items():    
-            if(len(children) == num_siblings):
+            if(len(children) == num_children):
                 if(parent not in found_topics):
                     found_topics[parent] = [{'matched':len(children), 'parent of':children}]
                 else:
@@ -168,5 +168,7 @@ def remove_same_as(topics,cso):
                 final_topics.append(max(same_as, key=len))
             else:
                 final_topics.append(topic)
+        else:
+            final_topics.append(topic)
       
     return (final_topics)
