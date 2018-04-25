@@ -10,10 +10,10 @@ Script that annotates content from scientific papers with the topics of the [Com
 ![Framework of CSO Annotator](/pics/framework.png "Framework of CSO Annotator")
 
 ## In depth
-The algorithm firstly preprocesses the content of each paper: removes punctuation and stop words.
-Then, it parses the text to find words that with a certain degree of similarity (default: Levenshtein >= 0.85) match with the topics within the Computer Science Ontology.
-Thirdly, it adds more broader generic topics, exploiting the relationships within the CSO. A more broader topic is included if a certain amount of children (default = 2) are in the initial set of topics.
-Lastly, it cleans the output removing statistic values, and removes related equivalent topics using the CSO.
+1. The algorithm firstly preprocesses the content of each paper: removes punctuation and stop words.
+2. Then, it parses the text to find n-grams (unigram, bigrams and trigrams) that match, with a certain degree of similarity (default: Levenshtein >= 0.85), with the topics within the Computer Science Ontology.
+3. Thirdly, it adds more broader generic topics, based on the ones retrieved in Step 2. It exploits the _skos:broaderGeneric_ relationships within the CSO. A more broader topic is included if a certain amount of children (default: num_children = 2) are in the initial set of topics.
+4. Lastly, it cleans the output removing statistic values, and removes similar topics using the _relatedEquivalent_ within the CSO.
 
 ## Instance
 Input:
@@ -26,8 +26,12 @@ paper = {"title": "Detection of Embryonic Research Topics by Analysing Semantic 
 
 Running the annotator:
 ```python
+'''
 # cso is a dictionary loaded beforehand
-result = CSO.cso_annotator(paper, cso, format = 'json', num_children = 1, min_similarity=0.9)
+# num_children = 1, all the broader topics with at least one child matched is included in the final list of topics
+# min_similarity = 0.9, more precise similarity between n-grams and topics has been requested
+'''
+result = CSO.cso_annotator(paper, cso, format = 'json', num_children = 1, min_similarity = 0.9)
 json.dumps(result)
 ```
 Result (variable **_result_**):
