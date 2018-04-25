@@ -42,7 +42,7 @@ def load_cso(file):
         
         
 
-def cso_matcher(paper, cso, format="text", num_siblings=2, min_similarity=0.85):
+def cso_annotator(paper, cso, format="text", num_siblings=2, min_similarity=0.85):
 
     
     """
