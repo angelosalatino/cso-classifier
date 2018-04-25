@@ -12,6 +12,7 @@ from nltk.corpus import stopwords
 from nltk import ngrams
 from nltk.tokenize import word_tokenize
 import Levenshtein.StringMatcher as ls
+import numpy as np
     
    
 def load_cso(file):
@@ -75,6 +76,7 @@ def cso_matcher(paper, cso, format="text", num_siblings=2, min_similarity=0.85):
     """ extract more concepts from the ontology
     """
     found_topics = climb_ontology(found_topics,cso,num_siblings=num_siblings)
+    
 
     return (found_topics)
 
@@ -85,12 +87,10 @@ def statistic_similarity(paper, cso, min_similarity):
     """
     found_topics={}
     
-    #result = [key for key, value in cso['topics'].items() if key.startswith("seman")]
-    
     words = ngrams(word_tokenize(paper,preserve_line=True), 1)
     for grams in words:
         gram = " ".join(grams)
-        topics = [key for key, _ in cso['topics'].items() if key.startswith(gram[:3])]
+        topics = [key for key, _ in cso['topics'].items() if key.startswith(gram[:4])]
         for topic in topics:
             m = ls.StringMatcher(None, topic, gram).ratio()
             if(m >= min_similarity):
@@ -102,7 +102,7 @@ def statistic_similarity(paper, cso, min_similarity):
     bigrams = ngrams(word_tokenize(paper,preserve_line=True), 2)
     for grams in bigrams:
         gram = " ".join(grams)
-        topics = [key for key, _ in cso['topics'].items() if key.startswith(gram[:3])]
+        topics = [key for key, _ in cso['topics'].items() if key.startswith(gram[:4])]
         for topic in topics:
             m = ls.StringMatcher(None, topic, gram).ratio()
             if(m >= min_similarity):
@@ -114,7 +114,7 @@ def statistic_similarity(paper, cso, min_similarity):
     trigrams = ngrams(word_tokenize(paper,preserve_line=True), 3)
     for grams in trigrams:
         gram = " ".join(grams)
-        topics = [key for key, _ in cso['topics'].items() if key.startswith(gram[:3])]
+        topics = [key for key, _ in cso['topics'].items() if key.startswith(gram[:4])]
         for topic in topics:
             m = ls.StringMatcher(None, topic, gram).ratio()
             if(m >= min_similarity):
@@ -137,19 +137,36 @@ def climb_ontology(found_topics,cso,num_siblings):
                 parents = cso['parents'][keys[val]]
                 for parent in parents:
                     if(parent in all_parents):
-                        ++all_parents[parent]
+                        all_parents[parent].append(keys[val])
                     else:
-                        all_parents[parent] = 1
+                        all_parents[parent] = [keys[val]]
                     
-        for parent, times in all_parents.items():    
-            if(times == num_siblings):
+        for parent, children in all_parents.items():    
+            if(len(children) == num_siblings):
                 if(parent not in found_topics):
-                    found_topics[parent] = [{'matched':times, 'similarity':'null'}]
+                    found_topics[parent] = [{'matched':len(children), 'parent of':children}]
+                else:
+                    found_topics[parent].append({'matched':len(children), 'parent of':children})
         all_parents.clear()
             
     return (found_topics)
 
 
 def clear_explanation(found_topics, cso):
-    topics = list(found_topics.keys()) 
+    topics = list(found_topics.keys()) #takes only the keys
+    topics = remove_same_as(topics,cso) #unifies the same_As
+    topics = list(set(topics)) #finds unique topics 
     return topics
+
+def remove_same_as(topics,cso):
+    final_topics = []
+    for topic in topics:
+        if(topic in cso['same_as']):
+            same_as = cso['same_as'][topic].copy()
+            if(len(np.intersect1d(same_as, topics))>0):
+                same_as.append(topic)
+                final_topics.append(max(same_as, key=len))
+            else:
+                final_topics.append(topic)
+      
+    return (final_topics)
