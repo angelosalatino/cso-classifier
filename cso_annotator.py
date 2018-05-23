@@ -161,13 +161,16 @@ def clear_explanation(found_topics, cso):
 def remove_same_as(topics,cso):
     final_topics = []
     for topic in topics:
+        print(topic)
         if(topic in cso['same_as']):
+            # Let's take all the same-as
             same_as = cso['same_as'][topic].copy()
-            if(len(np.intersect1d(same_as, topics))>0):
-                same_as.append(topic)
-                final_topics.append(max(same_as, key=len))
-            else:
-                final_topics.append(topic)
+            same_as.append(topic)
+            # sort them alphabetically
+            same_as = sorted(same_as)
+            # append the first longest topic
+            final_topics.append(max(same_as, key=len))
+
         else:
             final_topics.append(topic)
       
