@@ -26,9 +26,10 @@ paper = {"title": "Detection of Embryonic Research Topics by Analysing Semantic 
         }
 
 # provides the topics within the paper with an explanation
-result = CSO.cso_annotator(paper, cso, format = 'json', num_children = 1, min_similarity=0.9)
+result = CSO.cso_annotator(paper, cso, format = 'json', num_children = 1, min_similarity=0.9, climb_ont='no')
 json.dumps(result)
 
 # removes related equivalent topics and removes the explanation
 topics = CSO.clear_explanation(result, cso)
-json.dumps(topics)
+json.dumps(sorted(topics))
+
