@@ -12,7 +12,9 @@ Script that annotates content from scientific papers with the topics of the [Com
 ## In depth
 1. The algorithm firstly preprocesses the content of each paper: removes punctuation and stop words.
 2. Then, it parses the text to find n-grams (unigram, bigrams and trigrams) that match, with a certain degree of similarity (default: Levenshtein >= 0.85), with the topics within the Computer Science Ontology.
-3. Thirdly, it adds more broader generic topics, based on the ones retrieved in Step 2. It exploits the _skos:broaderGeneric_ relationships within the CSO. A more broader topic is included if a certain amount of children (default: num_children = 2) are in the initial set of topics.
+3. Thirdly, it adds more broader generic topics, based on the ones retrieved in Step 2. It exploits the _skos:broaderGeneric_ relationships within the CSO. A more broader topic is included if a certain amount of children (default: num_children = 2) are in the initial set of topics. The selcgtion of more broader generic topics can be achieved in two ways:
+  * select just the first parents, or in other words the direct broaders of the topics extracted from the paper;
+  * select the whole tree from the first broader topic up until the root of the ontology.
 4. Lastly, it cleans the output removing statistic values, and removes similar topics using the _relatedEquivalent_ within the CSO.
 
 ## Instance
@@ -28,10 +30,11 @@ Running the annotator:
 ```python
 '''
 # cso is a dictionary loaded beforehand
-# num_children = 1, all the broader topics with at least one child matched is included in the final list of topics
+# num_children = 1, include all the broader topics having at least one child topic matched in the paper
 # min_similarity = 0.9, more precise similarity between n-grams and topics has been requested
+# climb_ont = 'jfp', it adds 'just the first parent'. The other option available is 'wt' as it adds the whole tree up until the root. 
 '''
-result = CSO.cso_annotator(paper, cso, format = 'json', num_children = 1, min_similarity = 0.9)
+result = CSO.cso_annotator(paper, cso, format = 'json', num_children = 1, min_similarity=0.9, climb_ont='jfp')
 json.dumps(result)
 ```
 Result (variable **_result_**):
@@ -47,14 +50,9 @@ Result (variable **_result_**):
          "similarity":0.9411764705882353
       },
       {  
-         "matched":1,
+         "matched":2,
          "parent of":[  
-            "ontology"
-         ]
-      },
-      {  
-         "matched":1,
-         "parent of":[  
+            "ontology",
             "semantic web"
          ]
       }
@@ -69,14 +67,9 @@ Result (variable **_result_**):
          "similarity":1.0
       },
       {  
-         "matched":1,
+         "matched":2,
          "parent of":[  
-            "ontology"
-         ]
-      },
-      {  
-         "matched":1,
-         "parent of":[  
+            "ontology",
             "semantic web"
          ]
       }
@@ -107,14 +100,14 @@ Result (variable **_result_**):
 and then cleaning the result:
 ```python
 topics = CSO.clear_explanation(result, cso)
-json.dumps(topics)
+json.dumps(sorted(topics))
 ```
 
 List of topics (variable **_topics_**):
 ```json
 [  
-   "semantic web",
-   "ontology",
+   "ontology-based",
+   "semantic web technologies",
    "semantics",
    "world wide web"
 ]
