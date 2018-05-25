@@ -17,6 +17,24 @@ Script that classifes content from scientific papers with the topics of the [Com
   * select the whole tree from the first broader topic up until the root of the ontology.
 4. Lastly, it cleans the output removing statistic values, and removes similar topics using the _relatedEquivalent_ within the CSO.
 
+## Choosing the Ontology
+In the repository you can find two versions of the CSO (_ComputerScienceOntology.csv_):
+
+```python
+'''
+Version 1: 15K topics and 90K relationships
+'''
+file = "ComputerScienceOntology.csv"
+```
+or
+```python
+'''
+Version 2: 26K topics and 226K relationships
+'''
+file = "ComputerScienceOntology_v2.csv"
+```
+
+
 ## Instance
 Input:
 ```json
