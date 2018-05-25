@@ -53,8 +53,8 @@ def load_cso(file):
         
         
 
-def cso_annotator(paper, cso, format="text", num_children=2, min_similarity=0.85, climb_ont='jfp'):
-    """Function that annotates a single paper. If you have a collection of papers, 
+def cso_classifier(paper, cso, format="text", num_children=2, min_similarity=0.85, climb_ont='jfp'):
+    """Function that classifies a single paper. If you have a collection of papers, 
         you must call this function for each paper and organise the result.
        Initially, it cleans the paper file, removing stopwords (English ones) and punctuation.
        Then it extracts n-grams (1,2,3) and with a Levenshtein it check the similarity for each of
@@ -268,7 +268,7 @@ def remove_same_as(topics,cso):
     """Function that removes the same as, picking the longest string in alphabetical order.
 
     Args:
-        topics (array): It contains the list of topics found with the annotator, without statistics.
+        topics (array): It contains the list of topics found with the classifier, without statistics.
         cso (dictionary): the ontology previously loaded from the file.
 
     Returns:

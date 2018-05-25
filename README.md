@@ -1,13 +1,13 @@
-# CSO-Annotator
+# CSO-Classifier
 
-Script that annotates content from scientific papers with the topics of the [Computer Science Ontology (CSO)](https://cso.kmi.open.ac.uk). Being able to synthesize the content of papers, allows to perform different kinds of analytics:
+Script that classifes content from scientific papers with the topics of the [Computer Science Ontology (CSO)](https://cso.kmi.open.ac.uk). Being able to synthesize the content of papers, allows to perform different kinds of analytics:
 * Trend analysis
 * Recommender systems
 * Find authors’ topics of interest
 * Topic analysis
 
 ## Framework
-![Framework of CSO Annotator](/pics/framework.png "Framework of CSO Annotator")
+![Framework of CSO Classifier](/pics/framework.png "Framework of CSO Classifier")
 
 ## In depth
 1. The algorithm firstly preprocesses the content of each paper: removes punctuation and stop words.
@@ -26,7 +26,7 @@ paper = {"title": "Detection of Embryonic Research Topics by Analysing Semantic 
         }
 ```
 
-Running the annotator:
+Running the classifier:
 ```python
 '''
 # cso is a dictionary loaded beforehand
@@ -34,7 +34,7 @@ Running the annotator:
 # min_similarity = 0.9, more precise similarity between n-grams and topics has been requested
 # climb_ont = 'jfp', it adds 'just the first parent'. The other option available is 'wt' as it adds the whole tree up until the root. 
 '''
-result = CSO.cso_annotator(paper, cso, format = 'json', num_children = 1, min_similarity=0.9, climb_ont='jfp')
+result = CSO.cso_classifier(paper, cso, format = 'json', num_children = 1, min_similarity=0.9, climb_ont='jfp')
 json.dumps(result)
 ```
 Result (variable **_result_**):

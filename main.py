@@ -6,7 +6,7 @@ Created on Mon Apr 23 15:17:24 2018
 @author: angelosalatino
 """
 
-import cso_annotator as CSO
+import cso_classifier as CSO
 import json
 
 file = "ComputerScienceOntology.csv"
@@ -26,7 +26,7 @@ paper = {"title": "Detection of Embryonic Research Topics by Analysing Semantic 
         }
 
 # provides the topics within the paper with an explanation
-result = CSO.cso_annotator(paper, cso, format = 'json', num_children = 1, min_similarity=0.9, climb_ont='no')
+result = CSO.cso_classifier(paper, cso, format = 'json', num_children = 1, min_similarity=0.9, climb_ont='no')
 json.dumps(result)
 
 # removes related equivalent topics and removes the explanation
