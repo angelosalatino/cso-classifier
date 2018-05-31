@@ -9,6 +9,12 @@ Script that classifes content from scientific papers with the topics of the [Com
 ## Framework
 ![Framework of CSO Classifier](/pics/framework.png "Framework of CSO Classifier")
 
+## Requirements
+1. Python 3
+2. ```pip install nltk```
+3. ```import nltk; nltk.download('stopwords')```
+4. ```pip install python-Levenshtein```
+
 ## In depth
 1. The algorithm firstly preprocesses the content of each paper: removes punctuation and stop words.
 2. Then, it parses the text to find n-grams (unigram, bigrams and trigrams) that match, with a certain degree of similarity (default: Levenshtein >= 0.85), with the topics within the Computer Science Ontology.
@@ -21,16 +27,12 @@ Script that classifes content from scientific papers with the topics of the [Com
 In the repository you can find two versions of the CSO (_ComputerScienceOntology.csv_):
 
 ```python
-'''
-Version 1: 15K topics and 90K relationships
-'''
+# Version 1: 15K topics and 90K relationships
 file = "ComputerScienceOntology.csv"
 ```
 or
 ```python
-'''
-Version 2: 26K topics and 226K relationships
-'''
+# Version 2: 26K topics and 226K relationships
 file = "ComputerScienceOntology_v2.csv"
 ```
 
@@ -46,12 +48,10 @@ paper = {"title": "Detection of Embryonic Research Topics by Analysing Semantic 
 
 Running the classifier:
 ```python
-'''
 # cso is a dictionary loaded beforehand
 # num_children = 1, include all the broader topics having at least one child topic matched in the paper
 # min_similarity = 0.9, more precise similarity between n-grams and topics has been requested
 # climb_ont = 'jfp', it adds 'just the first parent'. The other option available is 'wt' as it adds the whole tree up until the root. 
-'''
 result = CSO.cso_classifier(paper, cso, format = 'json', num_children = 1, min_similarity=0.9, climb_ont='jfp')
 json.dumps(result)
 ```
