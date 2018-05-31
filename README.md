@@ -52,8 +52,9 @@ Running the classifier:
 # num_children = 1, include all the broader topics having at least one child topic matched in the paper
 # min_similarity = 0.9, more precise similarity between n-grams and topics has been requested
 # climb_ont = 'jfp', it adds 'just the first parent'. The other option available is 'wt' as it adds the whole tree up until the root. 
-result = CSO.cso_classifier(paper, cso, format = 'json', num_children = 1, min_similarity=0.9, climb_ont='jfp')
-json.dumps(result)
+# verbose = True, it returns the result in a verbose way. It reports the different statistics associated with matches.
+result = CSO.cso_classifier(PAPER, cso, format='json', num_children=1, min_similarity=0.9, climb_ont='jfp', verbose=True)
+print(json.dumps(result))
 ```
 Result (variable **_result_**):
 ```json
@@ -117,11 +118,11 @@ Result (variable **_result_**):
 
 and then cleaning the result:
 ```python
-topics = CSO.clear_explanation(result, cso)
-json.dumps(sorted(topics))
+result = CSO.cso_classifier(PAPER, cso, format='json', num_children=1, min_similarity=0.9, climb_ont='jfp', verbose=False)
+print(json.dumps(result))
 ```
 
-List of topics (variable **_topics_**):
+List of final topics (variable **_result_**):
 ```json
 [  
    "ontology-based",

@@ -52,7 +52,7 @@ def load_cso(file):
     return(cso)
 
 
-def cso_classifier(paper, cso, format="text", num_children=2, min_similarity=0.85, climb_ont='jfp', verbose=True):
+def cso_classifier(paper, cso, format="text", num_children=2, min_similarity=0.85, climb_ont='jfp', verbose=False):
     """Function that classifies a single paper. If you have a collection of papers, 
         you must call this function for each paper and organise the result.
        Initially, it cleans the paper file, removing stopwords (English ones) and punctuation.
@@ -69,6 +69,7 @@ def cso_classifier(paper, cso, format="text", num_children=2, min_similarity=0.8
         num_children (integer): it defines the number of children a broader topic must have in order to be included in the final set of topics. Default = 2.
         min_similarity (integer): minimum Levenshtein similarity between the n-gram and the topics within the CSO. Default = 0.85.
         climb_ont (string): either "jfp" or "wt" for selecting "just the first parent" or climbing the "whole tree".
+        verbose (bool): True or False, whether the result should contain also statistical values for matchings. Useful for debugging. Default False.
 
     Returns:
         found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
