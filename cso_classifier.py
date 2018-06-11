@@ -17,28 +17,37 @@ def load_cso(file):
     """Function that loads the CSO from the file in a dictionary.
        In particular, it load all the relationships organised in boxes:
            - topics, the list of topics
-           - broaders, the list of broaders for a given topic
+           - broaders, the list of broader topics for a given topic
+           - narrowers, the list of narrower topics for a given topic
            - same_as, all the siblings for a given topic
 
     Args:
         file (string): The path of the file constaining the ontology.
 
     Returns:
-        cso (dictionary): {'topics':topics, 'broaders':broaders, 'same_as':same_as}.
+        cso (dictionary): {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}.
 
 
     """
     with open(file) as ontoFile:
         topics = {}
         broaders = {}
+        narrowers = {}
         same_as = {}
         ontology = csv.reader(ontoFile, delimiter=';')
         for triple in ontology:
             if triple[1] == 'klink:broaderGeneric':
+                # loading broader topics
                 if triple[2] in broaders:
                     broaders[triple[2]].append(triple[0])
                 else:
                     broaders[triple[2]] = [triple[0]]
+                
+                # loading narrower topics
+                if triple[0] in narrowers:
+                    narrowers[triple[0]].append(triple[2])
+                else:
+                    narrowers[triple[0]] = [triple[2]]
             elif triple[1] == 'klink:relatedEquivalent':
                 if triple[2] in same_as:
                     same_as[triple[2]].append(triple[0])
@@ -47,8 +56,84 @@ def load_cso(file):
             elif triple[1] == 'rdfs:label':
                 topics[triple[0]] = True
 
-    cso = {'topics':topics, 'broaders':broaders, 'same_as':same_as}
+    cso = {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}
+    return(cso)
+    
+    
+def load_local_cso(file, seed = 'semantic web'):
+    """Function that loads a portion of the CSO, starting from a seed topic.
+       In particular, it load all the relationships organised in boxes:
+           - topics, the list of topics
+           - broaders, the list of broader topics for a given topic
+           - narrowers, the list of narrower topics for a given topic
+           - same_as, all the siblings for a given topic
 
+    Args:
+        file (string): The path of the file constaining the ontology.
+        seed (string): Root topic from which extract the portion of ontology
+
+    Returns:
+        cso (dictionary): {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}.
+
+
+    """
+    
+    full_cso = load_cso(file)
+    
+    relationships  = full_cso['narrowers']
+    list_of_topics = full_cso['topics']
+    
+    if seed not in list_of_topics:
+        print("Error: "+seed+" not found in CSO")
+        return(False)
+     
+    
+    sub_seed_topics = {}
+    sub_seed_topics[seed] = True
+    
+    queue = [seed]
+    while (len(queue) > 0):
+        t_topic = queue.pop(0)
+        if t_topic in relationships:
+            for topic in relationships[t_topic]:
+                queue.append(topic)
+                sub_seed_topics[topic] = True
+    
+    
+    
+    # let's extract the portion of ontology
+    with open(file) as ontoFile:
+        topics = {}
+        broaders = {}
+        narrowers = {}
+        same_as = {}
+        ontology = csv.reader(ontoFile, delimiter=';')
+        for triple in ontology:
+            if (triple[0] in sub_seed_topics):
+                if triple[1] == 'klink:broaderGeneric':
+                    if (triple[2] in sub_seed_topics):
+                        # loading broader topics
+                        if triple[2] in broaders:
+                            broaders[triple[2]].append(triple[0])
+                        else:
+                            broaders[triple[2]] = [triple[0]]
+                        
+                        # loading narrower topics
+                        if triple[0] in narrowers:
+                            narrowers[triple[0]].append(triple[2])
+                        else:
+                            narrowers[triple[0]] = [triple[2]]
+                elif triple[1] == 'klink:relatedEquivalent':
+                    if triple[2] in same_as:
+                        same_as[triple[2]].append(triple[0])
+                    else:
+                        same_as[triple[2]] = [triple[0]]
+                elif triple[1] == 'rdfs:label':
+                    topics[triple[0]] = True
+    
+    
+    cso = {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}
+    
     return(cso)
 
 
@@ -163,7 +248,7 @@ def statistic_similarity(paper, cso, min_similarity):
 
 
 
-def climb_ontology(found_topics,cso,num_narrower,climb_ont):
+def climb_ontology(found_topics, cso, num_narrower, climb_ont):
     """Function that climbs the ontology. This function might retrieve
         just the first broader topic or the whole branch up until root
 
@@ -205,7 +290,7 @@ def climb_ontology(found_topics,cso,num_narrower,climb_ont):
     return found_topics
 
 
-def get_broader_of_topics(found_topics,all_broaders,cso):
+def get_broader_of_topics(found_topics, all_broaders, cso):
     """Function that returns all the broader topics for a given set of topics.
         It analyses the broader topics of both the topics initially found in the paper, and the broader topics found at the previous iteration.
         It incrementally provides a more comprehensive set of broader topics.
@@ -235,6 +320,7 @@ def get_broader_of_topics(found_topics,all_broaders,cso):
     return all_broaders
 
 
+
 def strip_explanation(found_topics, cso):
     """Function that removes statistical values from the dictionary containing the found topics.
         It returns only the topics. It removes the same as, picking the longest string in alphabetical order.
@@ -252,7 +338,7 @@ def strip_explanation(found_topics, cso):
     topics = list(set(topics)) #finds unique topics
     return topics
 
-def remove_same_as(topics,cso):
+def remove_same_as(topics, cso):
     """Function that removes the same as, picking the longest string in alphabetical order.
 
     Args:
@@ -277,3 +363,44 @@ def remove_same_as(topics,cso):
             final_topics.append(topic)
 
     return final_topics
+
+
+def retrieve_narrower_topics(seed, cso, depth = 'wt'):
+    """Function that retrieves the narrower topics of a given seed topic.
+
+    Args:
+        seed (string): seed topic from which selecting its narrower topics
+        cso (dictionary): the ontology previously loaded from the file.
+        depth (string): either "jfn" or "wt" for selecting "just the first narrower topics" or selecting all the topics in the "whole sub-tree".
+
+    Returns:
+        topics (array): the unique topics selected from the seed.
+    """
+    
+    relationships  = cso['narrowers']
+    
+    if seed not in relationships:
+        print("Error: "+seed+" not found in CSO")
+        return(False)
+     
+    
+    topics = {}
+    topics[seed] = True
+    
+    if depth == 'wt':
+        queue = [seed]
+        while (len(queue) > 0):
+            t_topic = queue.pop(0)
+            if t_topic in relationships:
+                for topic in relationships[t_topic]:
+                    queue.append(topic)
+                    topics[topic] = True
+    elif depth == 'jfn':
+        for topic in relationships[seed]:
+            topics[topic] = True
+    else:
+        print("Error: Field climb_ontology must be either 'jfn' or 'wt'")
+        return
+    
+    topics = list(topics.keys())
+    return(topics)
