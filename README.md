@@ -18,8 +18,8 @@ Script that classifes content from scientific papers with the topics of the [Com
 ## In depth
 1. The algorithm firstly preprocesses the content of each paper: removes punctuation and stop words.
 2. Then, it parses the text to find n-grams (unigram, bigrams and trigrams) that match, with a certain degree of similarity (default: Levenshtein >= 0.85), with the topics within the Computer Science Ontology.
-3. Thirdly, it adds more broader generic topics, based on the ones retrieved in Step 2. It exploits the _skos:broaderGeneric_ relationships within the CSO. A more broader topic is included if a certain amount of children (default: num_children = 2) are in the initial set of topics. The selcgtion of more broader generic topics can be achieved in two ways:
-  * select just the first parents, or in other words the direct broaders of the topics extracted from the paper;
+3. Thirdly, it adds more broader generic topics, based on the ones retrieved in Step 2. It exploits the _skos:broaderGeneric_ relationships within the CSO. A more broader topic is included if a certain amount of narrower topics (default: num_narrower = 2) are in the initial set of topics. The selcgtion of more broader generic topics can be achieved in two ways:
+  * select just the first broader topic, or in other words the direct broaders of the topics extracted from the paper;
   * select the whole tree from the first broader topic up until the root of the ontology.
 4. Lastly, it cleans the output removing statistic values, and removes similar topics using the _relatedEquivalent_ within the CSO.
 
@@ -49,11 +49,11 @@ paper = {"title": "Detection of Embryonic Research Topics by Analysing Semantic 
 Running the classifier:
 ```python
 # cso is a dictionary loaded beforehand
-# num_children = 1, include all the broader topics having at least one child topic matched in the paper
+# num_narrower = 1, include all the broader topics having at least one narrower topic matched in the paper
 # min_similarity = 0.9, more precise similarity between n-grams and topics has been requested
-# climb_ont = 'jfp', it adds 'just the first parent'. The other option available is 'wt' as it adds the whole tree up until the root. 
+# climb_ont = 'jfb', it adds 'just the first broader topic'. The other option available is 'wt' as it adds the whole tree up until the root. 
 # verbose = True, it returns the result in a verbose way. It reports the different statistics associated with matches.
-result = CSO.cso_classifier(PAPER, cso, format='json', num_children=1, min_similarity=0.9, climb_ont='jfp', verbose=True)
+result = CSO.cso_classifier(PAPER, cso, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfp', verbose=True)
 print(json.dumps(result))
 ```
 Result (variable **_result_**):
@@ -70,7 +70,7 @@ Result (variable **_result_**):
       },
       {  
          "matched":2,
-         "parent of":[  
+         "broader of":[  
             "ontology",
             "semantic web"
          ]
@@ -87,7 +87,7 @@ Result (variable **_result_**):
       },
       {  
          "matched":2,
-         "parent of":[  
+         "broader of":[  
             "ontology",
             "semantic web"
          ]
@@ -108,7 +108,7 @@ Result (variable **_result_**):
    "world wide web":[  
       {  
          "matched":1,
-         "parent of":[  
+         "broader of":[  
             "semantic web"
          ]
       }
@@ -118,7 +118,7 @@ Result (variable **_result_**):
 
 and then cleaning the result:
 ```python
-result = CSO.cso_classifier(PAPER, cso, format='json', num_children=1, min_similarity=0.9, climb_ont='jfp', verbose=False)
+result = CSO.cso_classifier(PAPER, cso, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfp', verbose=False)
 print(json.dumps(result))
 ```
 

@@ -17,28 +17,28 @@ def load_cso(file):
     """Function that loads the CSO from the file in a dictionary.
        In particular, it load all the relationships organised in boxes:
            - topics, the list of topics
-           - parents, the list of parents for a given topic
+           - broaders, the list of broaders for a given topic
            - same_as, all the siblings for a given topic
 
     Args:
         file (string): The path of the file constaining the ontology.
 
     Returns:
-        cso (dictionary): {'topics':topics, 'parents':parents, 'same_as':same_as}.
+        cso (dictionary): {'topics':topics, 'broaders':broaders, 'same_as':same_as}.
 
 
     """
     with open(file) as ontoFile:
         topics = {}
-        parents = {}
+        broaders = {}
         same_as = {}
         ontology = csv.reader(ontoFile, delimiter=';')
         for triple in ontology:
             if triple[1] == 'klink:broaderGeneric':
-                if triple[2] in parents:
-                    parents[triple[2]].append(triple[0])
+                if triple[2] in broaders:
+                    broaders[triple[2]].append(triple[0])
                 else:
-                    parents[triple[2]] = [triple[0]]
+                    broaders[triple[2]] = [triple[0]]
             elif triple[1] == 'klink:relatedEquivalent':
                 if triple[2] in same_as:
                     same_as[triple[2]].append(triple[0])
@@ -47,28 +47,28 @@ def load_cso(file):
             elif triple[1] == 'rdfs:label':
                 topics[triple[0]] = True
 
-    cso = {'topics':topics, 'parents':parents, 'same_as':same_as}
+    cso = {'topics':topics, 'broaders':broaders, 'same_as':same_as}
 
     return(cso)
 
 
-def cso_classifier(paper, cso, format="text", num_children=2, min_similarity=0.85, climb_ont='jfp', verbose=False):
+def cso_classifier(paper, cso, format="text", num_narrower=2, min_similarity=0.85, climb_ont='jfb', verbose=False):
     """Function that classifies a single paper. If you have a collection of papers, 
         you must call this function for each paper and organise the result.
        Initially, it cleans the paper file, removing stopwords (English ones) and punctuation.
        Then it extracts n-grams (1,2,3) and with a Levenshtein it check the similarity for each of
        them with the topics in the ontology.
-       Next, it climbs the ontology, by selecting either the first parent or the whole set of
-       parents until root is reached.
+       Next, it climbs the ontology, by selecting either the first broader topic or the whole set of
+       broader topics until root is reached.
 
     Args:
         paper (either string or dictionary): The paper to analyse. It can be a full string in which the content
         is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
         cso (dictionary): the ontology previously loaded from the file.
         format (string): either "text" or "json" to determine wether the paper is either in a string or dictionary respectively. Default = "text".
-        num_children (integer): it defines the number of children a broader topic must have in order to be included in the final set of topics. Default = 2.
+        num_narrower (integer): it defines the number of narrower topics before their broader topic gets included in the final set of topics. Default = 2.
         min_similarity (integer): minimum Levenshtein similarity between the n-gram and the topics within the CSO. Default = 0.85.
-        climb_ont (string): either "jfp" or "wt" for selecting "just the first parent" or climbing the "whole tree".
+        climb_ont (string): either "jfb" or "wt" for selecting "just the first broader topic" or climbing the "whole tree".
         verbose (bool): True or False, whether the result should contain also statistical values for matchings. Useful for debugging. Default False.
 
     Returns:
@@ -98,7 +98,7 @@ def cso_classifier(paper, cso, format="text", num_children=2, min_similarity=0.8
     found_topics = statistic_similarity(paper, cso, min_similarity)
 
     # extract more concepts from the ontology
-    found_topics = climb_ontology(found_topics, cso, num_children=num_children, climb_ont=climb_ont)
+    found_topics = climb_ontology(found_topics, cso, num_narrower=num_narrower, climb_ont=climb_ont)
 
     if verbose is False:
         found_topics = strip_explanation(found_topics, cso)
@@ -163,76 +163,76 @@ def statistic_similarity(paper, cso, min_similarity):
 
 
 
-def climb_ontology(found_topics,cso,num_children,climb_ont):
+def climb_ontology(found_topics,cso,num_narrower,climb_ont):
     """Function that climbs the ontology. This function might retrieve
-        just the first parent or the whole branch up until root
+        just the first broader topic or the whole branch up until root
 
     Args:
         found_topics (dictionary): It contains the topics found with string similarity.
         cso (dictionary): the ontology previously loaded from the file.
-        num_children (integer): it defines the number of children a broader topic must have in order to be included in the final set of topics. Default = 2.
-        climb_ont (string): either "jfp" or "wt" for selecting "just the first parent" or climbing the "whole tree".
+        num_narrower (integer): it defines the number of narrower topics before their broader topic gets included in the final set of topics. Default = 2.
+        climb_ont (string): either "jfb" or "wt" for selecting "just the first broader topic" or climbing the "whole tree".
 
     Returns:
         found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
     """
 
-    all_parents = {}
+    all_broaders = {}
 
-    if climb_ont == 'jfp':
-        all_parents = get_parent_of_topics(found_topics,all_parents,cso)
+    if climb_ont == 'jfb':
+        all_broaders = get_broader_of_topics(found_topics,all_broaders,cso)
     elif climb_ont == 'wt':
-        while True: #recursively adding new parents based on the current list of topics. Parents var increases each iteration. It stops when it does not change anymore.
-            all_parents_back = all_parents.copy()
-            all_parents = get_parent_of_topics(found_topics, all_parents, cso)
-            if all_parents_back == all_parents: # no more parents have been found
+        while True: #recursively adding new broaders based on the current list of topics. Broaders var increases each iteration. It stops when it does not change anymore.
+            all_broaders_back = all_broaders.copy()
+            all_broaders = get_broader_of_topics(found_topics, all_broaders, cso)
+            if all_broaders_back == all_broaders: # no more broaders have been found
                 break
     elif climb_ont == 'no':
         return found_topics
     else:
-        print("Error: Field climb_ontology must be 'jfp', 'wt' or 'no'")
+        print("Error: Field climb_ontology must be 'jfb', 'wt' or 'no'")
         return
 
 
-    for parent, children in all_parents.items():    
-        if len(children) >= num_children:
-            if parent not in found_topics:
-                found_topics[parent] = [{'matched':len(children), 'parent of':children}]
+    for broader, narrower in all_broaders.items():    
+        if len(narrower) >= num_narrower:
+            if broader not in found_topics:
+                found_topics[broader] = [{'matched':len(narrower), 'broader of':narrower}]
             else:
-                found_topics[parent].append({'matched':len(children), 'parent of':children})
+                found_topics[broader].append({'matched':len(narrower), 'broader of':narrower})
         
             
     return found_topics
 
 
-def get_parent_of_topics(found_topics,all_parents,cso):
-    """Function that returns all the parents for a given set of topics.
-        It analyses the parents of both the topics initially found in the paper and the parents found at the previous iteration.
-        It incrementally provides a more comprehensive set of parents.
+def get_broader_of_topics(found_topics,all_broaders,cso):
+    """Function that returns all the broader topics for a given set of topics.
+        It analyses the broader topics of both the topics initially found in the paper, and the broader topics found at the previous iteration.
+        It incrementally provides a more comprehensive set of broader topics.
 
     Args:
         found_topics (dictionary): It contains the topics found with string similarity.
-        all_parents (dictionary): It contains the parents found in the previous run. Otherwise an empty object.
+        all_broaders (dictionary): It contains the broader topics found in the previous run. Otherwise an empty object.
         cso (dictionary): the ontology previously loaded from the file.
 
     Returns:
-        all_parents (dictionary): contains all the parents found so far, including the previous iterations.
+        all_broaders (dictionary): contains all the broaders found so far, including the previous iterations.
     """
 
-    topics = list(found_topics.keys()) + list(all_parents.keys())
+    topics = list(found_topics.keys()) + list(all_broaders.keys())
     for topic in topics:
-        if topic in cso['parents']:
-            parents = cso['parents'][topic]
-            for parent in parents:
-                if parent in all_parents:
-                    if topic not in all_parents[parent]:
-                        all_parents[parent].append(topic)
+        if topic in cso['broaders']:
+            broaders = cso['broaders'][topic]
+            for broader in broaders:
+                if broader in all_broaders:
+                    if topic not in all_broaders[broader]:
+                        all_broaders[broader].append(topic)
                     else:
                         pass # the topic was listed before
                 else:
-                    all_parents[parent] = [topic]
+                    all_broaders[broader] = [topic]
 
-    return all_parents
+    return all_broaders
 
 
 def strip_explanation(found_topics, cso):
