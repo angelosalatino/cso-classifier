@@ -374,18 +374,26 @@ def retrieve_narrower_topics(seed, cso, depth = 'wt'):
         depth (string): either "jfn" or "wt" for selecting "just the first narrower topics" or selecting all the topics in the "whole sub-tree".
 
     Returns:
-        topics (array): the unique topics selected from the seed.
+        topics (array): the unique topics selected from the seed. Or False in case the topic does not exist in the ontology.
     """
     
-    relationships  = cso['narrowers']
+    list_of_topics = cso['topics']
     
-    if seed not in relationships:
+    if seed not in list_of_topics:
         print("Error: "+seed+" not found in CSO")
         return(False)
      
     
+    relationships  = cso['narrowers']
+    
     topics = {}
-    topics[seed] = True
+    
+    if seed not in relationships:
+        print("Error: No narrower topics found for "+seed)
+        return(list(topics.keys()))
+     
+    
+    #topics[seed] = True
     
     if depth == 'wt':
         queue = [seed]
@@ -401,6 +409,5 @@ def retrieve_narrower_topics(seed, cso, depth = 'wt'):
     else:
         print("Error: Field climb_ontology must be either 'jfn' or 'wt'")
         return
-    
-    topics = list(topics.keys())
-    return(topics)
+
+    return(list(topics.keys()))
