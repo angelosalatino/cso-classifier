@@ -6,6 +6,11 @@ Script that classifes content from scientific papers with the topics of the [Com
 * Find authors’ topics of interest
 * Topic analysis
 
+
+## About
+
+If you use the CSO classfier in your research or work and would like to cite the SKM3 Application Programming Interface, we suggest you cite the [CSO portal paper](http://skm.kmi.open.ac.uk/the-computer-science-ontology-a-large-scale-taxonomy-of-research-areas/).
+
 ## Framework
 ![Framework of CSO Classifier](/pics/framework.png "Framework of CSO Classifier")
 
