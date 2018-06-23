@@ -10,7 +10,7 @@ Script that classifes content from scientific papers with the topics of the [Com
 ![Framework of CSO Classifier](/pics/framework.png "Framework of CSO Classifier")
 
 ## Requirements
-1. Ensure you have (**Python 3**)[https://www.python.org/downloads/] installed.
+1. Ensure you have [**Python 3**](https://www.python.org/downloads/) installed.
 2. Install the necessary depepencies by executing the following command:```pip install -r requirements.txt```
 3. Download NLP datasets by running the following line  within your Python 3 interpreter: ```import nltk; nltk.download('stopwords');```
 
