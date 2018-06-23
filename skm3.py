@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Apr 23 15:16:13 2018
+Computer Science Ontology API 2018
 
 @author: angelosalatino
 """
@@ -12,13 +12,14 @@ from nltk import ngrams
 from nltk.tokenize import word_tokenize
 import Levenshtein.StringMatcher as ls
 
-class CSO_classifier:
+
+class CSOClassifier:
     """ An simple abstraction layer for using CSO classifier """
     
     def __init__(self, version=1):
-        if (version == 1):
+        if version == 1:
             self.filename = 'ontology/ComputerScienceOntology.csv'
-        else if (version == 1):
+        elif version == 1:
             self.filename = 'ontology/ComputerScienceOntology_v2.csv'
         else: 
             raise ValueError(f"Could not recognise value: {version}. Please specify version 1 or 2.")
@@ -27,7 +28,6 @@ class CSO_classifier:
         # Initialise variables to store CSO data - loads into memory 
         self.cso = {}
 
-       
     def load_cso(self):
         """Function that loads the CSO from the file in a dictionary.
            In particular, it load all the relationships organised in boxes:
@@ -72,7 +72,6 @@ class CSO_classifier:
 
         self.cso = {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}
 
-
     def load_local_cso(self, file, seed = 'semantic web'):
         """Function that loads a portion of the CSO, starting from a seed topic.
            In particular, it load all the relationships organised in boxes:
@@ -91,28 +90,25 @@ class CSO_classifier:
 
         """
 
-        full_cso = load_cso(file)
+        full_cso = self.load_cso(file)
 
         relationships  = full_cso['narrowers']
         list_of_topics = full_cso['topics']
 
         if seed not in list_of_topics:
             print("Error: "+seed+" not found in CSO")
-            return(False)
+            return False
 
-
-        sub_seed_topics = {}
+        sub_seed_topics = dict()
         sub_seed_topics[seed] = True
 
         queue = [seed]
-        while (len(queue) > 0):
+        while len(queue) > 0:
             t_topic = queue.pop(0)
             if t_topic in relationships:
                 for topic in relationships[t_topic]:
                     queue.append(topic)
                     sub_seed_topics[topic] = True
-
-
 
         # let's extract the portion of ontology
         with open(file) as ontoFile:
@@ -121,10 +117,11 @@ class CSO_classifier:
             narrowers = {}
             same_as = {}
             ontology = csv.reader(ontoFile, delimiter=';')
+
             for triple in ontology:
-                if (triple[0] in sub_seed_topics):
+                if triple[0] in sub_seed_topics:
                     if triple[1] == 'klink:broaderGeneric':
-                        if (triple[2] in sub_seed_topics):
+                        if triple[2] in sub_seed_topics:
                             # loading broader topics
                             if triple[2] in broaders:
                                 broaders[triple[2]].append(triple[0])
@@ -144,11 +141,14 @@ class CSO_classifier:
                     elif triple[1] == 'rdfs:label':
                         topics[triple[0]] = True
 
+        cso = {
+            'topics': topics,
+            'broaders': broaders,
+            'narrowers': narrowers,
+            'same_as': same_as
+        }
 
-        cso = {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}
-
-        return(cso)
-
+        return cso
 
     def classify(self, paper, format="text", num_narrower=2, min_similarity=0.85, climb_ont='jfb', verbose=False):
         """Function that classifies a single paper. If you have a collection of papers, 
@@ -163,11 +163,16 @@ class CSO_classifier:
             paper (either string or dictionary): The paper to analyse. It can be a full string in which the content
             is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
             cso (dictionary): the ontology previously loaded from the file.
-            format (string): either "text" or "json" to determine wether the paper is either in a string or dictionary respectively. Default = "text".
-            num_narrower (integer): it defines the number of narrower topics before their broader topic gets included in the final set of topics. Default = 2.
-            min_similarity (integer): minimum Levenshtein similarity between the n-gram and the topics within the CSO. Default = 0.85.
-            climb_ont (string): either "jfb" or "wt" for selecting "just the first broader topic" or climbing the "whole tree".
-            verbose (bool): True or False, whether the result should contain also statistical values for matchings. Useful for debugging. Default False.
+            format (string): either "text" or "json" to determine wether the paper is either in a string or
+            dictionary respectively. Default = "text".
+            num_narrower (integer): it defines the number of narrower topics before their broader topic gets
+            included in the final set of topics. Default = 2.
+            min_similarity (integer): minimum Levenshtein similarity between the n-gram and the topics within
+            the CSO. Default = 0.85.
+            climb_ont (string): either "jfb" or "wt" for selecting "just the first broader topic" or climbing the
+            "whole tree".
+            verbose (bool): True or False, whether the result should contain also statistical values for matchings.
+            Useful for debugging. Default False.
 
         Returns:
             found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
@@ -179,31 +184,28 @@ class CSO_classifier:
             for key in list(t_paper.keys()):
                 paper = paper + t_paper[key] + " "
         elif format == 'text':
-            pass #do nothing
+            pass
         else:
             print("Error: Field format must be either 'json' or 'text'")
             return
 
-        # preprocessing
+        # pre-processing
         paper = paper.lower()
         tokenizer = RegexpTokenizer(r'[\w\-\(\)]*')
         tokens = tokenizer.tokenize(paper)
-        filtered_words = [w for w in tokens if not w in stopwords.words('english')]
+        filtered_words = [w for w in tokens if w not in stopwords.words('english')]
         paper = " ".join(filtered_words)
 
-
         # analysing similarity with terms in the ontology
-        found_topics = statistic_similarity(paper, self.cso, min_similarity)
+        found_topics = self.statistic_similarity(paper, min_similarity)
 
         # extract more concepts from the ontology
-        found_topics = climb_ontology(found_topics, self.cso, num_narrower=num_narrower, climb_ont=climb_ont)
+        found_topics = self.climb_ontology(found_topics, num_narrower=num_narrower, climb_ont=climb_ont)
 
         if verbose is False:
-            found_topics = strip_explanation(found_topics, self.cso)
+            found_topics = self.strip_explanation(found_topics)
 
         return found_topics
-
-
 
     def statistic_similarity(self, paper, min_similarity):
         """Function that splits the paper text in n-grams (unigrams,bigrams,trigrams)
@@ -259,17 +261,17 @@ class CSO_classifier:
 
         return found_topics
 
-
-
-    def climb_ontology(found_topics, num_narrower, climb_ont):
+    def climb_ontology(self, found_topics, num_narrower, climb_ont):
         """Function that climbs the ontology. This function might retrieve
             just the first broader topic or the whole branch up until root
 
         Args:
             found_topics (dictionary): It contains the topics found with string similarity.
             cso (dictionary): the ontology previously loaded from the file.
-            num_narrower (integer): it defines the number of narrower topics before their broader topic gets included in the final set of topics. Default = 2.
-            climb_ont (string): either "jfb" or "wt" for selecting "just the first broader topic" or climbing the "whole tree".
+            num_narrower (integer): it defines the number of narrower topics before their broader topic gets included
+            in the final set of topics. Default = 2.
+            climb_ont (string): either "jfb" or "wt" for selecting "just the first broader topic" or climbing
+            the "whole tree".
 
         Returns:
             found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
@@ -278,11 +280,15 @@ class CSO_classifier:
         all_broaders = {}
 
         if climb_ont == 'jfb':
-            all_broaders = get_broader_of_topics(found_topics,all_broaders, self.cso)
+            all_broaders = self.get_broader_of_topics(found_topics,all_broaders)
         elif climb_ont == 'wt':
-            while True: #recursively adding new broaders based on the current list of topics. Broaders var increases each iteration. It stops when it does not change anymore.
+            while True:
+                """
+                recursively adding new broaders based on the current list of topics. Broaders var increases each 
+                iteration. It stops when it does not change anymore.
+                """
                 all_broaders_back = all_broaders.copy()
-                all_broaders = get_broader_of_topics(found_topics, all_broaders, self.cso)
+                all_broaders = self.get_broader_of_topics(found_topics, all_broaders)
                 if all_broaders_back == all_broaders: # no more broaders have been found
                     break
         elif climb_ont == 'no':
@@ -291,26 +297,25 @@ class CSO_classifier:
             print("Error: Field climb_ontology must be 'jfb', 'wt' or 'no'")
             return
 
-
         for broader, narrower in all_broaders.items():    
             if len(narrower) >= num_narrower:
                 if broader not in found_topics:
-                    found_topics[broader] = [{'matched':len(narrower), 'broader of':narrower}]
+                    found_topics[broader] = [{'matched': len(narrower), 'broader of': narrower}]
                 else:
-                    found_topics[broader].append({'matched':len(narrower), 'broader of':narrower})
-
+                    found_topics[broader].append({'matched': len(narrower), 'broader of': narrower})
 
         return found_topics
 
-
-    def get_broader_of_topics(found_topics, all_broaders):
+    def get_broader_of_topics(self, found_topics, all_broaders):
         """Function that returns all the broader topics for a given set of topics.
-            It analyses the broader topics of both the topics initially found in the paper, and the broader topics found at the previous iteration.
+            It analyses the broader topics of both the topics initially found in the paper, and the broader topics
+            found at the previous iteration.
             It incrementally provides a more comprehensive set of broader topics.
 
         Args:
             found_topics (dictionary): It contains the topics found with string similarity.
-            all_broaders (dictionary): It contains the broader topics found in the previous run. Otherwise an empty object.
+            all_broaders (dictionary): It contains the broader topics found in the previous run.
+            Otherwise an empty object.
             cso (dictionary): the ontology previously loaded from the file.
 
         Returns:
@@ -332,9 +337,7 @@ class CSO_classifier:
 
         return all_broaders
 
-
-
-    def strip_explanation(found_topics):
+    def strip_explanation(self, found_topics):
         """Function that removes statistical values from the dictionary containing the found topics.
             It returns only the topics. It removes the same as, picking the longest string in alphabetical order.
 
@@ -346,12 +349,12 @@ class CSO_classifier:
             topic (array): array containing the list of topics.
         """
 
-        topics = list(found_topics.keys()) #takes only the keys
-        topics = remove_same_as(topics, self.cso) #unifies the same_As
-        topics = list(set(topics)) #finds unique topics
+        topics = list(found_topics.keys())  # Takes only the keys
+        topics = self.remove_same_as(topics)  # Unifies the same_As
+        topics = list(set(topics))  # Finds unique topics
         return topics
 
-    def remove_same_as(topics):
+    def remove_same_as(self, topics):
         """Function that removes the same as, picking the longest string in alphabetical order.
 
         Args:
@@ -377,40 +380,39 @@ class CSO_classifier:
 
         return final_topics
 
-
-    def retrieve_narrower_topics(seed, depth = 'wt'):
+    def retrieve_narrower_topics(self, seed, depth='wt'):
         """Function that retrieves the narrower topics of a given seed topic.
 
         Args:
             seed (string): seed topic from which selecting its narrower topics
             cso (dictionary): the ontology previously loaded from the file.
-            depth (string): either "jfn" or "wt" for selecting "just the first narrower topics" or selecting all the topics in the "whole sub-tree".
+            depth (string): either "jfn" or "wt" for selecting "just the first narrower topics" or selecting all the
+            topics in the "whole sub-tree".
 
         Returns:
-            topics (array): the unique topics selected from the seed. Or False in case the topic does not exist in the ontology.
+            topics (array): the unique topics selected from the seed. Or False in case the topic does not exist
+            in the ontology.
         """
 
         list_of_topics = self.cso['topics']
 
         if seed not in list_of_topics:
             print("Error: "+seed+" not found in CSO")
-            return(False)
+            return False
 
-
-        relationships  = self.cso['narrowers']
+        relationships = self.cso['narrowers']
 
         topics = {}
 
         if seed not in relationships:
             print("Error: No narrower topics found for "+seed)
-            return(list(topics.keys()))
+            return list(topics.keys())
 
-
-        #topics[seed] = True
+        # topics[seed] = True
 
         if depth == 'wt':
             queue = [seed]
-            while (len(queue) > 0):
+            while len(queue) > 0:
                 t_topic = queue.pop(0)
                 if t_topic in relationships:
                     for topic in relationships[t_topic]:
@@ -423,4 +425,4 @@ class CSO_classifier:
             print("Error: Field climb_ontology must be either 'jfn' or 'wt'")
             return
 
-        return(list(topics.keys()))
+        return list(topics.keys())
