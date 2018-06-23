@@ -17,9 +17,9 @@ class CSO_classifier:
     
     def __init__(self, version=1):
         if (version == 1):
-            self.filename = 'ComputerScienceOntology.csv'
+            self.filename = 'ontology/ComputerScienceOntology.csv'
         else if (version == 1):
-            self.filename = 'ComputerScienceOntology_v2.csv'
+            self.filename = 'ontology/ComputerScienceOntology_v2.csv'
         else: 
             raise ValueError(f"Could not recognise value: {version}. Please specify version 1 or 2.")
             exit(0)
