@@ -150,7 +150,7 @@ class CSO_classifier:
         return(cso)
 
 
-    def cso_classifier(self, paper, format="text", num_narrower=2, min_similarity=0.85, climb_ont='jfb', verbose=False):
+    def classify(self, paper, format="text", num_narrower=2, min_similarity=0.85, climb_ont='jfb', verbose=False):
         """Function that classifies a single paper. If you have a collection of papers, 
             you must call this function for each paper and organise the result.
            Initially, it cleans the paper file, removing stopwords (English ones) and punctuation.
