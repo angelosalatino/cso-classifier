@@ -13,11 +13,22 @@ from nltk.tokenize import word_tokenize
 import Levenshtein.StringMatcher as ls
 
 class CSO_classifier:
-    def __init__(self):
-        pass
+    """ An simple abstraction layer for using CSO classifier """
+    
+    def __init__(self, version=1):
+        if (version == 1):
+            self.filename = 'ComputerScienceOntology.csv'
+        else if (version == 1):
+            self.filename = 'ComputerScienceOntology_v2.csv'
+        else: 
+            raise ValueError(f"Could not recognise value: {version}. Please specify version 1 or 2.")
+            exit(0)
+            
+        # Initialise variables to store CSO data - loads into memory 
+        self.cso = {}
 
        
-    def load_cso(file):
+    def load_cso(self):
         """Function that loads the CSO from the file in a dictionary.
            In particular, it load all the relationships organised in boxes:
                - topics, the list of topics
@@ -31,11 +42,12 @@ class CSO_classifier:
         Returns:
             cso (dictionary): {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}.
         """
-        with open(file) as ontoFile:
-            topics = {}
-            broaders = {}
-            narrowers = {}
-            same_as = {}
+        topics = {}
+        broaders = {}
+        narrowers = {}
+        same_as = {}
+        
+        with open(self.filename) as ontoFile:
             ontology = csv.reader(ontoFile, delimiter=';')
             for triple in ontology:
                 if triple[1] == 'klink:broaderGeneric':
@@ -58,8 +70,7 @@ class CSO_classifier:
                 elif triple[1] == 'rdfs:label':
                     topics[triple[0]] = True
 
-        cso = {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}
-        return(cso)
+        self.cso = {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}
 
 
     def load_local_cso(file, seed = 'semantic web'):
