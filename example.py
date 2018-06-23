@@ -7,9 +7,11 @@ Created on Mon Apr 23 15:17:24 2018
 """
 
 import json
-import cso_classifier as CSO
+from skm3 import CSO_classifier as CSO
 
-FILE = "ComputerScienceOntology.csv"
+# Create an instance of the CSO_classifier class
+clf = CSO(version=1)
+
 #PAPER = {"title": "How are topics born? Understanding the research dynamics preceding the emergence of new areas",
 #         "abstract": "The ability to promptly recognise new research trends is strategic for many stakeholders, \
 #         including universities, institutional funding bodies, academic publishers and companies. \
@@ -45,4 +47,5 @@ def main():
 
 
 if __name__ == '__main__':
+    """ Main entry point to the script """
     main()
