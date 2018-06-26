@@ -32,12 +32,12 @@ In the repository you can find two versions of the CSO (_ComputerScienceOntology
 
 ```python
 # Version 1: 15K topics and 90K relationships
-file = "ComputerScienceOntology.csv"
+clf = CSO(version=1)
 ```
 or
 ```python
 # Version 2: 26K topics and 226K relationships
-file = "ComputerScienceOntology_v2.csv"
+clf = CSO(version=2)
 ```
 
 
@@ -57,7 +57,7 @@ Running the classifier:
 # min_similarity = 0.9, more precise similarity between n-grams and topics has been requested
 # climb_ont = 'jfb', it adds 'just the first broader topic'. The other option available is 'wt' as it adds the whole tree up until the root. 
 # verbose = True, it returns the result in a verbose way. It reports the different statistics associated with matches.
-result = CSO.cso_classifier(PAPER, cso, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfp', verbose=True)
+result = clf.classify(PAPER, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfp', verbose=True)
 print(json.dumps(result))
 ```
 Result (variable **_result_**):
@@ -122,7 +122,7 @@ Result (variable **_result_**):
 
 and then cleaning the result:
 ```python
-result = CSO.cso_classifier(PAPER, cso, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfp', verbose=False)
+result = clf.classify(PAPER, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfp', verbose=False)
 print(json.dumps(result))
 ```
 
