@@ -6,14 +6,18 @@ Script that classifes content from scientific papers with the topics of the [Com
 * Find authors’ topics of interest
 * Topic analysis
 
+
+## About
+
+If you use the CSO classfier in your research or work and would like to cite the SKM3 Application Programming Interface, we suggest you cite the [CSO portal paper](http://skm.kmi.open.ac.uk/the-computer-science-ontology-a-large-scale-taxonomy-of-research-areas/).
+
 ## Framework
 ![Framework of CSO Classifier](/pics/framework.png "Framework of CSO Classifier")
 
 ## Requirements
-1. Python 3
-2. ```pip install nltk```
-3. ```import nltk; nltk.download('stopwords')```
-4. ```pip install python-Levenshtein```
+1. Ensure you have [**Python 3**](https://www.python.org/downloads/) installed.
+2. Install the necessary depepencies by executing the following command:```pip install -r requirements.txt```
+3. Download NLP datasets by running the following line  within your Python 3 interpreter: ```import nltk; nltk.download('stopwords');```
 
 ## In depth
 1. The algorithm firstly preprocesses the content of each paper: removes punctuation and stop words.
