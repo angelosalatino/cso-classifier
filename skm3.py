@@ -42,13 +42,14 @@ class CSOClassifier:
         Returns:
             cso (dictionary): {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}.
         """
-        topics = {}
-        broaders = {}
-        narrowers = {}
-        same_as = {}
         
         with open(self.filename) as ontoFile:
+            topics = {}
+            broaders = {}
+            narrowers = {}
+            same_as = {}
             ontology = csv.reader(ontoFile, delimiter=';')
+
             for triple in ontology:
                 if triple[1] == 'klink:broaderGeneric':
                     # loading broader topics
@@ -72,7 +73,7 @@ class CSOClassifier:
 
         self.cso = {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}
 
-    def load_local_cso(self, file, seed = 'semantic web'):
+    def load_cso_branch(self, file, seed='semantic web'):
         """Function that loads a portion of the CSO, starting from a seed topic.
            In particular, it load all the relationships organised in boxes:
                - topics, the list of topics
@@ -87,10 +88,9 @@ class CSOClassifier:
         Returns:
             cso (dictionary): {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}.
 
-
         """
 
-        full_cso = self.load_cso(file)
+        full_cso = self.load_cso(self.filename)
 
         relationships  = full_cso['narrowers']
         list_of_topics = full_cso['topics']
@@ -111,7 +111,7 @@ class CSOClassifier:
                     sub_seed_topics[topic] = True
 
         # let's extract the portion of ontology
-        with open(file) as ontoFile:
+        with open(self.filename) as ontoFile:
             topics = {}
             broaders = {}
             narrowers = {}
@@ -141,14 +141,12 @@ class CSOClassifier:
                     elif triple[1] == 'rdfs:label':
                         topics[triple[0]] = True
 
-        cso = {
+        self.cso = {
             'topics': topics,
             'broaders': broaders,
             'narrowers': narrowers,
             'same_as': same_as
         }
-
-        return cso
 
     def classify(self, paper, format="text", num_narrower=2, min_similarity=0.85, climb_ont='jfb', verbose=False):
         """Function that classifies a single paper. If you have a collection of papers, 
