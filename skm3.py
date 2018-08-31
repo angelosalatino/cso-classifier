@@ -16,7 +16,7 @@ import Levenshtein.StringMatcher as ls
 class CSOClassifier:
     """ An simple abstraction layer for using CSO classifier """
 
-    def __init__(self, version=1):
+    def __init__(self, version=2):
         
         self.version = version
         
