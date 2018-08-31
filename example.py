@@ -10,7 +10,7 @@ import json
 from skm3 import CSOClassifier as CSO
 
 # Create an instance of the CSO_classifier class
-clf = CSO(version=1)
+clf = CSO(version=2)
 
 
 """
@@ -61,7 +61,7 @@ def main():
     clf.load_cso()
 
     # provides the topics within the paper with an explanation
-    result = clf.classify(paper, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfb', verbose=True)
+    result = clf.classify(paper, num_narrower=1, min_similarity=0.9, climb_ont='jfb', verbose=False)
     with open('result.json', 'w') as outfile:
         outfile.write(json.dumps(result))
 

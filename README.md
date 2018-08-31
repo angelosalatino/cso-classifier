@@ -58,70 +58,60 @@ Running the classifier:
 # min_similarity = 0.9, more precise similarity between n-grams and topics has been requested
 # climb_ont = 'jfb', it adds 'just the first broader topic'. The other option available is 'wt' as it adds the whole tree up until the root. 
 # verbose = True, it returns the result in a verbose way. It reports the different statistics associated with matches.
-result = clf.classify(PAPER, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfp', verbose=True)
+result = clf.classify(PAPER, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfb', verbose=True)
 print(json.dumps(result))
 ```
 Result (variable **_result_**):
 ```json
 {  
-   "semantics":[  
-      {  
-         "matched":"semantic",
-         "similarity":0.9411764705882353
-      },
-      {  
-         "matched":"semantic",
-         "similarity":0.9411764705882353
-      },
-      {  
-         "matched":2,
-         "broader of":[  
-            "ontology",
-            "semantic web"
-         ]
-      }
-   ],
-   "semantic":[  
-      {  
-         "matched":"semantic",
-         "similarity":1.0
-      },
-      {  
-         "matched":"semantic",
-         "similarity":1.0
-      },
-      {  
-         "matched":2,
-         "broader of":[  
-            "ontology",
-            "semantic web"
-         ]
-      }
-   ],
-   "ontology":[  
-      {  
-         "matched":"ontology",
-         "similarity":1.0
-      }
-   ],
-   "semantic web":[  
-      {  
-         "matched":"semantic web",
-         "similarity":1.0
-      }
-   ],
-   "world wide web":[  
-      {  
-         "matched":1,
-         "broader of":[  
-            "semantic web"
-         ]
-      }
-   ]
+   "extracted":{  
+      "semantics":[  
+         {  
+            "matched":"semantic",
+            "similarity":0.9411764705882353
+         },
+         {  
+            "matched":"semantic",
+            "similarity":0.9411764705882353
+         }
+      ],
+      "ontology":[  
+         {  
+            "matched":"ontology",
+            "similarity":1.0
+         }
+      ],
+      "semantic web":[  
+         {  
+            "matched":"semantic web",
+            "similarity":1.0
+         }
+      ]
+   },
+   "inferred":{  
+      "semantics":[  
+         {  
+            "matched":2,
+            "broader of":[  
+               "ontology",
+               "semantic web"
+            ]
+         }
+      ],
+      "world wide web":[  
+         {  
+            "matched":1,
+            "broader of":[  
+               "semantic web"
+            ]
+         }
+      ]
+   }
 }
 ```
+Within the key _extracted_ you can find the syntactic match between topics and portion of theanalysed text. Whilst, within the _inferred_ key you can find the semantically inferred topics.
 
-and then cleaning the result:
+If you want a more cleaned result, you can run the same function with _verbose=False_:
 ```python
 result = clf.classify(PAPER, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfp', verbose=False)
 print(json.dumps(result))
@@ -129,10 +119,14 @@ print(json.dumps(result))
 
 List of final topics (variable **_result_**):
 ```json
-[  
-   "ontology-based",
-   "semantic web technologies",
-   "semantics",
-   "world wide web"
-]
+{  
+   "extracted":[  
+      "ontology",
+      "semantics",
+      "semantic web"
+   ],
+   "inferred":[  
+      "world wide web"
+   ]
+}
 ```

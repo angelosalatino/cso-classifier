@@ -15,16 +15,19 @@ import Levenshtein.StringMatcher as ls
 
 class CSOClassifier:
     """ An simple abstraction layer for using CSO classifier """
-    
+
     def __init__(self, version=1):
+        
+        self.version = version
+        
         if version == 1:
             self.filename = 'ontology/ComputerScienceOntology.csv'
-        elif version == 1:
+        elif version == 2:
             self.filename = 'ontology/ComputerScienceOntology_v2.csv'
-        else: 
+        else:
             raise ValueError(f"Could not recognise value: {version}. Please specify version 1 or 2.")
             exit(0)
-            
+
         # Initialise variables to store CSO data - loads into memory 
         self.cso = {}
 
@@ -35,19 +38,21 @@ class CSOClassifier:
                - broaders, the list of broader topics for a given topic
                - narrowers, the list of narrower topics for a given topic
                - same_as, all the siblings for a given topic
+               - primary_labels, all the primary labels of topics, if they belong to clusters
 
         Args:
             file (string): The path of the file constaining the ontology.
 
         Returns:
-            cso (dictionary): {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}.
+            cso (dictionary): {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as, 'primary_labels': primary_labels}.
         """
-        
-        with open(self.filename) as ontoFile:
+
+        with open(self.filename, 'r') as ontoFile:
             topics = {}
             broaders = {}
             narrowers = {}
             same_as = {}
+            primary_labels = {}
             ontology = csv.reader(ontoFile, delimiter=';')
 
             for triple in ontology:
@@ -70,33 +75,42 @@ class CSOClassifier:
                         same_as[triple[2]] = [triple[0]]
                 elif triple[1] == 'rdfs:label':
                     topics[triple[0]] = True
+                elif triple[1] == 'klink:primaryLabel':
+                    primary_labels[triple[0]] = triple[2]
 
-        self.cso = {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}
+        self.cso = {
+            'topics': topics,
+            'broaders': broaders,
+            'narrowers': narrowers,
+            'same_as': same_as,
+            'primary_labels': primary_labels
+        }
 
-    def load_cso_branch(self, file, seed='semantic web'):
+    def load_cso_branch(self, seed='semantic web'):
         """Function that loads a portion of the CSO, starting from a seed topic.
            In particular, it load all the relationships organised in boxes:
                - topics, the list of topics
                - broaders, the list of broader topics for a given topic
                - narrowers, the list of narrower topics for a given topic
                - same_as, all the siblings for a given topic
+               - primary_labels, the primary label of a topic, if it belongs to a cluster
 
         Args:
             file (string): The path of the file constaining the ontology.
             seed (string): Root topic from which extract the portion of ontology
 
         Returns:
-            cso (dictionary): {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as}.
+            cso (dictionary): {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as, 'primary_labels': primary_labels}.
 
         """
 
         full_cso = self.load_cso(self.filename)
 
-        relationships  = full_cso['narrowers']
+        relationships = full_cso['narrowers']
         list_of_topics = full_cso['topics']
 
         if seed not in list_of_topics:
-            print("Error: "+seed+" not found in CSO")
+            print("Error: " + seed + " not found in CSO")
             return False
 
         sub_seed_topics = dict()
@@ -116,6 +130,7 @@ class CSOClassifier:
             broaders = {}
             narrowers = {}
             same_as = {}
+            primary_labels = {}
             ontology = csv.reader(ontoFile, delimiter=';')
 
             for triple in ontology:
@@ -140,15 +155,18 @@ class CSOClassifier:
                             same_as[triple[2]] = [triple[0]]
                     elif triple[1] == 'rdfs:label':
                         topics[triple[0]] = True
+                    elif triple[1] == 'klink:primaryLabel':
+                        primary_labels[triple[0]] = triple[2]
 
         self.cso = {
             'topics': topics,
             'broaders': broaders,
             'narrowers': narrowers,
-            'same_as': same_as
+            'same_as': same_as,
+            'primary_labels': primary_labels
         }
 
-    def classify(self, paper, format="text", num_narrower=2, min_similarity=0.85, climb_ont='jfb', verbose=False):
+    def classify(self, paper, num_narrower=2, min_similarity=0.85, climb_ont='jfb', verbose=False):
         """Function that classifies a single paper. If you have a collection of papers, 
             you must call this function for each paper and organise the result.
            Initially, it cleans the paper file, removing stopwords (English ones) and punctuation.
@@ -176,15 +194,15 @@ class CSOClassifier:
             found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
         """
 
-        if format == 'json':
+        if isinstance(paper, dict):
             t_paper = paper
             paper = ""
             for key in list(t_paper.keys()):
                 paper = paper + t_paper[key] + " "
-        elif format == 'text':
+        elif isinstance(paper, str):
             pass
         else:
-            print("Error: Field format must be either 'json' or 'text'")
+            raise TypeError("Error: Field format must be either 'json' or 'text'")
             return
 
         # pre-processing
@@ -195,15 +213,17 @@ class CSOClassifier:
         paper = " ".join(filtered_words)
 
         # analysing similarity with terms in the ontology
-        found_topics = self.statistic_similarity(paper, min_similarity)
+        extracted_topics = self.statistic_similarity(paper, min_similarity)
 
         # extract more concepts from the ontology
-        found_topics = self.climb_ontology(found_topics, num_narrower=num_narrower, climb_ont=climb_ont)
+        inferred_topics = self.climb_ontology(extracted_topics, num_narrower=num_narrower, climb_ont=climb_ont)
+        
+        topics = {'extracted': extracted_topics, 'inferred': inferred_topics}
 
         if verbose is False:
-            found_topics = self.strip_explanation(found_topics)
+            topics = self.strip_explanation(topics)
 
-        return found_topics
+        return topics
 
     def statistic_similarity(self, paper, min_similarity):
         """Function that splits the paper text in n-grams (unigrams,bigrams,trigrams)
@@ -229,9 +249,9 @@ class CSOClassifier:
                 m = ls.StringMatcher(None, topic, gram).ratio()
                 if m >= min_similarity:
                     if topic in found_topics:
-                        found_topics[topic].append({'matched':gram, 'similarity':m})
+                        found_topics[topic].append({'matched': gram, 'similarity': m})
                     else:
-                        found_topics[topic] = [{'matched':gram, 'similarity':m}]
+                        found_topics[topic] = [{'matched': gram, 'similarity': m}]
 
         bigrams = ngrams(word_tokenize(paper, preserve_line=True), 2)
         for grams in bigrams:
@@ -241,9 +261,9 @@ class CSOClassifier:
                 m = ls.StringMatcher(None, topic, gram).ratio()
                 if m >= min_similarity:
                     if topic in found_topics:
-                        found_topics[topic].append({'matched':gram, 'similarity':m})
+                        found_topics[topic].append({'matched': gram, 'similarity': m})
                     else:
-                        found_topics[topic] = [{'matched':gram, 'similarity':m}]
+                        found_topics[topic] = [{'matched': gram, 'similarity': m}]
 
         trigrams = ngrams(word_tokenize(paper, preserve_line=True), 3)
         for grams in trigrams:
@@ -252,10 +272,11 @@ class CSOClassifier:
             for topic in topics:
                 m = ls.StringMatcher(None, topic, gram).ratio()
                 if m >= min_similarity:
+                    topic = self.get_primary_label(topic, self.cso['primary_labels'])
                     if topic in found_topics:
-                        found_topics[topic].append({'matched':gram, 'similarity':m})
+                        found_topics[topic].append({'matched': gram, 'similarity': m})
                     else:
-                        found_topics[topic] = [{'matched':gram, 'similarity':m}]
+                        found_topics[topic] = [{'matched': gram, 'similarity': m}]
 
         return found_topics
 
@@ -276,9 +297,10 @@ class CSOClassifier:
         """
 
         all_broaders = {}
+        inferred_topics = {}
 
         if climb_ont == 'jfb':
-            all_broaders = self.get_broader_of_topics(found_topics,all_broaders)
+            all_broaders = self.get_broader_of_topics(found_topics, all_broaders)
         elif climb_ont == 'wt':
             while True:
                 """
@@ -287,22 +309,25 @@ class CSOClassifier:
                 """
                 all_broaders_back = all_broaders.copy()
                 all_broaders = self.get_broader_of_topics(found_topics, all_broaders)
-                if all_broaders_back == all_broaders: # no more broaders have been found
+                if all_broaders_back == all_broaders:  # no more broaders have been found
                     break
         elif climb_ont == 'no':
-            return found_topics
+            return inferred_topics #it is empty at this stage
         else:
-            print("Error: Field climb_ontology must be 'jfb', 'wt' or 'no'")
+            raise ValueError("Error: Field climb_ontology must be 'jfb', 'wt' or 'no'")
             return
-
-        for broader, narrower in all_broaders.items():    
+        
+        
+        for broader, narrower in all_broaders.items():
             if len(narrower) >= num_narrower:
-                if broader not in found_topics:
-                    found_topics[broader] = [{'matched': len(narrower), 'broader of': narrower}]
+                broader = self.get_primary_label(broader, self.cso['primary_labels'])
+                if broader not in inferred_topics:
+                    inferred_topics[broader] = [{'matched': len(narrower), 'broader of': narrower}]
                 else:
-                    found_topics[broader].append({'matched': len(narrower), 'broader of': narrower})
+                    inferred_topics[broader].append({'matched': len(narrower), 'broader of': narrower})
 
-        return found_topics
+        return inferred_topics
+    
 
     def get_broader_of_topics(self, found_topics, all_broaders):
         """Function that returns all the broader topics for a given set of topics.
@@ -329,7 +354,7 @@ class CSOClassifier:
                         if topic not in all_broaders[broader]:
                             all_broaders[broader].append(topic)
                         else:
-                            pass # the topic was listed before
+                            pass  # the topic was listed before
                     else:
                         all_broaders[broader] = [topic]
 
@@ -346,19 +371,26 @@ class CSOClassifier:
         Returns:
             topic (array): array containing the list of topics.
         """
-
-        topics = list(found_topics.keys())  # Takes only the keys
-        topics = self.remove_same_as(topics)  # Unifies the same_As
-        topics = list(set(topics))  # Finds unique topics
+        
+        
+        extracted_topics = set(found_topics['extracted'].keys())  # Takes only the keys
+        inferred_topics = set(found_topics['inferred'].keys()).difference(extracted_topics) #removes the inferred topics that are also extracted
+        if (self.version == 1):
+            extracted_topics = set(self.remove_same_as(extracted_topics))
+            inferred_topics  = set(self.remove_same_as(inferred_topics))
+            
+        topics = {'extracted': list(extracted_topics), 'inferred': list(inferred_topics)}
         return topics
+    
 
     def remove_same_as(self, topics):
         """Function that removes the same as, picking the longest string in alphabetical order.
-
+            This function is obsolete. It is still here for legacy purposes (in case we run the classifier
+            with the version 1 of the ontology).
+            
         Args:
             topics (array): It contains the list of topics found with the classifier, without statistics.
             cso (dictionary): the ontology previously loaded from the file.
-
         Returns:
             final_topics (array): the filtered topics without their siblings.
         """
@@ -395,7 +427,7 @@ class CSOClassifier:
         list_of_topics = self.cso['topics']
 
         if seed not in list_of_topics:
-            print("Error: "+seed+" not found in CSO")
+            print("Error: " + seed + " not found in CSO")
             return False
 
         relationships = self.cso['narrowers']
@@ -403,7 +435,7 @@ class CSOClassifier:
         topics = {}
 
         if seed not in relationships:
-            print("Error: No narrower topics found for "+seed)
+            print("Error: No narrower topics found for " + seed)
             return list(topics.keys())
 
         # topics[seed] = True
@@ -424,3 +456,23 @@ class CSOClassifier:
             return
 
         return list(topics.keys())
+
+
+    def get_primary_label(self, topic, primary_labels):
+        """Function that returns the primary (preferred) label for a topic. If this topic belongs to 
+        a cluster.
+
+        Args:
+            topic (string): Topic to analyse.
+            primary_labels (dictionary): It contains the primary labels of all the topics belonging to clusters.
+
+        Returns:
+            topic (string): primary label of the analysed topic.
+        """
+        
+        try:
+            topic = primary_labels[topic]
+        except KeyError:
+            pass
+        
+        return topic
