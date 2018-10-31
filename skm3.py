@@ -240,33 +240,12 @@ class CSOClassifier:
 
         # analysing grams
         found_topics = {}
-
-        unigrams = ngrams(word_tokenize(paper, preserve_line=True), 1)
-        for grams in unigrams:
-            gram = " ".join(grams)
-            topics = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
-            for topic in topics:
-                m = ls.StringMatcher(None, topic, gram).ratio()
-                if m >= min_similarity:
-                    if topic in found_topics:
-                        found_topics[topic].append({'matched': gram, 'similarity': m})
-                    else:
-                        found_topics[topic] = [{'matched': gram, 'similarity': m}]
-
-        bigrams = ngrams(word_tokenize(paper, preserve_line=True), 2)
-        for grams in bigrams:
-            gram = " ".join(grams)
-            topics = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
-            for topic in topics:
-                m = ls.StringMatcher(None, topic, gram).ratio()
-                if m >= min_similarity:
-                    if topic in found_topics:
-                        found_topics[topic].append({'matched': gram, 'similarity': m})
-                    else:
-                        found_topics[topic] = [{'matched': gram, 'similarity': m}]
-
+        
+        idx = 0
         trigrams = ngrams(word_tokenize(paper, preserve_line=True), 3)
+        matched_trigrams = []
         for grams in trigrams:
+            idx += 1
             gram = " ".join(grams)
             topics = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
             for topic in topics:
@@ -277,6 +256,46 @@ class CSOClassifier:
                         found_topics[topic].append({'matched': gram, 'similarity': m})
                     else:
                         found_topics[topic] = [{'matched': gram, 'similarity': m}]
+                    matched_trigrams.append(idx)
+            
+        
+        idx = 0
+        bigrams = ngrams(word_tokenize(paper, preserve_line=True), 2)
+        matched_bigrams = []
+        for grams in bigrams:
+            idx += 1
+            if (idx not in matched_trigrams) and ((idx-1) not in matched_trigrams):
+                gram = " ".join(grams)
+                topics = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
+                for topic in topics:
+                    m = ls.StringMatcher(None, topic, gram).ratio()
+                    if m >= min_similarity:
+                        topic = self.get_primary_label(topic, self.cso['primary_labels'])
+                        if topic in found_topics:
+                            found_topics[topic].append({'matched': gram, 'similarity': m})
+                        else:
+                            found_topics[topic] = [{'matched': gram, 'similarity': m}]
+                        matched_bigrams.append(idx)
+            
+
+        idx = 0
+        unigrams = ngrams(word_tokenize(paper, preserve_line=True), 1)
+        for grams in unigrams:
+            idx += 1
+            if (idx not in matched_trigrams) and ((idx-1) not in matched_trigrams) and (idx not in matched_bigrams) and ((idx-1) not in matched_bigrams) and ((idx-1) not in matched_bigrams):
+                gram = " ".join(grams)
+                if gram == "semantic":
+                    print("I am here")
+                topics = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
+                for topic in topics:
+                    m = ls.StringMatcher(None, topic, gram).ratio()
+                    if m >= min_similarity:
+                        topic = self.get_primary_label(topic, self.cso['primary_labels'])
+                        if topic in found_topics:
+                            found_topics[topic].append({'matched': gram, 'similarity': m})
+                        else:
+                            found_topics[topic] = [{'matched': gram, 'similarity': m}]
+            
 
         return found_topics
 
