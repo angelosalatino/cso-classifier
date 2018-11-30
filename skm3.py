@@ -284,8 +284,6 @@ class CSOClassifier:
             idx += 1
             if (idx not in matched_trigrams) and ((idx-1) not in matched_trigrams) and (idx not in matched_bigrams) and ((idx-1) not in matched_bigrams) and ((idx-1) not in matched_bigrams):
                 gram = " ".join(grams)
-                if gram == "semantic":
-                    print("I am here")
                 topics = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
                 for topic in topics:
                     m = ls.StringMatcher(None, topic, gram).ratio()
