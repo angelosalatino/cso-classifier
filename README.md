@@ -11,8 +11,8 @@ Script that classifes content from scientific papers with the topics of the [Com
 
 If you use the CSO classfier in your research or work and would like to cite the SKM3 Application Programming Interface, we suggest you cite the [CSO portal paper](http://oro.open.ac.uk/55908/).
 
-In v1 folder you find the version of the classifier published as [poster paper at ISWC 2018](http://oro.open.ac.uk/55908/)
-In v2 folder you find the version submitted to JCDL 2019. [Pre-print](http://skm.kmi.open.ac.uk/the-cso-classifier-ontology-driven-detection-of-research-topics-in-scholarly-articles/)
+* In v1 folder you find the version of the classifier published as [poster paper at ISWC 2018](http://oro.open.ac.uk/55908/)
+* In v2 folder you find the version submitted to JCDL 2019. [Pre-print](http://skm.kmi.open.ac.uk/the-cso-classifier-ontology-driven-detection-of-research-topics-in-scholarly-articles/)
 The v2 folder is a work in progress folder. I plan to comlete the works on 1 Feb 2019
 
 ## Framework
