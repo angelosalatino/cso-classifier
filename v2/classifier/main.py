@@ -13,8 +13,8 @@ import hashlib
 
 ## external functions
 import misc
-from functions.stringmatcher import CSOClassifier as sm
-from functions.word_embeddings import CSOSemanticClassifier as we
+from functions.syntacticmodule import CSOClassifier as syntactic
+from functions.semanticmodule import CSOClassifier as semantic
 import multiprocessing as mp
 
 ## testing import (to be deleted once in deploy)
@@ -39,8 +39,8 @@ def main():
     cso, model = misc.load_ontology_and_model()
     
     # Passing parematers to the two classes (synt and sem)
-    clf = sm(cso, paper)
-    clf2 = we(model, cso, paper)
+    clf = syntactic(cso, paper)
+    clf2 = semantic(model, cso, paper)
     
     # Creating shared structure
     manager = mp.Manager()
