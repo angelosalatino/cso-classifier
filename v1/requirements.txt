@@ -1,0 +1,4 @@
+certifi==2018.4.16
+nltk==3.3
+python-Levenshtein==0.12.0
+six==1.11.0
