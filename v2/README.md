@@ -6,7 +6,7 @@ In this folder, we present the CSO Classifier, a new approach for automatically 
 ## About
 The CSO Classifier takes as input the metadata associated with a scholarly article (usually title, abstract, and keywords) and returns a selection of research topics drawn from CSO. It operates in three steps. First, it finds all topics in the ontology that are explicitly mentioned in the paper. Then it identifies further semantically related topics by utilizing part-of-speech tagging and world embeddings. Finally, it enriches this set by including the super-areas of these topics according to CSO.
 
-![Framework of CSO Classifier](/images/Workflow.png "Workflow of CSO Classifier")
+![Workflow of CSO Classifier](/images/Workflow.png "Workflow of CSO Classifier")
 
 ## Requirements
 1. Ensure you have [**Python 3**](https://www.python.org/downloads/) installed.
