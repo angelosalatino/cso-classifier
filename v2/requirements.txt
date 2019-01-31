@@ -20,6 +20,7 @@ cytoolz==0.9.0.1
 decorator==4.3.0
 dill==0.2.9
 docutils==0.14
+en-core-web-sm==2.0.0
 entrypoints==0.3
 gensim==3.4.0
 idna==2.8
@@ -47,6 +48,7 @@ msgpack-numpy==0.4.3.2
 murmurhash==1.0.1
 nbconvert==5.3.1
 nbformat==4.4.0
+nltk==3.3
 notebook==5.7.4
 numpy==1.15.4
 numpydoc==0.8.0
@@ -71,6 +73,7 @@ pyOpenSSL==18.0.0
 pyparsing==2.3.1
 PySocks==1.6.8
 python-dateutil==2.7.5
+python-Levenshtein==0.12.0
 pytz==2018.9
 pyzmq==17.1.2
 QtAwesome==0.5.5
