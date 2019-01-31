@@ -11,13 +11,10 @@ Created on Thu Nov 22 11:38:18 2018
 import nltk
 import re
 from nltk import everygrams
-from nltk.tokenize import word_tokenize
 import Levenshtein.StringMatcher as ls
 from kneed import KneeLocator
 import numpy as np
 import spacy
-import multiprocessing as mp
-import json
 
 class CSOClassifier:
     
@@ -25,13 +22,9 @@ class CSOClassifier:
         
         self.model = model
         self.cso = cso
-        self.syntsema = {}
         self.advsyntsema = {}
-        ## Pre-processing
-#        if len(paper) > 0:
-#            self.set_paper(paper)
-#        else:
-#            self.paper = {}
+        self.set_paper(paper)
+
         
         
     def set_paper(self, paper):
@@ -49,206 +42,15 @@ class CSOClassifier:
             raise TypeError("Error: Field format must be either 'json' or 'text'")
             return
     
-    
-    
-    def run(self, shared_dict):
-        processes = []
 
         
-        p1 = mp.Process(target=self.classify_with_window, args=[shared_dict])
-        processes.append(p1)
         
-        p2 = mp.Process(target=self.classify_with_nlp, args=[shared_dict])
-        processes.append(p2)
-        
-        return processes
-#
-#        [x.start() for x in processes]
-#        
-#        [x.join() for x in processes]
-#        
-#        self.syntsema = shared_dict['syntsema']
-#        self.advsyntsema = shared_dict['advsyntsema']        
-        # Get process results from the output queue
-        #result = [self.output.get() for p in processes]
-        #print(shared_dict)
-        #print(json.dumps(shared_dict, indent=2, sort_keys=False))
-        
-        
-        
-        
-    def classify_with_window(self, shared_dict):
-        
-
-        
-        ## Break paper in sentences
-        
-        sentences = nltk.sent_tokenize(self.paper)
-        tokenized_sentence = []
-        for sentence in sentences:
-            sentence = re.sub('[\=\,\…\’\'\+\-\–\“\”\"\/\‘\[\]\®\™\%\;\:]', ' ', sentence)
-            sentence = re.sub('\.$|^\.', '', sentence)
-            sentence = sentence.lower().strip()
-            sentence = re.sub('\.+', '.', sentence)
-            sentence = re.sub('\s+', ' ', sentence)
-            sentence = re.sub('i+\)', '', sentence)
-            sentence = re.sub('[a-z]\.[a-z]\.', '', sentence) #remove i.e., e.g., f.i.
-            sentence = re.sub('[\(\)]','', sentence)
-            tokenized_sentence.append(nltk.word_tokenize(sentence))
-        
-        
-        ## Find topics per window
-        
-        from window_slider import Slider
-        bucket_size = 10
-        overlap_count = 5
-        list_of_windows = []
-        top_amount_of_words = 20
-        word_similarity = 0.6
-        for t_sentence in tokenized_sentence:
-            slider = Slider(bucket_size,overlap_count)
-            try:
-                slider.fit(np.array(t_sentence)) 
-                #print(np.array(t_sentence)) 
-                while True:
-                    window_data = slider.slide()
-                    # do your stuff
-                    #print(window_data)
-                    
-                    list_of_windows.append(window_data)
-                    if slider.reached_end_of_list(): break
-            except ValueError:
-                list_of_windows.append(t_sentence)
-            #print("############################################## End of sentence")  
-        #print(list_of_windows)
-        
-        found_topics = {} # to store the matched topics
-        processed_embeddings = {} # to store processed embeddings
-        total_matched = 0
-        min_similarity = 0.95 #
-        
-        for window in list_of_windows:
-            words = filter(lambda x: x in self.model.vocab, window)
-            similarities = self.get_top_similar_words(self.model.most_similar(words,topn=top_amount_of_words),word_similarity)
-            #display(HTML('<p><strong>Window:</strong> <i>'+' '.join(window)+'</i></p>'))
-            #print(similarities)
-            for wet, sim in similarities: #wet = word embedding topic, sim = similarity
-                    
-                    if sim >= word_similarity: # similarity on word embedding goes above threshold
-                        
-                        if wet in processed_embeddings:
-                            # if this wet has already been processed in the past, we must know its most similar topic
-                            topics = processed_embeddings[wet].keys() 
-                            #print("I am grabbing the topics of ",wet)
-                        else:
-                            # looking for the topic within CSO
-                            topics = [key for key, _ in self.cso['topics_wu'].items() if key.startswith(wet[:6])]
-                            # in this position allows to keep track of all embeddings. The ones that fail will not have matches with topics in CSO
-                            processed_embeddings[wet] = {} 
-                            
-                        for topic in topics:
-                            #topic = topic.replace(" ", "_")
-                            m = ls.StringMatcher(None, topic, wet).ratio() #topic is from cso, wet is from word embedding
-                            if m >= min_similarity:
-        
-                                if topic in found_topics:
-                                    #tracking this match
-                                    found_topics[topic]["times"] += 1
-                                    
-                                    found_topics[topic]["gram_similarity"].append(sim)
-        
-        
-                                    #tracking the most similar gram to the topic
-                                    if m > found_topics[topic]["embedding_similarity"]:
-                                        found_topics[topic]["embedding_similarity"] = m 
-                                        found_topics[topic]["embedding_matched"] = wet
-        
-                                else:
-                                    #creating new topic in the result set
-                                    found_topics[topic] = {'embedding_matched': wet,
-                                                           'embedding_similarity': m,
-                                                           'gram_similarity':[sim],
-                                                           'times': 1, 
-                                                           'topic':topic}
-        
-        
-        
-                                processed_embeddings[wet][topic] = True
-        
-        
-        
-                                total_matched += 1
-
-        ## Rank Topics
-        
-        max_value = 0
-        scores = []
-        for tp,topic in found_topics.items(): 
-            topic["score"] = topic["times"] * topic["embedding_similarity"] * np.mean(topic["gram_similarity"]) 
-            scores.append(topic["score"])
-            if topic["score"] > max_value:
-                max_value = topic["score"]
-        
-        mean_total_scores = np.mean(scores) #I perform the average score. This is important to filter some syntactic matches
-        
-            
-        # I select the unique topics  
-        unique_topics = {}
-        for tp,topic in found_topics.items():
-            prim_label = self.get_primary_label(tp,self.cso["primary_labels"])
-            if prim_label in unique_topics:
-                if unique_topics[prim_label] < topic["score"]:
-                    unique_topics[prim_label] = topic["score"]
-            else:
-                unique_topics[prim_label] = topic["score"]
-        
-        # ranking topics by their score. High-scored topics go on top
-        sort_t = sorted(unique_topics.items(), key=lambda v: v[1], reverse=True)
-        #sort_t = sorted(found_topics.items(), key=lambda k: k[1]['score'], reverse=True)
-        
-        
-        ## Finding knee/elbow
-        
-        vals = []
-        for tp in sort_t:
-            vals.append(tp[1]) #in 0, there is the topic, in 1 there is the info
-        
-        x = range(1,len(vals)+1) 
-        kn = KneeLocator(x, vals,curve='convex', direction='decreasing')
-        
-        if kn.knee is None:
-            kn = KneeLocator(x, vals,curve='concave', direction='decreasing')
-        
-#        
-#        import matplotlib.pyplot as plt
-#        plt.plot(x,vals)
-#        plt.vlines(kn.knee, plt.ylim()[0], plt.ylim()[1], linestyles='dashed')
-#        plt.ylabel('topic scores')
-#        plt.show()
-        
-        #print(found_topics)
-        
-        
-        final_topics = {}
-        final_topics["extracted"] = []
-        final_topics["inferred"] = []
-        try: 
-            if(kn.knee > 0):
-                final_topics["extracted"] = [self.cso["topics_wu"][sort_t[i][0]] for i in range(0,kn.knee)]
-                final_topics["inferred"] = self.climb_ontology(final_topics["extracted"])
-        except TypeError:
-            pass
-        
-        #print(json.dumps(final_topics, indent=2, sort_keys=False))
-        
-        #return final_topics
-        shared_dict['syntsema'] = final_topics
-        
+ 
     
-    def classify_with_nlp(self, processed_embeddings):
+    def classify_semantic(self, processed_embeddings={}):
         
         
-        ## Tokenizer with spaCy.io
+        ##################### Tokenizer with spaCy.io
         
         nlp = spacy.load('en_core_web_sm')
         doc = nlp(self.paper)
@@ -262,7 +64,7 @@ class CSOClassifier:
         
         #print(pos_tags)
         
-        ## Applying grammar
+        ##################### Applying grammar
         
         GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<NN.*>+}"
 #        GRAMMAR = "DBW_CONCEPT: {<HYP.*|JJ.*>*<HYP.*|NN.*>+}"
@@ -285,7 +87,7 @@ class CSOClassifier:
                 concepts.append(concept)
         
         
-        ## Core analysis
+        ##################### Core analysis
         
         # Set up
         found_topics = {} # to store the matched topics
@@ -393,7 +195,7 @@ class CSOClassifier:
                                 total_matched += 1
         
         
-        ## Ranking
+        ##################### Ranking
         
         max_value = 0
         max_topic = ""
@@ -454,37 +256,32 @@ class CSOClassifier:
         x = range(1,len(vals)+1) 
         kn = KneeLocator(x, vals, direction='decreasing')
         
-        final_topics = {}
-        final_topics["extracted"] = []
-        final_topics["inferred"] = []
-        #Take the first 30 topics
-#        final_topics["extracted"] = [{"topic":self.cso["topics_wu"][sort_t[i][0]], "score":sort_t[i][1]} for i in range(0,min(30,len(sort_t)))]
-        #Take them all
-#        final_topics["extracted"] = [{"topic":self.cso["topics_wu"][sort_t[i][0]], "score":sort_t[i][1]} for i in range(0,len(sort_t))]
-#        final_topics["knee"] = kn.knee
-        
-        knee = 0
-        if kn.knee is None:
-            knee = 5
-        else:
-            knee = kn.knee
         
         
-        final_topics["extracted"] = [self.cso["topics_wu"][sort_t[i][0]] for i in range(0,knee)]
+        ##################### Pruning
+        
+        knee = int(kn.knee) 
+        if knee > 5:
+            try:
+                knee += 0
+            except TypeError:
+                print(kn.knee," ",knee, " ", len(test_topics))
             
-#        if(knee > 5):
-#            final_topics["extracted"] = [self.cso["topics_wu"][sort_t[i][0]] for i in range(0,kn.knee)]
-##            final_topics["inferred"] = self.climb_ontology(final_topics["extracted"])
-#            
-#        else:
-#            final_topics["extracted"] = [self.cso["topics_wu"][sort_t[i][0]] for i in range(0,5)]
-##            final_topics["inferred"] = []
-        
-        #print(json.dumps(final_topics, indent=2, sort_keys=False))
-        
-        #return final_topics
-        #shared_dict['advsyntsema'] = final_topics
-        
+        else:
+            
+            if sort_t[0][1] == sort_t[4][1]:
+                top = sort_t[0][1]
+                test_topics = [item[1] for item in sort_t if item[1]==top] 
+                knee = len(test_topics)
+                print("I was here and I found knee = ",knee)
+                print(sort_t)
+
+            else:
+                knee = 5
+
+        final_topics = []
+        final_topics = [self.cso["topics_wu"][sort_t[i][0]] for i in range(0,knee)]
+             
         return final_topics
 
     

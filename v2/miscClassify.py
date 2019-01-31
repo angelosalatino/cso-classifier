@@ -8,12 +8,11 @@ Created on Sat Dec 15 23:01:40 2018
 
 
 
-import hashlib
 
-## external functions
+
 import classifier.misc as misc
-from classifier.functions.stringmatcher import CSOClassifier as sm
-from classifier.functions.word_embeddings import CSOSemanticClassifier as we
+from classifier.syntacticmodule import CSOClassifier as synt
+from classifier.semanticmodule import CSOClassifier as sema
 
 
 def get_paper(papers,key):
@@ -61,8 +60,8 @@ def classify_papers_batchHybrid(p):
     cso, model = misc.load_ontology_and_model()
     
     # Passing parematers to the two classes (synt and sem)
-    clf2 = we(model, cso)
-    clf = sm(cso)
+    synt_module = synt(cso)
+    sema_module = sema(model, cso)
     
     
     for key, value in p.items():
