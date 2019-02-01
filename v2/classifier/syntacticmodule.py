@@ -13,21 +13,32 @@ import Levenshtein.StringMatcher as ls
 
 
 
-class CSOClassifier:
+class CSOClassifierSyntactic:
     """ An simple abstraction layer for using CSO classifier """
 
     def __init__(self, cso = {}, paper = {}):
-        self.version = 2
+        """Function that initialises an object of class CSOClassifierSyntactic and all its members.
+
+        Args:
+            cso (dictionary): Computer Science Ontology
+            paper (dictionary): paper{"title":"...","abstract":"...","keywords":"..."} the paper.
+
+        """
         # Initialise variables to store CSO data - loads into memory 
         self.cso = cso
         self.min_similarity = 0.94
+        self.paper = {}
         self.set_paper(paper)
     
     def set_paper(self, paper):
-        '''
-        paper (either string or dictionary): The paper to analyse. It can be a full string in which the content
+        """Function that initializes the paper variable in the class.
+
+        Args:
+            paper (either string or dictionary): The paper to analyse. It can be a full string in which the content
             is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
-        '''
+
+        """
+
         if isinstance(paper, dict):
             t_paper = paper
             self.paper = ""
@@ -43,6 +54,11 @@ class CSOClassifier:
             return
     
     def set_min__similarity(self, msm):
+        """Function that sets a different value for the similarity.
+
+        Args:
+            msm (integer): similairity value.
+        """
         self.min_similarity = msm
 
     def classify_syntactic(self):
@@ -86,7 +102,6 @@ class CSOClassifier:
 
         Args:
             paper (string): The paper to analyse. At this stage it is a string.
-            cso (dictionary): the ontology previously loaded from the file.
             min_similarity (integer): minimum Levenshtein similarity between the n-gram and the topics within the CSO. 
 
         Returns:
