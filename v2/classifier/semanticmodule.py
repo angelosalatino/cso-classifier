@@ -13,21 +13,36 @@ import re
 from nltk import everygrams
 import Levenshtein.StringMatcher as ls
 from kneed import KneeLocator
-import numpy as np
 import spacy
 
-class CSOClassifier:
+class CSOClassifierSemantic:
     
     def __init__(self, model = {}, cso = {}, paper = {}):
-        
+        """Function that initialises an object of class CSOClassifierSemantic and all its members.
+
+        Args:
+            model (dictionary): word2vec model.
+            cso (dictionary): Computer Science Ontology
+            paper (dictionary): paper{"title":"...","abstract":"...","keywords":"..."} the paper.
+
+            
+        """
         self.model = model
         self.cso = cso
-        self.advsyntsema = {}
+        self.paper = {}
         self.set_paper(paper)
 
         
         
     def set_paper(self, paper):
+        """Function that initializes the paper variable in the class.
+
+        Args:
+            paper (dictionary): paper{"title":"...","abstract":"...","keywords":"..."} the paper.
+            paper (either string or dictionary): The paper to analyse. It can be a full string in which the content
+            is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
+
+        """
         if isinstance(paper, dict):
             t_paper = paper
             self.paper = ""
@@ -48,7 +63,18 @@ class CSOClassifier:
  
     
     def classify_semantic(self, processed_embeddings={}):
-        
+        """Function that classifies the paper on a semantic level. This semantic module follows four steps: 
+            (i) entity extraction, 
+            (ii) CSO concept identification, 
+            (iii) concept ranking, and 
+            (iv) concept selection.
+
+        Args:
+            processed_embeddings (dictionary): This dictionary saves the matches between word embeddings and terms in CSO. It is useful when processing in batch mode.
+
+        Returns:
+            final_topics (list): list of identified topics.
+        """
         
         ##################### Tokenizer with spaCy.io
         
@@ -92,7 +118,7 @@ class CSOClassifier:
         # Set up
         found_topics = {} # to store the matched topics
         successful_grams = {} # to store the successful grams
-        #processed_embeddings = {} # to store processed embeddings
+
         total_matched = 0
         word_similarity = 0.7 # similarity of words in the model
         top_amount_of_words = 10 # maximum number of words to select
@@ -127,9 +153,6 @@ class CSOClassifier:
                         #print("n-grams"," ".join(grams),"not found")
                         pass
                 
-                
-                #if gram.startswith("data_mining"):
-                    #print(similarities)
         
                 #### Finding the words within CSO
                 for wet, sim in similarities: #wet = word embedding topic, sim = similarity
@@ -187,10 +210,7 @@ class CSOClassifier:
                                 else:
                                     successful_grams[gram] = [topic]
         
-        
                                 processed_embeddings[wet][topic] = m#True
-        
-        
         
                                 total_matched += 1
         
@@ -198,39 +218,18 @@ class CSOClassifier:
         ##################### Ranking
         
         max_value = 0
-        max_topic = ""
         scores = []
         for tp,topic in found_topics.items(): 
             topic["score"] = topic["times"] * len(topic['grams'].keys())
             scores.append(topic["score"])
             if topic["score"] > max_value:
                 max_value = topic["score"]
-                max_topic = topic["topic"]
-            
-        
-        mean_total_scores = np.mean(scores)
-        
-        syntactic_match = 0
+
         for tp,topic in found_topics.items():            
             if "syntactic" in topic:
                 topic["score"] = max_value
                 
                 
-            #topic["score"] =  max_value - topic["score"]
-#            if tp in topic["grams"]:
-#                successful_grams_for_topic = list(set(successful_grams[tp]))
-#                succ_scores = []
-#                for succ_gram in successful_grams_for_topic:
-#                    if succ_gram != tp:
-#                        succ_scores.append(found_topics[succ_gram]["score"])
-#                try:
-#                    if(np.sum(succ_scores) >= mean_total_scores): #Checking if its semantic contribution is higher than the average
-#                        topic["score"] = max_value
-#                        syntactic_match += 1
-#                except ValueError:
-#                    pass
-            
-            #topic["score"] *= np.mean(topic["gram_similarity"]) 
              
             
         # Selection of unique topics  
@@ -265,7 +264,7 @@ class CSOClassifier:
             try:
                 knee += 0
             except TypeError:
-                print(kn.knee," ",knee, " ", len(test_topics))
+                print("ERROR: ",kn.knee," ",knee, " ", len(sort_t))
             
         else:
             
@@ -273,8 +272,6 @@ class CSOClassifier:
                 top = sort_t[0][1]
                 test_topics = [item[1] for item in sort_t if item[1]==top] 
                 knee = len(test_topics)
-                print("I was here and I found knee = ",knee)
-                print(sort_t)
 
             else:
                 knee = 5
@@ -308,6 +305,15 @@ class CSOClassifier:
         return topic
     
     def get_top_similar_words(self, list_of_words, th):
+        """Function that identifies the top similar words in the model that have similarity higher than th.
+
+        Args:
+            list_of_words (list of tuples): It contains the topics found with string similarity.
+            th (integer): threshold
+
+        Returns:
+            result (dictionary): containing the found topics with their similarity and the n-gram analysed.
+        """
         #result = [y for (x,y) in enumerate(list_of_words) if y[1] >= th]
         result = [(x,y) for (x,y) in list_of_words if y >= th]
         return result
@@ -319,11 +325,7 @@ class CSOClassifier:
 
         Args:
             found_topics (dictionary): It contains the topics found with string similarity.
-            cso (dictionary): the ontology previously loaded from the file.
-            num_narrower (integer): it defines the number of narrower topics before their broader topic gets included
-            in the final set of topics. Default = 2.
-            climb_ont (string): either "jfb" or "wt" for selecting "just the first broader topic" or climbing
-            the "whole tree".
+
 
         Returns:
             found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
@@ -356,8 +358,6 @@ class CSOClassifier:
         Args:
             found_topics (dictionary): It contains the topics found with string similarity.
             all_broaders (dictionary): It contains the broader topics found in the previous run.
-            Otherwise an empty object.
-            cso (dictionary): the ontology previously loaded from the file.
 
         Returns:
             all_broaders (dictionary): contains all the broaders found so far, including the previous iterations.
