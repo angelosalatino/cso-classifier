@@ -12,7 +12,7 @@ The CSO Classifier takes as input the metadata associated with a scholarly artic
 1. Ensure you have [**Python 3**](https://www.python.org/downloads/) installed.
 2. Install the necessary depepencies by executing the following command:```pip install -r requirements.txt```
 3. Download English package for spaCy using ```python -m spacy download en_core_web_sm```
-4. Download the word2vec model. The current model has a size of 350MB and cannot be stored in Github. For this reason it must be downloaded separately from [https://cso.kmi.open.ac.uk/downloads/model.p](https://cso.kmi.open.ac.uk/downloads/model.p) and stored in the *models* folder: ```/classifier/models/```
+4. Download the word2vec model. The current model has a size of 350MB and cannot be stored in Github. For this reason it must be downloaded separately from [https://cso.kmi.open.ac.uk/download/model.p](https://cso.kmi.open.ac.uk/download/model.p) and stored in the *models* folder: ```/classifier/models/```
 
 ## Main Files
 * **CSO-Classifier.ipynb**: :page_facing_up: Python notebook for executing the classifier
