@@ -38,7 +38,6 @@ class CSOClassifierSemantic:
         """Function that initializes the paper variable in the class.
 
         Args:
-            paper (dictionary): paper{"title":"...","abstract":"...","keywords":"..."} the paper.
             paper (either string or dictionary): The paper to analyse. It can be a full string in which the content
             is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
 
