@@ -4,67 +4,90 @@
 Created on Thu Nov 22 08:45:29 2018
 
 @author: angelosalatino
+
+This file mostly contains routines to deal with the Computer Science Ontology and the model.
 """
 
-import csv as co
 import pickle
-          
-def load_cso():
-        """Function that loads the CSO from the file in a dictionary.
-           In particular, it load all the relationships organised in boxes:
-               - topics, the list of topics
-               - broaders, the list of broader topics for a given topic
-               - narrowers, the list of narrower topics for a given topic
-               - same_as, all the siblings for a given topic
-               - primary_labels, all the primary labels of topics, if they belong to clusters
+import os
+import sys
+import requests
+from hurry.filesize import size
 
-        Args:
-            file (string): The path of the file constaining the ontology.
+def load_ontology_pickle():
+    """Function that loads CSO. 
+    This file has been serialised using Pickle allowing to be loaded quickly.
+    
+    Args:
 
-        Returns:
-            cso (dictionary): {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as, 'primary_labels': primary_labels}.
-        """
+    Returns:
+        fcso (dictionary): containing the found topics with their similarity and the n-gram analysed.
+    """
+    fcso = pickle.load( open( "classifier/models/cso.p", "rb" ) )
+    return fcso
 
-        with open('ontology/ComputerScienceOntology_v2.csv', 'r') as ontoFile:
-            topics = {}
-            broaders = {}
-            narrowers = {}
-            same_as = {}
-            primary_labels = {}
-            ontology = co.reader(ontoFile, delimiter=';')
 
-            for triple in ontology:
-                if triple[1] == 'klink:broaderGeneric':
-                    # loading broader topics
-                    if triple[2] in broaders:
-                        broaders[triple[2]].append(triple[0])
-                    else:
-                        broaders[triple[2]] = [triple[0]]
+def load_ontology_and_model():
+    """Function that loads both CSO and Word2vec model. 
+    Those two files have been serialised using Pickle allowing to be loaded quickly.
+    
 
-                    # loading narrower topics
-                    if triple[0] in narrowers:
-                        narrowers[triple[0]].append(triple[2])
-                    else:
-                        narrowers[triple[0]] = [triple[2]]
-                elif triple[1] == 'klink:relatedEquivalent':
-                    if triple[2] in same_as:
-                        same_as[triple[2]].append(triple[0])
-                    else:
-                        same_as[triple[2]] = [triple[0]]
-                elif triple[1] == 'rdfs:label':
-                    topics[triple[0].replace(" ", "_")] = triple[0]
-                elif triple[1] == 'klink:primaryLabel':
-                    primary_labels[triple[0].replace(" ", "_")] = triple[2].replace(" ", "_")
+    Args:
 
-        cso = {
-            'topics': topics,
-            'broaders': broaders,
-            'narrowers': narrowers,
-            'same_as': same_as,
-            'primary_labels': primary_labels
-        }
+    Returns:
+        fcso (dictionary): containing the found topics with their similarity and the n-gram analysed.
+        fmodel (dictionary): containing the found topics with their similarity and the n-gram analysed.
+    """
+    
+    check_model()
+    
+    fcso = pickle.load( open( "classifier/models/cso.p", "rb" ) )
+    fmodel = pickle.load( open( "classifier/models/model.p", "rb" ) )
+    
+    print("Computer Science Ontology and Word2vec model loaded.")
+    return fcso, fmodel
+      
+
+def check_model():
+    """Function that checks if the model is available. If not, it will attempt to download it from a remote location.
+    Tipically hosted on the CSO Portal
+
+    """
+    
+    path = 'classifier/models/model.p'
+    url = 'https://cso.kmi.open.ac.uk/download/model.p'  
+    if not os.path.exists(path):
+        print('[*] Beginning model download from',url)
+        download_file(url, path)  
         
-        return cso
+        
+def download_file(url, filename):
+    """Function that downloads the model from the web.
+
+    Args:
+        url (string): Url of where the model is located.
+        filename (string): location of where to save the model
+
+    Returns:
+        
+    """
+    with open(filename, 'wb') as f:
+        response = requests.get(url, stream=True)
+        total = response.headers.get('content-length')
+
+        if total is None:
+            f.write(response.content)
+        else:
+            downloaded = 0
+            total = int(total)
+            for data in response.iter_content(chunk_size=max(int(total/1000), 1024*1024)):
+                downloaded += len(data)
+                f.write(data)
+                done = int(50*downloaded/total)
+                sys.stdout.write('\r[{}{}] {}/{}'.format('█' * done, '.' * (50-done), size(downloaded), size(total)))
+                sys.stdout.flush()
+    sys.stdout.write('\n')
+    print('[*] Done!')
 
 
 def get_primary_label(topic, primary_labels):
@@ -85,23 +108,6 @@ def get_primary_label(topic, primary_labels):
             pass
         
         return topic
-    
-def get_top_similar_words(list_of_words, th):
-    #result = [y for (x,y) in enumerate(list_of_words) if y[1] >= th]
-    result = [(x,y) for (x,y) in list_of_words if y >= th]
-    return result
-
-
-def load_ontology_pickle():
-    fcso = pickle.load( open( "classifier/models/cso.p", "rb" ) )
-    return fcso
-
-
-def load_ontology_and_model():
-    fcso = pickle.load( open( "classifier/models/cso.p", "rb" ) )
-    fmodel = pickle.load( open( "classifier/models/model.p", "rb" ) )
-    return fcso, fmodel
-
 
 
 def climb_ontology(cso, found_topics):
