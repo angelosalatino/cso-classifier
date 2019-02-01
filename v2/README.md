@@ -17,6 +17,7 @@ The CSO Classifier takes as input the metadata associated with a scholarly artic
 ## Main Files
 * **CSO-Classifier.ipynb**: :page_facing_up: Python notebook for executing the classifier
 * **requirements.txt**: :page_facing_up: File containing the necessary libraries to run the classifier
+*  **images**: :file_folder: folder containing some pictures, e.g., the workflow showed above
 *  **classifier**: :file_folder: Folder containing the main functionalities of the classifier
     - **syntacticmodule.py**: :page_facing_up: functionalities that implement the syntactic module
     - **semanticmodule.py**: :page_facing_up: functionalities that implement the semantic module
@@ -24,3 +25,106 @@ The CSO Classifier takes as input the metadata associated with a scholarly artic
     - **models**: :file_folder: Folder containing the word2vec model and CSO
         - **cso.p**: :page_facing_up: file containing the Computer Science Ontology
         - **model.P**: :page_facing_up: file containing the word2vec model. Please be aware that this file is not currently tracked within this repository due to its large size (over 100MB). This file needs to be downloaded separately (see ```Requirements #4``` above). 
+
+
+## Sample Input
+```json
+paper = {
+        "title": "De-anonymizing Social Networks",
+        "abstract": "Operators of online social networks are increasingly sharing potentially "
+        "sensitive information about users and their relationships with advertisers, application "
+        "developers, and data-mining researchers. Privacy is typically protected by anonymization, "
+        "i.e., removing names, addresses, etc. We present a framework for analyzing privacy and "
+        "anonymity in social networks and develop a new re-identification algorithm targeting "
+        "anonymized social-network graphs. To demonstrate its effectiveness on real-world networks, "
+        "we show that a third of the users who can be verified to have accounts on both Twitter, a "
+        "popular microblogging service, and Flickr, an online photo-sharing site, can be re-identified "
+        "in the anonymous Twitter graph with only a 12% error rate. Our de-anonymization algorithm is "
+        "based purely on the network topology, does not require creation of a large number of dummy "
+        "\"sybil\" nodes, is robust to noise and all existing defenses, and works even when the overlap "
+        "between the target network and the adversary's auxiliary information is small.",
+        "keywords": "data mining, data privacy, graph theory, social networking (online)"
+        }
+```
+
+## Sample Output
+```json
+{
+    "syntactic": [
+        "twitter",
+        "graph theory",
+        "data mining",
+        "anonymization",
+        "online social networks",
+        "data privacy",
+        "network topology",
+        "anonymity",
+        "sensitive informations",
+        "microblogging",
+        "social networks",
+        "privacy",
+        "real-world networks"
+    ],
+    "semantic": [
+        "social networks",
+        "online social networks",
+        "sensitive informations",
+        "data mining",
+        "privacy",
+        "data privacy",
+        "anonymization",
+        "anonymity",
+        "network topology",
+        "twitter",
+        "microblogging",
+        "topology",
+        "graph theory",
+        "social media",
+        "social networking sites",
+        "network structures",
+        "network architecture",
+        "micro-blog",
+        "online communities",
+        "social graphs"
+    ],
+    "union": [
+        "network architecture",
+        "data privacy",
+        "network topology",
+        "graph theory",
+        "micro-blog",
+        "network structures",
+        "social graphs",
+        "microblogging",
+        "topology",
+        "twitter",
+        "social networks",
+        "social media",
+        "data mining",
+        "online social networks",
+        "privacy",
+        "social networking sites",
+        "anonymization",
+        "anonymity",
+        "sensitive informations",
+        "real-world networks",
+        "online communities"
+    ],
+    "enhanced": [
+        "privacy preserving",
+        "complex networks",
+        "online systems",
+        "facebook",
+        "computer science",
+        "access control",
+        "neural networks",
+        "electric network topology",
+        "world wide web",
+        "network security",
+        "security of data",
+        "authentication",
+        "network protocols",
+        "theoretical computer science"
+    ]
+}
+```
