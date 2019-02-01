@@ -105,5 +105,6 @@ ujson==1.35
 urllib3==1.24.1
 wcwidth==0.1.7
 webencodings==0.5.1
+wget==3.2
 wrapt==1.11.0
 wurlitzer==1.0.2
