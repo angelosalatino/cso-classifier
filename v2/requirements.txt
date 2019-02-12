@@ -22,6 +22,7 @@ dill==0.2.9
 docutils==0.14
 entrypoints==0.3
 gensim==3.4.0
+hurry.filesize==0.9
 idna==2.8
 imagesize==1.1.0
 ipykernel==5.1.0
