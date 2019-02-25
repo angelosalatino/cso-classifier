@@ -132,9 +132,8 @@ def load_ontology_and_model():
  
      
 def check_ontology():
-    """Function that checks if the ontology is available. If not, it will attempt to download it from a remote location.
-    Tipically hosted on the CSO Portal and create 
-
+    """Function that checks if the ontology is available. If not, it will check if a csv version exists and then it will create the pickle file.
+    
     """ 
     
     if not os.path.exists(CSO_PICKLE_PATH):
