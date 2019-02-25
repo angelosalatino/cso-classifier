@@ -1,13 +1,17 @@
 # Model Folder
 
-This folder should contain two files:
+This folder should contain three files:
+* **cso.csv**
 * **cso.p**
 * **model.p**
 
-Each of these two files contain a serialized Python object, created using [Pickle](https://docs.python.org/3/library/pickle.html). Serializing such objects allows us to quickly import them in our workspace.
+The last two files contain a serialized Python object, created using [Pickle](https://docs.python.org/3/library/pickle.html). Serializing such objects allows us to quickly import them in our workspace.
+
+## cso.csv
+This file contains the Computer Science Ontology describing the relationships between different research concepts. Each row contains a triple (subject, predicate, object).
 
 ## cso.p
-This serialized file contains the Computer Science Ontology. In particular, it contains a dictionary with all the relevant information about the different concepts included in CSO.
+This serialized file contains the Computer Science Ontology. In particular, it contains a dictionary with all the relevant information about the different concepts included in CSO. It is produced from the file *cso.csv*.
 
 ## model.p
 This serialized file contains the word2vec model that has been trained using the Gensim library:
