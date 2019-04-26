@@ -12,7 +12,7 @@ The CSO Classifier is a novel application that takes as input the text from abst
 
 ## Repository Structure
 * In **v1 folder** you can find the find version of the classifier published as [poster paper at ISWC 2018](http://oro.open.ac.uk/55908/). This classifier finds all topics in the ontology that are explicitly mentioned within the processed papers.
-* In **v2 folder** you can find the second version submitted to TPDL 2019. [Pre-print](http://skm.kmi.open.ac.uk/the-cso-classifier-ontology-driven-detection-of-research-topics-in-scholarly-articles/). This classifier instead analyzes papers both on a syntactic and semantic level, and returns a set of pertinent research topics drawn from CSO.
+* In **v2 folder** you can find the second version submitted to TPDL 2019. [Pre-print](https://cso.kmi.open.ac.uk/cso-classifier/downloads/TPDL2019_v12.pdf). This classifier instead analyzes papers both on a syntactic and semantic level, and returns a set of pertinent research topics drawn from CSO.
 
 ## Main Requirements
 1. Ensure you have [**Python 3**](https://www.python.org/downloads/) installed.
@@ -21,7 +21,7 @@ The CSO Classifier is a novel application that takes as input the text from abst
 ## Other Links and Relevant Papers
 * [Computer Science Ontology (CSO)](https://cso.kmi.open.ac.uk)
 * [Classifying Research Papers with the Computer Science Ontology](http://oro.open.ac.uk/55908/). In (ISWC 2018 Posters & Demonstrations and Industry Tracks) @ The 17th International Semantic Web Conference (ISWC 2018), 8-12 October 2018, Monterey, California, USA, 2018
-* [The CSO Classifier: Ontology-Driven Detection of Research Topics in Scholarly Articles](http://skm.kmi.open.ac.uk/the-cso-classifier-ontology-driven-detection-of-research-topics-in-scholarly-articles/). *Submitted to JCDL 2019*
+* [The CSO Classifier: Ontology-Driven Detection of Research Topics in Scholarly Articles](https://cso.kmi.open.ac.uk/cso-classifier/downloads/TPDL2019_v12.pdf). *Submitted to TPDL 2019*
 
 ## How to cite this work
 If you use the CSO Classfier in your research or work and would like to cite the SKM3 Application Programming Interface, we suggest you cite:
