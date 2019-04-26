@@ -12,7 +12,7 @@ The CSO Classifier is a novel application that takes as input the text from abst
 
 ## Repository Structure
 * In **v1 folder** you can find the find version of the classifier published as [poster paper at ISWC 2018](http://oro.open.ac.uk/55908/). This classifier finds all topics in the ontology that are explicitly mentioned within the processed papers.
-* In **v2 folder** you can find the second version submitted to JCDL 2019. [Pre-print](http://skm.kmi.open.ac.uk/the-cso-classifier-ontology-driven-detection-of-research-topics-in-scholarly-articles/). This classifier instead analyzes papers both on a syntactic and semantic level, and returns a set of pertinent research topics drawn from CSO.
+* In **v2 folder** you can find the second version submitted to TPDL 2019. [Pre-print](http://skm.kmi.open.ac.uk/the-cso-classifier-ontology-driven-detection-of-research-topics-in-scholarly-articles/). This classifier instead analyzes papers both on a syntactic and semantic level, and returns a set of pertinent research topics drawn from CSO.
 
 ## Main Requirements
 1. Ensure you have [**Python 3**](https://www.python.org/downloads/) installed.
