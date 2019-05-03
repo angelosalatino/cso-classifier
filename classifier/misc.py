@@ -17,14 +17,15 @@ from webweb import Web
 import numpy as np
 from hurry.filesize import size
 import csv as co
+import json
 
 #some global variables
 CSO_PATH = "classifier/models/cso.csv"
 CSO_PICKLE_PATH = "classifier/models/cso.p"
 MODEL_PICKLE_PATH = "classifier/models/model.p"
 MODEL_PICKLE_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/model.p"
-
-
+CACHED_MODEL = "classifier/models/token-to-cso-combined.json"
+CACHED_MODEL_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/token-to-cso-combined.json"
 
 def load_cso():
     """Function that loads the CSO from the file in a dictionary.
@@ -94,6 +95,12 @@ def load_cso():
     return cso
         
 
+def load_token2cso_merger():
+    #print("Loading Model to CSO Merger")
+    with open(CACHED_MODEL) as f:
+       return json.load(f)
+
+
 
 def load_ontology_pickle():
     """Function that loads CSO. 
@@ -102,7 +109,7 @@ def load_ontology_pickle():
     Args:
 
     Returns:
-        fcso (dictionary): containing the found topics with their similarity and the n-gram analysed.
+        fcso (dictionary): contains the CSO Ontology.
     """
     check_ontology()
     fcso = pickle.load( open( CSO_PICKLE_PATH, "rb" ) )
@@ -117,8 +124,8 @@ def load_ontology_and_model():
     Args:
 
     Returns:
-        fcso (dictionary): containing the found topics with their similarity and the n-gram analysed.
-        fmodel (dictionary): containing the found topics with their similarity and the n-gram analysed.
+        fcso (dictionary): contains the CSO Ontology.
+        fmodel (dictionary): contains the word2vec model.
     """
     
     check_ontology()
@@ -129,10 +136,37 @@ def load_ontology_and_model():
     
     print("Computer Science Ontology and Word2vec model loaded.")
     return fcso, fmodel
- 
+
+
+def load_ontology_and_chached_model():
+    """Function that loads both CSO and the cached Word2vec model. 
+    The ontology file has been serialised with Pickle. 
+    The cached model is a json file (dictionary) containing all words in the corpus vocabulary with the corresponding CSO topics.
+    The latter has been created to speed up the process of retrieving CSO topics given a token in the metadata
+    
+
+    Args:
+
+    Returns:
+        fcso (dictionary): contains the CSO Ontology.
+        fmodel (dictionary): contains a cache of the model, i.e., each token is linked to the corresponding CSO topic.
+    """
+    
+    check_ontology()
+    check_cached_model()
+    
+    fcso = pickle.load( open( CSO_PICKLE_PATH, "rb" ) )
+    
+    with open(CACHED_MODEL) as f:
+       fmodel =  json.load(f)
+    
+    print("Computer Science Ontology and cached model loaded.")
+    return fcso, fmodel
+
      
 def check_ontology():
-    """Function that checks if the ontology is available. If not, it will check if a csv version exists and then it will create the pickle file.
+    """Function that checks if the ontology is available. 
+    If not, it will check if a csv version exists and then it will create the pickle file.
     
     """ 
     
@@ -146,14 +180,23 @@ def check_ontology():
 
 def check_model():
     """Function that checks if the model is available. If not, it will attempt to download it from a remote location.
-    Tipically hosted on the CSO Portal
+    Tipically hosted on the CSO Portal.
 
     """
     
     if not os.path.exists(MODEL_PICKLE_PATH):
         print('[*] Beginning model download from', MODEL_PICKLE_REMOTE_URL)
         download_file(MODEL_PICKLE_REMOTE_URL, MODEL_PICKLE_PATH)  
-        
+
+def check_cached_model():
+    """Function that checks if the cached model is available. If not, it will attempt to download it from a remote location.
+    Tipically hosted on the CSO Portal.
+
+    """
+    
+    if not os.path.exists(CACHED_MODEL):
+        print('[*] Beginning download of cached model from', CACHED_MODEL_REMOTE_URL)
+        download_file(CACHED_MODEL_REMOTE_URL, CACHED_MODEL)  
         
 def download_file(url, filename):
     """Function that downloads the model from the web.

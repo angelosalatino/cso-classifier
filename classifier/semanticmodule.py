@@ -8,12 +8,10 @@ Created on Thu Nov 22 11:38:18 2018
 
 
 
-import nltk
-import re
-from nltk import everygrams
-import Levenshtein.StringMatcher as ls
-from kneed import KneeLocator
-import spacy
+
+import json
+import time
+import pickle
 
 class CSOClassifierSemantic:
     
@@ -27,10 +25,12 @@ class CSOClassifierSemantic:
 
             
         """
-        self.model = model
-        self.cso = cso
-        self.paper = {}
-        self.set_paper(paper)
+        
+        self.cso = cso                  #Stores the CSO Ontology
+        self.paper = {}                 #Paper to analyse
+        self.ngrammerger = model        #contains the cached model
+        self.merge_bigrams = True       #Allows to combine the topics of mutiple tokens, when analysing 2-grams or 3-grams
+        self.set_paper(paper)           #Initialises the paper
 
         
         
@@ -55,13 +55,15 @@ class CSOClassifierSemantic:
         else:
             raise TypeError("Error: Field format must be either 'json' or 'text'")
             return
-    
 
-        
-        
  
     
-    def classify_semantic(self, processed_embeddings={}):
+    def classify_semantic(self):
+        import nltk
+        import re
+        from nltk import everygrams
+        from kneed import KneeLocator
+        import spacy
         """Function that classifies the paper on a semantic level. This semantic module follows four steps: 
             (i) entity extraction, 
             (ii) CSO concept identification, 
@@ -75,6 +77,8 @@ class CSOClassifierSemantic:
             final_topics (list): list of identified topics.
         """
         
+        
+        
         ##################### Tokenizer with spaCy.io
         
         nlp = spacy.load('en_core_web_sm')
@@ -83,11 +87,10 @@ class CSOClassifierSemantic:
         for token in doc:
             if len(token.tag_) > 0:
                 pos_tags_spacy.append((token.text, token.tag_))
-                #print(token.text, token.lemma_, token.pos_, token.tag_, token.dep_,token.shape_, token.is_alpha, token.is_stop)
         
         pos_tags = pos_tags_spacy
         
-        #print(pos_tags)
+        
         
         ##################### Applying grammar
         
@@ -112,107 +115,105 @@ class CSOClassifierSemantic:
                 concepts.append(concept)
         
         
+
         ##################### Core analysis
         
         # Set up
         found_topics = {} # to store the matched topics
         successful_grams = {} # to store the successful grams
 
-        total_matched = 0
-        word_similarity = 0.7 # similarity of words in the model
-        top_amount_of_words = 10 # maximum number of words to select
         min_similarity = 0.94 #
+
         
-                
+        
         # finding matches
         for concept in concepts:
             evgrams = everygrams(concept.split(), 1, 3) # list of unigrams, bigrams, trigrams
             for grams in evgrams:
                 gram = "_".join(grams)
-        
+                gram_wu = " ".join(grams)
+                
                 #### Finding similar words contained in the model
-                #print("processing",gram)
-                similarities = []
                 
-                similarities.append((gram,1)) #Appending the gram with max similarity
-            
-                try:
-                    similarities_with_gram = self.get_top_similar_words(self.model.most_similar(gram,topn=top_amount_of_words), word_similarity)
-                    similarities.extend(similarities_with_gram)
-                except KeyError:
-                    #print("Unigram: ",gram,"not found")
-                    pass#continue
-                
-                if len(similarities) == 1 and len(grams) > 1: #if the model does not contain the gram, then it aims at analysing single words
-                    try:    
-                        similarities_with_grams = self.get_top_similar_words(self.model.most_similar(grams,topn=top_amount_of_words), word_similarity)
-                        similarities.extend(similarities_with_grams)
-                        #print("Processing N-Gram"," ".join(grams))
-                    except KeyError:
-                        #print("n-grams"," ".join(grams),"not found")
-                        pass
-                
-        
-                #### Finding the words within CSO
-                for wet, sim in similarities: #wet = word embedding topic, sim = similarity
+                list_of_matched_topics = []
+
+                if gram in self.ngrammerger:
+                    list_of_matched_topics = self.ngrammerger[gram]
                     
-                    if sim >= word_similarity: # similarity on word embedding goes above threshold
+                else:
+                    
+                    if len(grams) > 1 and self.merge_bigrams:
                         
-                        if wet in processed_embeddings:
-                            # if this wet has already been processed in the past, we must know its most similar topic
-                            topics = processed_embeddings[wet].keys() 
-                            #print("I am grabbing the topics of ",wet)
-                        else:
-                            # looking for the topic within CSO
-                            topics = [key for key, _ in self.cso['topics_wu'].items() if key.startswith(wet[:4])]
-                            # in this position allows to keep track of all embeddings. The ones that fail will not have matches with topics in CSO
-                            processed_embeddings[wet] = {} 
-                            
-                        for topic in topics:
-                            #topic = topic.replace(" ", "_")
-                            m = ls.StringMatcher(None, topic, wet).ratio() #topic is from cso, wet is from word embedding
-                            if m >= min_similarity:
-        
-                                if topic in found_topics:
-                                    #tracking this match
-                                    found_topics[topic]["times"] += 1
+                        temp_list_of_matches = {}
+                        
+                        list_of_merged_topics = {}
+                        
+                        for gram in grams:
+                            if gram in self.ngrammerger:
+                                list_of_matched_topics_t = self.ngrammerger[gram]
+                                for topic_item in list_of_matched_topics_t:
+                                    temp_list_of_matches[topic_item["topic"]] = topic_item
+                                    try:
+                                        list_of_merged_topics[topic_item["topic"]] += 1
+                                    except KeyError:
+                                        list_of_merged_topics[topic_item["topic"]] = 1
                                     
-                                    found_topics[topic]["gram_similarity"].append(sim)
-        
-                                    #tracking the matched gram
-                                    if gram in found_topics[topic]["grams"]: 
-                                        found_topics[topic]["grams"][gram] += 1
-                                    else:
-                                        found_topics[topic]["grams"][gram] = 1
-        
-                                    #tracking the most similar gram to the topic
-                                    if m > found_topics[topic]["embedding_similarity"]:
-                                        found_topics[topic]["embedding_similarity"] = m 
-                                        found_topics[topic]["embedding_matched"] = wet
-        
-                                else:
-                                    #creating new topic in the result set
-                                    found_topics[topic] = {'grams': {gram:1},
-                                                           'embedding_matched': wet,
-                                                           'embedding_similarity': m,
-                                                           'gram_similarity':[sim],
-                                                           'times': 1, 
-                                                           'topic':topic}
-                                
-                                if sim == 1:
-                                    found_topics[topic]["syntactic"] = True
-        
-        
-                                # reporting successful grams: it is the inverse of found_topics["topic"]["grams"]
-                                if gram in successful_grams:
-                                    successful_grams[gram].append(topic)
-                                else:
-                                    successful_grams[gram] = [topic]
-        
-                                processed_embeddings[wet][topic] = m#True
-        
-                                total_matched += 1
-        
+                        for topic_x, value in list_of_merged_topics.items():
+                            if value >= len(grams):
+                                list_of_matched_topics.append(temp_list_of_matches[topic_x])
+                                    
+                            
+                for topic_item in list_of_matched_topics:
+                        
+                    topic = topic_item["topic"]
+                    m     = topic_item["sim_t"]
+                    wet   = topic_item["wet"]
+                    sim   = topic_item["sim_w"]
+                    
+                    
+                    if m >= min_similarity:
+                        
+    
+                        if topic in found_topics:
+                            #tracking this match
+                            found_topics[topic]["times"] += 1
+                            
+                            found_topics[topic]["gram_similarity"].append(sim)
+    
+                            #tracking the matched gram
+                            if gram in found_topics[topic]["grams"]: 
+                                found_topics[topic]["grams"][gram] += 1
+                            else:
+                                found_topics[topic]["grams"][gram] = 1
+    
+                            #tracking the most similar gram to the topic
+                            if m > found_topics[topic]["embedding_similarity"]:
+                                found_topics[topic]["embedding_similarity"] = m 
+                                found_topics[topic]["embedding_matched"] = wet
+    
+                        else:
+                            #creating new topic in the result set
+                            found_topics[topic] = {'grams': {gram:1},
+                                                    'embedding_matched': wet,
+                                                    'embedding_similarity': m,
+                                                    'gram_similarity':[sim],
+                                                    'times': 1, 
+                                                    'topic':topic}
+
+                        
+                        
+                        if sim == 1:
+                            found_topics[topic]["syntactic"] = True
+    
+    
+                        # reporting successful grams: it is the inverse of found_topics["topic"]["grams"]
+                        if gram in successful_grams:
+                            successful_grams[gram].append(topic)
+                        else:
+                            successful_grams[gram] = [topic]
+    
+    
+                
         
         ##################### Ranking
         
@@ -257,6 +258,7 @@ class CSOClassifierSemantic:
             print("I performed a different identification of knee")
             kn = KneeLocator(x, vals, curve='convex', direction='decreasing')
         
+        
         ##################### Pruning
         
         try: 
@@ -271,17 +273,20 @@ class CSOClassifierSemantic:
                 print("ERROR: ",kn.knee," ",knee, " ", len(sort_t))
             
         else:
-            
-            if sort_t[0][1] == sort_t[4][1]:
-                top = sort_t[0][1]
-                test_topics = [item[1] for item in sort_t if item[1]==top] 
-                knee = len(test_topics)
-
-            else:
-                knee = 5
+            try:
+                if sort_t[0][1] == sort_t[4][1]:
+                    top = sort_t[0][1]
+                    test_topics = [item[1] for item in sort_t if item[1]==top] 
+                    knee = len(test_topics)
+    
+                else:
+                    knee = 5
+            except IndexError:
+                knee = len(sort_t)
 
         final_topics = []
         final_topics = [self.cso["topics_wu"][sort_t[i][0]] for i in range(0,knee)]
+        
              
         return final_topics
 
@@ -381,3 +386,4 @@ class CSOClassifierSemantic:
                         all_broaders[broader] = [topic]
 
         return all_broaders
+    
