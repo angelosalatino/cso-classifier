@@ -48,7 +48,7 @@ print(paper["keywords"])
 # In[Load Model, CSO and initialize]:
 
 
-cso, model = misc.load_ontology_and_model()
+cso, model =  misc.load_ontology_and_chached_model()
 
 # Passing parematers to the two classes (synt and sema)
 synt_module = synt(cso, paper)
