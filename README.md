@@ -1,28 +1,132 @@
 # CSO-Classifier
 
-Classifying research papers according to their research topics is an important task to improve their retrievability, assist the creation of smart analytics, and support a variety of approaches for analysing and making sense of the research environment. In this repository, we present the CSO Classifier, a new unsupervised approach for automatically classifying research papers according to the [Computer Science Ontology (CSO)](https://cso.kmi.open.ac.uk), a comprehensive ontology of research areas in the field of Computer Science. The CSO Classifier takes as input the metadata associated with a research paper (title, abstract, keywords) and returns a selection of research concepts drawn from the ontology. The approach was evaluated on a gold standard of manually annotated articles yielding a significant improvement over alternative methods.
+Script that classifes content from scientific papers with the topics of the [Computer Science Ontology (CSO)](https://cso.kmi.open.ac.uk). Being able to synthesize the content of papers, allows to perform different kinds of analytics:
+* Trend analysis
+* Recommender systems
+* Find authors’ topics of interest
+* Topic analysis
 
 
 ## About
 
-The CSO Classifier is a novel application that takes as input the text from abstract, title, and keywords of a research paper and outputs a list of relevant concepts from CSO. It consists of two main components: (i) the syntactic module and (ii) the semantic module. Figure 1 depicts its architecture. The syntactic module parses the input documents and identifies CSO concepts that are explicitly referred in the document. The semantic module uses part-of-speech tagging to identify promising terms and then exploits word embeddings to infer semantically related topics. Finally, the CSO Classifier combines the results of these two modules and enhances them by including relevant super-areas.
+If you use the CSO classfier in your research or work and would like to cite the SKM3 Application Programming Interface, we suggest you cite the [CSO portal paper](http://skm.kmi.open.ac.uk/the-computer-science-ontology-a-large-scale-taxonomy-of-research-areas/).
 
-![Framework of CSO Classifier](/v2/images/Workflow.png "Framework of CSO Classifier")
+## Framework
+![Framework of CSO Classifier](/pics/framework.png "Framework of CSO Classifier")
 
-
-## Repository Structure
-* In **v1 folder** you can find the find version of the classifier published as [poster paper at ISWC 2018](http://oro.open.ac.uk/55908/). This classifier finds all topics in the ontology that are explicitly mentioned within the processed papers.
-* In **v2 folder** you can find the second version submitted to TPDL 2019. [Pre-print](https://cso.kmi.open.ac.uk/cso-classifier/downloads/TPDL2019_v12.pdf). This classifier instead analyzes papers both on a syntactic and semantic level, and returns a set of pertinent research topics drawn from CSO.
-
-## Main Requirements
+## Requirements
 1. Ensure you have [**Python 3**](https://www.python.org/downloads/) installed.
-2. Each folder will have its own *requirements.txt* file, including all necessary dependencies. Install them by executing the following command:```pip install -r requirements.txt```.
+2. Install the necessary depepencies by executing the following command:```pip install -r requirements.txt```
+3. Download NLP datasets by running the following line  within your Python 3 interpreter: ```import nltk; nltk.download('stopwords');```
 
-## Other Links and Relevant Papers
-* [Computer Science Ontology (CSO)](https://cso.kmi.open.ac.uk)
-* [Classifying Research Papers with the Computer Science Ontology](http://oro.open.ac.uk/55908/). In (ISWC 2018 Posters & Demonstrations and Industry Tracks) @ The 17th International Semantic Web Conference (ISWC 2018), 8-12 October 2018, Monterey, California, USA, 2018
-* [The CSO Classifier: Ontology-Driven Detection of Research Topics in Scholarly Articles](https://cso.kmi.open.ac.uk/cso-classifier/downloads/TPDL2019_v12.pdf). *Submitted to TPDL 2019*
+## In depth
+1. The algorithm firstly preprocesses the content of each paper: removes punctuation and stop words.
+2. Then, it parses the text to find n-grams (unigram, bigrams and trigrams) that match, with a certain degree of similarity (default: Levenshtein >= 0.85), with the topics within the Computer Science Ontology.
+3. Thirdly, it adds more broader generic topics, based on the ones retrieved in Step 2. It exploits the _skos:broaderGeneric_ relationships within the CSO. A more broader topic is included if a certain amount of narrower topics (default: num_narrower = 2) are in the initial set of topics. The selcgtion of more broader generic topics can be achieved in two ways:
+  * select just the first broader topic, or in other words the direct broaders of the topics extracted from the paper;
+  * select the whole tree from the first broader topic up until the root of the ontology.
+4. Lastly, it cleans the output removing statistic values, and removes similar topics using the _relatedEquivalent_ within the CSO.
 
-## How to cite this work
-If you use the CSO Classfier in your research or work and would like to cite the SKM3 Application Programming Interface, we suggest you cite:
-* Salatino, Angelo; Thanapalasingam, Thiviyan; Mannocci, Andrea; Osborne, Francesco and Motta, Enrico (2018). **Classifying Research Papers with the Computer Science Ontology.** In: *ISWC 2018 Posters & Demonstrations and Industry Tracks* (van Erp, Marieke ed.).
+## Choosing the Ontology
+In the repository you can find two versions of the CSO (_ComputerScienceOntology.csv_):
+
+```python
+# Version 1: 15K topics and 90K relationships
+clf = CSO(version=1)
+```
+or
+```python
+# Version 2: 26K topics and 226K relationships
+clf = CSO(version=2)
+```
+
+
+## Instance
+Input:
+```json
+paper = {
+      "title": "Detection of Embryonic Research Topics by Analysing Semantic Topic Networks",
+      "abstract": "Being aware of new research topics is an important asset for anybody involved in the research environment, including researchers, academic publishers and institutional funding bodies. In recent years, the amount of scholarly data available on the web has increased steadily, allowing the development of several approaches for detecting emerging research topics and assessing their trends. However, current methods focus on the detection of topics which are already associated with a label or a substantial number of documents. In this paper, we address instead the issue of detecting embryonic topics, which do not possess these characteristics yet. We suggest that it is possible to forecast the emergence of novel research topics even at such early stage and demonstrate that the emergence of a new topic can be anticipated by analysing the dynamics of pre-existing topics. We present an approach to evaluate such dynamics and an experiment on a sample of 3 million research papers, which confirms our hypothesis. In particular, we found that the pace of collaboration in sub-graphs of topics that will give rise to novel topics is significantly higher than the one in the control group.",
+      "keywords": "Scholarly Data, Research Trend Detection, Topic Emergence Detection, Topic Discovery, Semantic Web, Ontology"
+        }
+```
+
+Running the classifier:
+```python
+# cso is a dictionary loaded beforehand
+# num_narrower = 1, include all the broader topics having at least one narrower topic matched in the paper
+# min_similarity = 0.9, more precise similarity between n-grams and topics has been requested
+# climb_ont = 'jfb', it adds 'just the first broader topic'. The other option available is 'wt' as it adds the whole tree up until the root. 
+# verbose = True, it returns the result in a verbose way. It reports the different statistics associated with matches.
+result = clf.classify(PAPER, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfb', verbose=True)
+print(json.dumps(result))
+```
+Result (variable **_result_**):
+```json
+{  
+   "extracted":{  
+      "semantics":[  
+         {  
+            "matched":"semantic",
+            "similarity":0.9411764705882353
+         },
+         {  
+            "matched":"semantic",
+            "similarity":0.9411764705882353
+         }
+      ],
+      "ontology":[  
+         {  
+            "matched":"ontology",
+            "similarity":1.0
+         }
+      ],
+      "semantic web":[  
+         {  
+            "matched":"semantic web",
+            "similarity":1.0
+         }
+      ]
+   },
+   "inferred":{  
+      "semantics":[  
+         {  
+            "matched":2,
+            "broader of":[  
+               "ontology",
+               "semantic web"
+            ]
+         }
+      ],
+      "world wide web":[  
+         {  
+            "matched":1,
+            "broader of":[  
+               "semantic web"
+            ]
+         }
+      ]
+   }
+}
+```
+Within the key _extracted_ you can find the syntactic match between topics and portion of theanalysed text. Whilst, within the _inferred_ key you can find the semantically inferred topics.
+
+If you want a more cleaned result, you can run the same function with _verbose=False_:
+```python
+result = clf.classify(PAPER, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfp', verbose=False)
+print(json.dumps(result))
+```
+
+List of final topics (variable **_result_**):
+```json
+{  
+   "extracted":[  
+      "ontology",
+      "semantics",
+      "semantic web"
+   ],
+   "inferred":[  
+      "world wide web"
+   ]
+}
+```
