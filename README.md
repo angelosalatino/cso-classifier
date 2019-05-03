@@ -13,7 +13,7 @@ The CSO Classifier is a novel application that takes as input the text from abst
 1. Ensure you have [**Python 3**](https://www.python.org/downloads/) installed.
 2. Install the necessary depepencies by executing the following command:```pip install -r requirements.txt```
 3. Download English package for spaCy using ```python -m spacy download en_core_web_sm```
-4. Download the word2vec model. The current model has a size of 350MB and cannot be stored in Github. For this reason it must be downloaded separately from [https://cso.kmi.open.ac.uk/download/model.p](https://cso.kmi.open.ac.uk/download/model.p) and stored in the *models* folder: ```/classifier/models/```
+
 
 ## Main Files
 * **CSO-Classifier.ipynb**: :page_facing_up: Python notebook for executing the classifier
@@ -24,11 +24,38 @@ The CSO Classifier is a novel application that takes as input the text from abst
     - **semanticmodule.py**: :page_facing_up: functionalities that implement the semantic module
     - **misc.py**: :page_facing_up: some miscellaneous functionalities
     - **models**: :file_folder: Folder containing the word2vec model and CSO
-        - **cso.p**: :page_facing_up: file containing the Computer Science Ontology
-        - **model.p**: :page_facing_up: file containing the word2vec model. Please be aware that this file is not currently tracked within this repository due to its large size (over 100MB). This file needs to be downloaded separately (see ```Requirements #4``` above). 
+        - **cso.csv**: :page_facing_up: file containing the Computer Science Ontology in csv
+        - **cso.p**: :page_facing_up: serialised file containing the Computer Science Ontology (pickled)
+        - **token-to-cso-combined.json**: :page_facing_up: file containing the cached word2vec model. This json file contains a dictionary in which each token of the corpus vocabulary, has been mapped with the corresponding CSO topics. Below we explain how this file has been generated.
+
+## Generation of the model and token-to-cso-combined file
+In this section we describe how we generated the word2vec model used within the CSO Classifier and what is the token-to-cso-combined file.
+
+### Word Embedding generation
+We applied the word2vec approach [1,2] to a collection of text from the Microsoft Academic Graph (MAG)  for generating word embeddings. MAG is a scientific knowledge base and a heterogeneous graph containing scientific publication records, citation relationships, authors, institutions, journals, conferences, and fields of study. It is the largest dataset of scholarly data publicly available, and, as of December 2018, it contains more than 210 million publications.
+We first downloaded titles, and abstracts of 4,654,062 English papers in the field of Computer Science. Then we pre-processed the data by replacing spaces with underscores in all n-grams matching the CSO topic labels (e.g., “digital libraries” became “digital_libraries”) and for frequent bigrams and trigrams (e.g., “highest_accuracies”, “highly_cited_journals”). These frequent n-grams were identified by analysing combinations of words that co-occur together, as suggested in [2] and using the parameters showed in Table 1. Indeed, while it is possible to obtain the vector of a n-gram by averaging the embedding vectors of all it words, the resulting representation usually is not as good as the one obtained by considering the n-gram as a single word during the training phase. 
+Finally, we trained the word2vec model using the parameters provided in Table 2. The parameters were set to these values after testing several combinations. 
+| min-count  |  threshold |
+|---|---|
+| 5  | 10  |
+Table 1: Parameters used during the collocation words analysis
+
+| method  |  emb. size | window size | min count cutoff |
+|---|---|---|---|
+| skipgram  | 128  |  10 |  10 |
+Table 2: Parameters used for training the word2vec model.
+
+After training the model we obtained a **gensim.models.keyedvectors.Word2VecKeyedVectors** object weighing **366MB**. You can download the model [from here](https://cso.kmi.open.ac.uk/download/model.p). 
+The size of the model hindered the performance of the classifier in two ways. Firstly, it required several seconds to be loaded into memory. This was partially fixed by serialising the model file (using python pickle, see version v2.0 of CSO Classifier). Secondly, while processing a document, the classifier needs to retrieve the top 10 similar words for all tokens, and compare them with CSO topics. In performing such operation, the model would recquire several seconds, becoming a bottleneck for the classification process.
+To this end, we decided to create a cached model (**token-to-cso-combined.json**) which is a dictionary that directly connects all token available in the vocabulary of the model with the CSO topics. This strategy allows to quickly retrieve all CSO topics that can be inferred by a particular token.
+
+### token-to-cso-combined file
+
+To generate this file, we collected all the set of words available within the vocabulary of the model. Then iterating on each word, we retrieved its top 10 similar words from the model, and we computed their Levenshtein similarity against all CSO topics. If the similarity was above 0.7, we created a record which stored all CSO topics triggered by the initial word.
 
 
-## Sample Input
+## Input - Output
+### Sample Input
 ```json
 paper = {
         "title": "De-anonymizing Social Networks",
@@ -48,84 +75,85 @@ paper = {
         }
 ```
 
-## Sample Output
+### Sample Output
 ```json
 {
     "syntactic": [
-        "twitter",
-        "graph theory",
-        "data mining",
-        "anonymization",
-        "online social networks",
-        "data privacy",
-        "network topology",
-        "anonymity",
         "sensitive informations",
-        "microblogging",
+        "graph theory",
+        "real-world networks",
+        "network topology",
         "social networks",
+        "anonymity",
+        "anonymization",
+        "twitter",
+        "microblogging",
         "privacy",
-        "real-world networks"
+        "data privacy",
+        "online social networks",
+        "data mining"
     ],
     "semantic": [
         "social networks",
         "online social networks",
-        "sensitive informations",
         "data mining",
         "privacy",
         "data privacy",
         "anonymization",
         "anonymity",
-        "network topology",
         "twitter",
         "microblogging",
         "topology",
+        "network topology",
         "graph theory",
-        "social media",
-        "social networking sites",
-        "network structures",
         "network architecture",
-        "micro-blog",
-        "online communities",
-        "social graphs"
+        "network structures",
+        "social networking sites",
+        "association rules",
+        "micro-blog"
     ],
     "union": [
-        "network architecture",
-        "data privacy",
-        "network topology",
-        "graph theory",
-        "micro-blog",
-        "network structures",
-        "social graphs",
-        "microblogging",
-        "topology",
-        "twitter",
-        "social networks",
-        "social media",
-        "data mining",
-        "online social networks",
-        "privacy",
-        "social networking sites",
-        "anonymization",
-        "anonymity",
         "sensitive informations",
+        "social networking sites",
+        "micro-blog",
+        "network architecture",
+        "graph theory",
+        "social networks",
+        "network topology",
         "real-world networks",
-        "online communities"
+        "topology",
+        "anonymity",
+        "anonymization",
+        "association rules",
+        "twitter",
+        "microblogging",
+        "network structures",
+        "privacy",
+        "data privacy",
+        "online social networks",
+        "data mining"
     ],
     "enhanced": [
-        "privacy preserving",
         "complex networks",
-        "online systems",
-        "facebook",
-        "computer science",
-        "access control",
-        "neural networks",
-        "electric network topology",
+        "privacy preserving",
         "world wide web",
-        "network security",
-        "security of data",
-        "authentication",
+        "theoretical computer science",
+        "social media",
         "network protocols",
-        "theoretical computer science"
+        "access control",
+        "security of data",
+        "online systems",
+        "electric network topology",
+        "computer science",
+        "facebook",
+        "network security",
+        "neural networks",
+        "authentication"
     ]
 }
 ```
+
+## References
+
+[1] Mikolov, T., Chen, K., Corrado, G. and Dean, J. 2013. Efficient Estimation of Word Representations in Vector Space. (Jan. 2013).
+[2]	Mikolov, T., Chen, K., Corrado, G. and Dean, J. 2013. Distributed Representations of Words and Phrases and their Compositionality. Advances in neural information processing systems. 3111–3119.
