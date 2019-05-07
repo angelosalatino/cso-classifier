@@ -16,7 +16,7 @@ from classifier.syntacticmodule import CSOClassifierSyntactic as synt
 from classifier.semanticmodule import CSOClassifierSemantic as sema
 
 
-def run_cso_classifier(paper, modules = "both", enhances = "first"): 
+def run_cso_classifier(paper, modules = "both", enhancement = "first"): 
     """Function that runs the CSO Classifier. 
     The ontology file has been serialised with Pickle. 
     The cached model is a json file (dictionary) containing all words in the corpus vocabulary with the corresponding CSO topics.
@@ -36,7 +36,7 @@ def run_cso_classifier(paper, modules = "both", enhances = "first"):
         raise ValueError("Error: Field modules must be 'syntactic', 'semantic' or 'both'")
         return
     
-    if enhances not in ["first", "all", "no"]:
+    if enhancement not in ["first", "all", "no"]:
         raise ValueError("Error: Field enhances must be 'first', 'all' or 'no'")
         return
     
@@ -64,13 +64,13 @@ def run_cso_classifier(paper, modules = "both", enhances = "first"):
     class_res["union"] = union
     
     
-    if enhances == 'first':
+    if enhancement == 'first':
         enhanced = misc.climb_ontology(cso,union, "first")
         class_res["enhanced"] = [x for x in enhanced if x not in union]
-    elif enhances == 'all':
+    elif enhancement == 'all':
         enhanced = misc.climb_ontology(cso,union, "all")
         class_res["enhanced"] = [x for x in enhanced if x not in union]
-    elif enhances == 'no':
+    elif enhancement == 'no':
         pass
 
 
