@@ -247,38 +247,52 @@ def get_primary_label(topic, primary_labels):
         return topic
 
 
-def climb_ontology(cso, found_topics):
-    """Function that climbs the ontology. This function might retrieve
-        just the first broader topic or the whole branch up until root
+def climb_ontology(cso, found_topics, climb_ont):
+        """Function that climbs the ontology. This function might retrieve
+            just the first broader topic or the whole branch up until root
+        Args:
+            found_topics (dictionary): It contains the topics found with string similarity.
+            cso (dictionary): the ontology previously loaded from the file.
+            num_narrower (integer): it defines the number of narrower topics before their broader topic gets included
+            in the final set of topics. Default = 1.
+            climb_ont (string): either "first" or "all" for selecting "just the first broader topic" or climbing
+            the "whole tree".
+        Returns:
+            found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
+        """
 
-    Args:
-        found_topics (dictionary): It contains the topics found with string similarity.
-        cso (dictionary): the ontology previously loaded from the file.
-        num_narrower (integer): it defines the number of narrower topics before their broader topic gets included
-        in the final set of topics. Default = 2.
-        climb_ont (string): either "jfb" or "wt" for selecting "just the first broader topic" or climbing
-        the "whole tree".
+        all_broaders = {}
+        inferred_topics = {}
+        num_narrower = 1
 
-    Returns:
-        found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
-    """
+        if climb_ont == 'first':
+            all_broaders = get_broader_of_topics(cso, found_topics, all_broaders)
+        elif climb_ont == 'all':
+            while True:
+                """
+                recursively adding new broaders based on the current list of topics. Broaders var increases each 
+                iteration. It stops when it does not change anymore.
+                """
+                all_broaders_back = all_broaders.copy()
+                all_broaders = get_broader_of_topics(cso, found_topics, all_broaders)
+                if all_broaders_back == all_broaders:  # no more broaders have been found
+                    break
+        elif climb_ont == 'no':
+            return inferred_topics #it is empty at this stage
+        else:
+            raise ValueError("Error: Field climb_ontology must be 'first', 'all' or 'no'")
+            return
+        
+        
+        for broader, narrower in all_broaders.items():
+            if len(narrower) >= num_narrower:
+                broader = get_primary_label(broader, cso['primary_labels'])
+                if broader not in inferred_topics:
+                    inferred_topics[broader] = [{'matched': len(narrower), 'broader of': narrower}]
+                else:
+                    inferred_topics[broader].append({'matched': len(narrower), 'broader of': narrower})
 
-    all_broaders = {}
-    inferred_topics = {}
-    num_narrower = 1
-    all_broaders = get_broader_of_topics(cso, found_topics, all_broaders)
-
-    
-    
-    for broader, narrower in all_broaders.items():
-        if len(narrower) >= num_narrower:
-            broader = get_primary_label(broader, cso['primary_labels'])
-            if broader not in inferred_topics:
-                inferred_topics[broader] = [{'matched': len(narrower), 'broader of': narrower}]
-            else:
-                inferred_topics[broader].append({'matched': len(narrower), 'broader of': narrower})
-
-    return list(set(inferred_topics.keys()).difference(found_topics))
+        return inferred_topics
 
 
 
@@ -298,7 +312,7 @@ def get_broader_of_topics(cso, found_topics, all_broaders):
         all_broaders (dictionary): contains all the broaders found so far, including the previous iterations.
     """
 
-    topics = list(found_topics)
+    topics = list(found_topics) + list(all_broaders.keys())
     for topic in topics:
         if topic in cso['broaders']:
             broaders = cso['broaders'][topic]
