@@ -56,7 +56,7 @@ To this end, we decided to create a cached model (**token-to-cso-combined.json**
 To generate this file, we collected all the set of words available within the vocabulary of the model. Then iterating on each word, we retrieved its top 10 similar words from the model, and we computed their Levenshtein similarity against all CSO topics. If the similarity was above 0.7, we created a record which stored all CSO topics triggered by the initial word.
 
 
-## Input - Output
+## Input - Output Test
 ### Sample Input
 ```json
 paper = {
@@ -154,6 +154,9 @@ paper = {
     ]
 }
 ```
+
+## License
+[Apache 2.0](https://choosealicense.com/licenses/apache-2.0/)
 
 ## References
 
