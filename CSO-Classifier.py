@@ -11,9 +11,8 @@ Created on Thu Feb 14 14:43:42 2019
 # In[Loading Libraries]:
 
 
-import classifier.misc as misc
-from classifier.syntacticmodule import CSOClassifierSyntactic as synt
-from classifier.semanticmodule import CSOClassifierSemantic as sema
+import classifier.classifier as CSO
+
 
 import json
  
@@ -45,39 +44,17 @@ print(paper["keywords"])
 
 
 
-# In[Load Model, CSO and initialize]:
+# In[Run Classifier]
 
-
-cso, model =  misc.load_ontology_and_chached_model()
-
-# Passing parematers to the two classes (synt and sema)
-synt_module = synt(cso, paper)
-sema_module = sema(model, cso, paper)
-
-#initializing variable that will contain output
-class_res = {}
-
-
-
-# In[Running]:
-
-
-class_res["syntactic"] = synt_module.classify_syntactic()
-class_res["semantic"]  = sema_module.classify_semantic()
-
-union = list(set(class_res["syntactic"] + class_res["semantic"]))
-class_res["union"] = union
-
-enhanced = misc.climb_ontology(cso,union)
-class_res["enhanced"] = [x for x in enhanced if x not in union]
+result = CSO.run_cso_classifier(paper)
 
 
 
 # In[Printing and Saving]:
 
 
-print(class_res)
+print(result)
 
 with open('output.json', 'w') as outfile:
-    json.dump(class_res, outfile, indent=4)
+    json.dump(result, outfile, indent=4)
 
