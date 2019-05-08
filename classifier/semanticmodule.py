@@ -7,12 +7,6 @@ Created on Thu Nov 22 11:38:18 2018
 """
 
 
-
-
-import json
-import time
-import pickle
-
 class CSOClassifierSemantic:
     
     def __init__(self, model = {}, cso = {}, paper = {}):
@@ -131,7 +125,6 @@ class CSOClassifierSemantic:
             evgrams = everygrams(concept.split(), 1, 3) # list of unigrams, bigrams, trigrams
             for grams in evgrams:
                 gram = "_".join(grams)
-                gram_wu = " ".join(grams)
                 
                 #### Finding similar words contained in the model
                 
@@ -252,18 +245,22 @@ class CSOClassifierSemantic:
         for tp in sort_t:
             vals.append(tp[1]) #in 0, there is the topic, in 1 there is the info
         
-        x = range(1,len(vals)+1) 
-        kn = KneeLocator(x, vals, direction='decreasing')
-        if kn.knee is None:
-            print("I performed a different identification of knee")
-            kn = KneeLocator(x, vals, curve='convex', direction='decreasing')
-        
+        try:
+            x = range(1,len(vals)+1) 
+            kn = KneeLocator(x, vals, direction='decreasing')
+            if kn.knee is None:
+                print("I performed a different identification of knee")
+                kn = KneeLocator(x, vals, curve='convex', direction='decreasing')
+        except ValueError:
+            pass
         
         ##################### Pruning
         
         try: 
             knee = int(kn.knee)
         except TypeError:
+            knee = 0
+        except UnboundLocalError:
             knee = 0
             
         if knee > 5:
@@ -290,8 +287,6 @@ class CSOClassifierSemantic:
              
         return final_topics
 
-    
-    
     
     
     def get_primary_label(self, topic, primary_labels):
