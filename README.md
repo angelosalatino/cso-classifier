@@ -134,26 +134,29 @@ In this section, we explain how to run the CSO Classifier to classify a single o
 
 #### Sample Input (SP)
 
+The sample input is a dictionary containing title, abstract and keywords as keys:
 ```json
 paper = {
         "title": "De-anonymizing Social Networks",
         "abstract": "Operators of online social networks are increasingly sharing potentially "
-        "sensitive information about users and their relationships with advertisers, application "
-        "developers, and data-mining researchers. Privacy is typically protected by anonymization, "
-        "i.e., removing names, addresses, etc. We present a framework for analyzing privacy and "
-        "anonymity in social networks and develop a new re-identification algorithm targeting "
-        "anonymized social-network graphs. To demonstrate its effectiveness on real-world networks, "
-        "we show that a third of the users who can be verified to have accounts on both Twitter, a "
-        "popular microblogging service, and Flickr, an online photo-sharing site, can be re-identified "
-        "in the anonymous Twitter graph with only a 12% error rate. Our de-anonymization algorithm is "
-        "based purely on the network topology, does not require creation of a large number of dummy "
-        "\"sybil\" nodes, is robust to noise and all existing defenses, and works even when the overlap "
-        "between the target network and the adversary's auxiliary information is small.",
+            "sensitive information about users and their relationships with advertisers, application "
+            "developers, and data-mining researchers. Privacy is typically protected by anonymization, "
+            "i.e., removing names, addresses, etc. We present a framework for analyzing privacy and "
+            "anonymity in social networks and develop a new re-identification algorithm targeting "
+            "anonymized social-network graphs. To demonstrate its effectiveness on real-world networks, "
+            "we show that a third of the users who can be verified to have accounts on both Twitter, a "
+            "popular microblogging service, and Flickr, an online photo-sharing site, can be re-identified "
+            "in the anonymous Twitter graph with only a 12% error rate. Our de-anonymization algorithm is "
+            "based purely on the network topology, does not require creation of a large number of dummy "
+            "\"sybil\" nodes, is robust to noise and all existing defenses, and works even when the overlap "
+            "between the target network and the adversary's auxiliary information is small.",
         "keywords": "data mining, data privacy, graph theory, social networking (online)"
         }
 ```
 
 #### Run (SP)
+
+Just import the classifier and run it:
 
 ```python
 import classifier.classifier as CSO
@@ -164,6 +167,8 @@ print(result)
 To observe the available settings please refer to the [Parameters](#parameters) section.
 
 #### Sample Output (SP)
+
+As output the classifier returns a dictionary with four components: (i) syntactic, (ii) semantic, (iii) union, and (iv) enhanced. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas.
 
 ```json
 {
@@ -246,6 +251,8 @@ To observe the available settings please refer to the [Parameters](#parameters) 
 
 #### Sample Input (BM)
 
+The sample input is a dictionary of dictionaries. Each key is a paper id (example id1, see below) and its value is itself a dictionary containing title, abstract and keywords.
+
 ```json
 papers = {
     "id1": {
@@ -263,6 +270,8 @@ papers = {
 
 #### Run (BM)
 
+Import the python script and run the classifier:
+
 ```python
 import classifier.classifier as CSO
 result = CSO.run_cso_classifier_batch_mode(papers, modules = "both", enhancement = "first")
@@ -272,6 +281,8 @@ print(result)
 To observe the available settings please refer to the [Parameters](#parameters) section.
 
 #### Sample Output (BM)
+
+As output the classifier returns a dictionary of dictionaries. For each classified paper (identified by their id), it returns a dictionary containing four components: (i) syntactic, (ii) semantic, (iii) union, and (iv) enhanced. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas.
 
 ```json
 {
