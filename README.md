@@ -1,137 +1,330 @@
 # CSO-Classifier
 
-Script that classifes content from scientific papers with the topics of the [Computer Science Ontology (CSO)](https://cso.kmi.open.ac.uk). Being able to synthesize the content of papers, allows to perform different kinds of analytics:
-* Trend analysis
-* Recommender systems
-* Find authors’ topics of interest
-* Topic analysis
+## Abstract
 
+Classifying research papers according to their research topics is an important task to improve their retrievability, assist the creation of smart analytics, and support a variety of approaches for analysing and making sense of the research environment. In this repository, we present the CSO Classifier, a new unsupervised approach for automatically classifying research papers according to the [Computer Science Ontology (CSO)](https://cso.kmi.open.ac.uk), a comprehensive ontology of research areas in the field of Computer Science. The CSO Classifier takes as input the metadata associated with a research paper (title, abstract, keywords) and returns a selection of research concepts drawn from the ontology. The approach was evaluated on a gold standard of manually annotated articles yielding a significant improvement over alternative methods.
+
+## Table of contents
+
+<!--ts-->
+* [Abstract](#abstract)
+* [Table of contents](#table-of-contents)
+* [About](#about)
+* [Requirements](#requirements)
+* [Releases](#releases)
+  * [v2.1](#v21)
+  * [v2.0](#v20)
+  * [v1.0](#v10)
+* [List of Files](#list-of-files)
+* [Word2vec model and token-to-cso-combined file generation](#word2vec-model-and-token-to-cso-combined-file-generation)
+  * [Word Embedding generation](#word-embedding-generation)
+  * [token-to-cso-combined file](#token-to-cso-combined-file)
+* [Usage examples](#usage-examples)
+  * [Classifying a single paper (SP)](#classifying-a-single-paper-sp)
+  * [Classifying in batch mode (BM)](#classifying-in-batch-mode-bm)
+  * [Parameters](#parameters)
+* [License](#license)
+* [References](#references)
+<!--te-->
 
 ## About
 
-If you use the CSO classfier in your research or work and would like to cite the SKM3 Application Programming Interface, we suggest you cite the [CSO portal paper](http://skm.kmi.open.ac.uk/the-computer-science-ontology-a-large-scale-taxonomy-of-research-areas/).
+The CSO Classifier is a novel application that takes as input the text from abstract, title, and keywords of a research paper and outputs a list of relevant concepts from CSO. It consists of two main components: (i) the syntactic module and (ii) the semantic module. Figure 1 depicts its architecture. The syntactic module parses the input documents and identifies CSO concepts that are explicitly referred in the document. The semantic module uses part-of-speech tagging to identify promising terms and then exploits word embeddings to infer semantically related topics. Finally, the CSO Classifier combines the results of these two modules and enhances them by including relevant super-areas.
 
-## Framework
-![Framework of CSO Classifier](/pics/framework.png "Framework of CSO Classifier")
+![Framework of CSO Classifier](/images/Workflow.png "Framework of CSO Classifier")
+**Figure 1**: Framework of CSO Classifier
 
 ## Requirements
+
 1. Ensure you have [**Python 3**](https://www.python.org/downloads/) installed.
 2. Install the necessary depepencies by executing the following command:```pip install -r requirements.txt```
-3. Download NLP datasets by running the following line  within your Python 3 interpreter: ```import nltk; nltk.download('stopwords');```
+3. Download English package for spaCy using ```python -m spacy download en_core_web_sm```
 
-## In depth
-1. The algorithm firstly preprocesses the content of each paper: removes punctuation and stop words.
-2. Then, it parses the text to find n-grams (unigram, bigrams and trigrams) that match, with a certain degree of similarity (default: Levenshtein >= 0.85), with the topics within the Computer Science Ontology.
-3. Thirdly, it adds more broader generic topics, based on the ones retrieved in Step 2. It exploits the _skos:broaderGeneric_ relationships within the CSO. A more broader topic is included if a certain amount of narrower topics (default: num_narrower = 2) are in the initial set of topics. The selcgtion of more broader generic topics can be achieved in two ways:
-  * select just the first broader topic, or in other words the direct broaders of the topics extracted from the paper;
-  * select the whole tree from the first broader topic up until the root of the ontology.
-4. Lastly, it cleans the output removing statistic values, and removes similar topics using the _relatedEquivalent_ within the CSO.
+## Releases
 
-## Choosing the Ontology
-In the repository you can find two versions of the CSO (_ComputerScienceOntology.csv_):
+Here we list the available releases for the CSO Classifier. These releses are available for download both from [Github](https://github.com/angelosalatino/cso-classifier/releases) and [Zenodo](10.5281/zenodo.2660819).
 
-```python
-# Version 1: 15K topics and 90K relationships
-file = "ComputerScienceOntology.csv"
-```
-or
-```python
-# Version 2: 26K topics and 226K relationships
-file = "ComputerScienceOntology_v2.csv"
-```
+### v2.1
+This new release (version v2.1) makes the CSO Classifier more scalable. Compared to its previous version (v2.0), the classifier relies on a cached word2vec model which connects the words within the model vocabulary directly with the CSO topics. Thanks to this cache, the classifier is able to quickly retrieve all CSO topics that could be inferred by given tokens, speeding up the processing time. In addition, this cache is lighter (~64M) compared to the actual word2vec model (~366MB), which allows to save additional time at loading time.
+
+Thanks to this improvement the CSO Classifier is around 24x faster and can be easily run on large corpus of scholarly data.
+
+Download from:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2689440.svg)](https://doi.org/10.5281/zenodo.2689440)
 
 
-## Instance
-Input:
+### v2.0
+
+The second version (v2.0) implements the CSO Classifier as described in the [about section](#about). It combines the results of the syntactic and semantic modules, and then it enriches it with their supertopics. Compared to [v1.0](#v10), it adds a semantic layer that allows to generate a more comprehensive result, identifying research topics that are not explicitely available in the metadata. The semantic module relies on a Word2vec model trained on over 4.5M papers in _Computer Science_. [Below](#word-embedding-generation) we show more in detail how we trained such model. In this version of the classifier, we [pickled](https://docs.python.org/3.6/library/pickle.html) the model to speed-up the process of loading into memory (~4.5 times faster).
+
+> Salatino, A.A., Osborne, F., Thanapalasingam, T. and Motta, E. 2018. The CSO Classifier: Ontology-Driven Detection of Research Topics in Scholarly Articles. [Available in Pre-Print here](http://skm.kmi.open.ac.uk/the-cso-classifier-ontology-driven-detection-of-research-topics-in-scholarly-articles/)
+
+Download from:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2661834.svg)](https://doi.org/10.5281/zenodo.2661834)
+
+### v1.0
+
+The first version (v1.0) of the CSO Classifier is an implementations of the syntactic module, which was also previously used to support the semi-automatic annotation of proceedings at Springer Nature [[1]](#references). This classifier aims at syntactically match n-grams (unigrams, bigrams and trigrams) of the input document with concepts within CSO.
+
+More details about this version of the classifier can be found within: 
+> Salatino, A.A., Thanapalasingam, T., Mannocci, A., Osborne, F. and Motta, E. 2018. Classifying Research Papers with the Computer Science Ontology. ISWC-P&D-Industry-BlueSky 2018 (2018). [Read more](http://oro.open.ac.uk/55908/)
+
+Download from:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2661834.svg)](https://doi.org/10.5281/zenodo.2661834)
+
+## List of Files
+
+* **CSO-Classifier.ipynb**: :page_facing_up: Python notebook for executing the classifier
+* **requirements.txt**: :page_facing_up: File containing the necessary libraries to run the classifier
+* **images**: :file_folder: folder containing some pictures, e.g., the workflow showed above
+* **classifier**: :file_folder: Folder containing the main functionalities of the classifier
+  * **classifier.py**: :page_facing_up: contains the function for running the CSO Classifier
+  * **syntacticmodule.py**: :page_facing_up: functionalities that implement the syntactic module
+  * **semanticmodule.py**: :page_facing_up: functionalities that implement the semantic module
+  * **misc.py**: :page_facing_up: some miscellaneous functionalities
+  * **models**: :file_folder: Folder containing the word2vec model and CSO
+    * **cso.csv**: :page_facing_up: file containing the Computer Science Ontology in csv
+    * **cso.p**: :page_facing_up: serialised file containing the Computer Science Ontology (pickled)
+    * **token-to-cso-combined.json**: :page_facing_up: file containing the cached word2vec model. This json file contains a dictionary in which each token of the corpus vocabulary, has been mapped with the corresponding CSO topics. Below we explain how this file has been generated.
+
+## Word2vec model and token-to-cso-combined file generation
+
+In this section, we describe how we generated the word2vec model used within the CSO Classifier and what is the token-to-cso-combined file.
+
+### Word Embedding generation
+
+We applied the word2vec approach [[2,3]](#references) to a collection of text from the Microsoft Academic Graph (MAG)  for generating word embeddings. MAG is a scientific knowledge base and a heterogeneous graph containing scientific publication records, citation relationships, authors, institutions, journals, conferences, and fields of study. It is the largest dataset of scholarly data publicly available, and, as of December 2018, it contains more than 210 million publications.
+
+We first downloaded titles, and abstracts of 4,654,062 English papers in the field of Computer Science. Then we pre-processed the data by replacing spaces with underscores in all n-grams matching the CSO topic labels (e.g., “digital libraries” became “digital_libraries”) and for frequent bigrams and trigrams (e.g., “highest_accuracies”, “highly_cited_journals”). These frequent n-grams were identified by analysing combinations of words that co-occur together, as suggested in [[2]](#references) and using the parameters showed in Table 1. Indeed, while it is possible to obtain the vector of a n-gram by averaging the embedding vectors of all it words, the resulting representation usually is not as good as the one obtained by considering the n-gram as a single word during the training phase.
+
+Finally, we trained the word2vec model using the parameters provided in Table 2. The parameters were set to these values after testing several combinations.
+
+| min-count  |  threshold |
+|---|---|
+| 5  | 10  |
+
+**Table 1**: Parameters used during the collocation words analysis
+
+
+| method  |  emb. size | window size | min count cutoff |
+|---|---|---|---|
+| skipgram  | 128  |  10 |  10 |
+
+**Table 2**: Parameters used for training the word2vec model.
+
+
+After training the model, we obtained a **gensim.models.keyedvectors.Word2VecKeyedVectors** object weighing **366MB**. You can download the model [from here](https://cso.kmi.open.ac.uk/download/model.p).
+
+The size of the model hindered the performance of the classifier in two ways. Firstly, it required several seconds to be loaded into memory. This was partially fixed by serialising the model file (using python pickle, see version v2.0 of CSO Classifier, ~4.5 times faster). Secondly, while processing a document, the classifier needs to retrieve the top 10 similar words for all tokens, and compare them with CSO topics. In performing such operation, the model would recquire several seconds, becoming a bottleneck for the classification process.
+
+To this end, we decided to create a cached model (**token-to-cso-combined.json**) which is a dictionary that directly connects all token available in the vocabulary of the model with the CSO topics. This strategy allows to quickly retrieve all CSO topics that can be inferred by a particular token.
+
+### token-to-cso-combined file
+
+To generate this file, we collected all the set of words available within the vocabulary of the model. Then iterating on each word, we retrieved its top 10 similar words from the model, and we computed their Levenshtein similarity against all CSO topics. If the similarity was above 0.7, we created a record which stored all CSO topics triggered by the initial word.
+
+## Usage examples
+
+In this section, we explain how to run the CSO Classifier to classify a single or multiple (_batch mode_) papers.
+
+### Classifying a single paper (SP)
+
+#### Sample Input (SP)
+
+The sample input is a dictionary containing title, abstract and keywords as keys:
 ```json
-paper = {"title": "Detection of Embryonic Research Topics by Analysing Semantic Topic Networks",
-         "abstract": "Being aware of new research topics is an important asset for anybody involved in the research environment, including researchers, academic publishers and institutional funding bodies. In recent years, the amount of scholarly data available on the web has increased steadily, allowing the development of several approaches for detecting emerging research topics and assessing their trends. However, current methods focus on the detection of topics which are already associated with a label or a substantial number of documents. In this paper, we address instead the issue of detecting embryonic topics, which do not possess these characteristics yet. We suggest that it is possible to forecast the emergence of novel research topics even at such early stage and demonstrate that the emergence of a new topic can be anticipated by analysing the dynamics of pre-existing topics. We present an approach to evaluate such dynamics and an experiment on a sample of 3 million research papers, which confirms our hypothesis. In particular, we found that the pace of collaboration in sub-graphs of topics that will give rise to novel topics is significantly higher than the one in the control group.",
-         "keywords": "Scholarly Data, Research Trend Detection, Topic Emergence Detection, Topic Discovery, Semantic Web, Ontology"
+paper = {
+        "title": "De-anonymizing Social Networks",
+        "abstract": "Operators of online social networks are increasingly sharing potentially "
+            "sensitive information about users and their relationships with advertisers, application "
+            "developers, and data-mining researchers. Privacy is typically protected by anonymization, "
+            "i.e., removing names, addresses, etc. We present a framework for analyzing privacy and "
+            "anonymity in social networks and develop a new re-identification algorithm targeting "
+            "anonymized social-network graphs. To demonstrate its effectiveness on real-world networks, "
+            "we show that a third of the users who can be verified to have accounts on both Twitter, a "
+            "popular microblogging service, and Flickr, an online photo-sharing site, can be re-identified "
+            "in the anonymous Twitter graph with only a 12% error rate. Our de-anonymization algorithm is "
+            "based purely on the network topology, does not require creation of a large number of dummy "
+            "\"sybil\" nodes, is robust to noise and all existing defenses, and works even when the overlap "
+            "between the target network and the adversary's auxiliary information is small.",
+        "keywords": "data mining, data privacy, graph theory, social networking (online)"
         }
 ```
 
-Running the classifier:
+#### Run (SP)
+
+Just import the classifier and run it:
+
 ```python
-# cso is a dictionary loaded beforehand
-# num_narrower = 1, include all the broader topics having at least one narrower topic matched in the paper
-# min_similarity = 0.9, more precise similarity between n-grams and topics has been requested
-# climb_ont = 'jfb', it adds 'just the first broader topic'. The other option available is 'wt' as it adds the whole tree up until the root. 
-# verbose = True, it returns the result in a verbose way. It reports the different statistics associated with matches.
-result = CSO.cso_classifier(PAPER, cso, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfp', verbose=True)
-print(json.dumps(result))
+import classifier.classifier as CSO
+result = CSO.run_cso_classifier(paper, modules = "both", enhancement = "first")
+print(result)
 ```
-Result (variable **_result_**):
+
+To observe the available settings please refer to the [Parameters](#parameters) section.
+
+#### Sample Output (SP)
+
+As output the classifier returns a dictionary with four components: (i) syntactic, (ii) semantic, (iii) union, and (iv) enhanced. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas.
+
 ```json
-{  
-   "semantics":[  
-      {  
-         "matched":"semantic",
-         "similarity":0.9411764705882353
-      },
-      {  
-         "matched":"semantic",
-         "similarity":0.9411764705882353
-      },
-      {  
-         "matched":2,
-         "broader of":[  
-            "ontology",
-            "semantic web"
-         ]
-      }
-   ],
-   "semantic":[  
-      {  
-         "matched":"semantic",
-         "similarity":1.0
-      },
-      {  
-         "matched":"semantic",
-         "similarity":1.0
-      },
-      {  
-         "matched":2,
-         "broader of":[  
-            "ontology",
-            "semantic web"
-         ]
-      }
-   ],
-   "ontology":[  
-      {  
-         "matched":"ontology",
-         "similarity":1.0
-      }
-   ],
-   "semantic web":[  
-      {  
-         "matched":"semantic web",
-         "similarity":1.0
-      }
-   ],
-   "world wide web":[  
-      {  
-         "matched":1,
-         "broader of":[  
-            "semantic web"
-         ]
-      }
-   ]
+{
+    "syntactic": [
+        "sensitive informations",
+        "graph theory",
+        "real-world networks",
+        "network topology",
+        "social networks",
+        "anonymity",
+        "anonymization",
+        "twitter",
+        "microblogging",
+        "privacy",
+        "data privacy",
+        "online social networks",
+        "data mining"
+    ],
+    "semantic": [
+        "social networks",
+        "online social networks",
+        "data mining",
+        "privacy",
+        "data privacy",
+        "anonymization",
+        "anonymity",
+        "twitter",
+        "microblogging",
+        "topology",
+        "network topology",
+        "graph theory",
+        "network architecture",
+        "network structures",
+        "social networking sites",
+        "association rules",
+        "micro-blog"
+    ],
+    "union": [
+        "sensitive informations",
+        "social networking sites",
+        "micro-blog",
+        "network architecture",
+        "graph theory",
+        "social networks",
+        "network topology",
+        "real-world networks",
+        "topology",
+        "anonymity",
+        "anonymization",
+        "association rules",
+        "twitter",
+        "microblogging",
+        "network structures",
+        "privacy",
+        "data privacy",
+        "online social networks",
+        "data mining"
+    ],
+    "enhanced": [
+        "complex networks",
+        "privacy preserving",
+        "world wide web",
+        "theoretical computer science",
+        "social media",
+        "network protocols",
+        "access control",
+        "security of data",
+        "online systems",
+        "electric network topology",
+        "computer science",
+        "facebook",
+        "network security",
+        "neural networks",
+        "authentication"
+    ]
 }
 ```
 
-and then cleaning the result:
-```python
-result = CSO.cso_classifier(PAPER, cso, format='json', num_narrower=1, min_similarity=0.9, climb_ont='jfp', verbose=False)
-print(json.dumps(result))
+### Classifying in batch mode (BM)
+
+#### Sample Input (BM)
+
+The sample input is a dictionary of dictionaries. Each key is a paper id (example id1, see below) and its value is itself a dictionary containing title, abstract and keywords.
+
+```json
+papers = {
+    "id1": {
+        "title": "De-anonymizing Social Networks",
+        "abstract": "Operators of online social networks are increasingly sharing potentially sensitive information about users and their relationships with advertisers, application developers, and data-mining researchers. Privacy is typically protected by anonymization, i.e., removing names, addresses, etc. We present a framework for analyzing privacy and anonymity in social networks and develop a new re-identification algorithm targeting anonymized social-network graphs. To demonstrate its effectiveness on real-world networks, we show that a third of the users who can be verified to have accounts on both Twitter, a popular microblogging service, and Flickr, an online photo-sharing site, can be re-identified in the anonymous Twitter graph with only a 12% error rate. Our de-anonymization algorithm is based purely on the network topology, does not require creation of a large number of dummy \"sybil\" nodes, is robust to noise and all existing defenses, and works even when the overlap between the target network and the adversary's auxiliary information is small.",
+        "keywords": "data mining, data privacy, graph theory, social networking (online)"
+    },
+    "id2": {
+        "title": "Title of sample paper id2",
+        "abstract": "Abstract of sample paper id2",
+        "keywords": "keyword1, keyword2, ..., keywordN"
+    }
+}
 ```
 
-List of final topics (variable **_result_**):
-```json
-[  
-   "ontology-based",
-   "semantic web technologies",
-   "semantics",
-   "world wide web"
-]
+#### Run (BM)
+
+Import the python script and run the classifier:
+
+```python
+import classifier.classifier as CSO
+result = CSO.run_cso_classifier_batch_mode(papers, modules = "both", enhancement = "first")
+print(result)
 ```
+
+To observe the available settings please refer to the [Parameters](#parameters) section.
+
+#### Sample Output (BM)
+
+As output the classifier returns a dictionary of dictionaries. For each classified paper (identified by their id), it returns a dictionary containing four components: (i) syntactic, (ii) semantic, (iii) union, and (iv) enhanced. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas.
+
+```json
+{
+    "id1": {
+        "syntactic": [
+            "sensitive informations","graph theory", "real-world networks", "network topology", "social networks", "anonymity", "anonymization", "twitter", "microblogging", "privacy", "data privacy", "online social networks", "data mining"
+        ],
+        "semantic": [
+            "social networks", "online social networks", "data mining", "privacy", "data privacy", "anonymization", "anonymity", "twitter", "microblogging", "topology", "network topology", "graph theory", "network architecture", "network structures", "social networking sites", "association rules", "micro-blog"
+        ],
+        "union": [
+            "sensitive informations", "social networking sites", "micro-blog", "network architecture", "graph theory", "social networks", "network topology", "real-world networks", "topology", "anonymity", "anonymization", "association rules", "twitter", "microblogging", "network structures", "privacy", "data privacy", "online social networks", "data mining"
+        ],
+        "enhanced": [
+            "complex networks", "privacy preserving", "world wide web", "theoretical computer science", "social media", "network protocols", "access control", "security of data", "online systems", "electric network topology", "computer science", "facebook", "network security", "neural networks", "authentication"
+        ]
+    },
+    "id2": {
+        "syntactic": [...],
+        "semantic": [...],
+        "union": [...],
+        "enhanced": [...]
+    }
+}
+```
+
+### Parameters
+Beside the paper(s), the function running the CSO Classifier accepts two additional parameters: (i) **modules** and (ii) **enhancement**. Both parameters are strings that define a particular behaviour for the classifier.
+
+(1) The parameter *modules* can be either "syntactic", "semantic", or "both". Using the value "syntactic", the classifier will run only the syntactic module. Using the "semantic" value, instead, the classifier will use only the semantic module. Finally, using "both", the classifier will run both syntactic and semantic modules and combine their results. The default value for *modules* is *both*.
+
+(2) The parameter *enhancement* can be either "first", "all", or "no". This parameters controls whether the classifier will try to infer, given a topic (e.g., Linked Data), only the direct super-topics (e.g., Semantic Web) or all its super-topics (e.g., Semantic Web, WWW, Computer Science). Using "first" as value, it will infer only the direct super topics. Instead, if using "all", the classifier will infer all its super-topics. Using "no" the classifier will not perform any enhancement. The default value for *enhancement* is *first*.
+
+
+## License
+
+[Apache 2.0](https://choosealicense.com/licenses/apache-2.0/)
+
+## References
+
+[1] Osborne, F., Salatino, A., Birukou, A. and Motta, E. 2016. Automatic Classification of Springer Nature Proceedings with Smart Topic Miner. The Semantic Web -- ISWC 2016. 9982 LNCS, (2016), 383–399. DOI:https://doi.org/10.1007/978-3-319-46547-0_33
+
+[2] Mikolov, T., Chen, K., Corrado, G. and Dean, J. 2013. Efficient Estimation of Word Representations in Vector Space. (Jan. 2013).
+
+[3] Mikolov, T., Chen, K., Corrado, G. and Dean, J. 2013. Distributed Representations of Words and Phrases and their Compositionality. Advances in neural information processing systems. 3111–3119.
