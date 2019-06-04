@@ -249,7 +249,7 @@ class CSOClassifierSemantic:
             x = range(1,len(vals)+1) 
             kn = KneeLocator(x, vals, direction='decreasing')
             if kn.knee is None:
-                print("I performed a different identification of knee")
+                #print("I performed a different identification of knee")
                 kn = KneeLocator(x, vals, curve='convex', direction='decreasing')
         except ValueError:
             pass
