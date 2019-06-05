@@ -20,11 +20,12 @@ import csv as co
 import json
 
 #some global variables
-CSO_PATH = "classifier/models/cso.csv"
-CSO_PICKLE_PATH = "classifier/models/cso.p"
-MODEL_PICKLE_PATH = "classifier/models/model.p"
+dir = os.path.dirname(os.path.realpath(__file__))
+CSO_PATH = f"{dir}/models/cso.csv"
+CSO_PICKLE_PATH = f"{dir}/models/cso.p"
+MODEL_PICKLE_PATH = f"{dir}/models/model.p"
 MODEL_PICKLE_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/model.p"
-CACHED_MODEL = "classifier/models/token-to-cso-combined.json"
+CACHED_MODEL = f"{dir}/models/token-to-cso-combined.json"
 CACHED_MODEL_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/token-to-cso-combined.json"
 
 def load_cso():
