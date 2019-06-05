@@ -5,6 +5,12 @@ Created on Thu Nov 22 11:38:18 2018
 
 @author: angelosalatino
 """
+import nltk
+import re
+from nltk import everygrams
+from kneed import KneeLocator
+import spacy
+import warnings
 
 
 class CSOClassifierSemantic:
@@ -53,11 +59,6 @@ class CSOClassifierSemantic:
  
     
     def classify_semantic(self):
-        import nltk
-        import re
-        from nltk import everygrams
-        from kneed import KneeLocator
-        import spacy
         """Function that classifies the paper on a semantic level. This semantic module follows four steps: 
             (i) entity extraction, 
             (ii) CSO concept identification, 
@@ -70,7 +71,8 @@ class CSOClassifierSemantic:
         Returns:
             final_topics (list): list of identified topics.
         """
-        
+        #### suppressing some warnings that can be raised by the kneed library
+        warnings.filterwarnings("ignore")
         
         
         ##################### Tokenizer with spaCy.io
@@ -249,7 +251,7 @@ class CSOClassifierSemantic:
             x = range(1,len(vals)+1) 
             kn = KneeLocator(x, vals, direction='decreasing')
             if kn.knee is None:
-                print("I performed a different identification of knee")
+                #print("I performed a different identification of knee")
                 kn = KneeLocator(x, vals, curve='convex', direction='decreasing')
         except ValueError:
             pass
