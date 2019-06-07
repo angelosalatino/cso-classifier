@@ -18,6 +18,7 @@ import numpy as np
 from hurry.filesize import size
 import csv as co
 import json
+from itertools import islice
 
 #some global variables
 dir = os.path.dirname(os.path.realpath(__file__))
@@ -197,7 +198,8 @@ def check_cached_model():
     
     if not os.path.exists(CACHED_MODEL):
         print('[*] Beginning download of cached model from', CACHED_MODEL_REMOTE_URL)
-        download_file(CACHED_MODEL_REMOTE_URL, CACHED_MODEL)  
+        download_file(CACHED_MODEL_REMOTE_URL, CACHED_MODEL) 
+        
         
 def download_file(url, filename):
     """Function that downloads the model from the web.
@@ -328,6 +330,13 @@ def get_broader_of_topics(cso, found_topics, all_broaders):
 
     return all_broaders
 
+def chunks(data, size):
+    """Yield successive n-sized chunks from l."""
+    
+    # https://stackoverflow.com/questions/22878743/how-to-split-dictionary-into-multiple-dictionaries-fast
+    it = iter(data)
+    for i in range(0, len(data), size):
+        yield {k:data[k] for k in islice(it, size)}
 
 def get_network(cso, found_topics):
     """Function that extracts the network from a given set of topics.
