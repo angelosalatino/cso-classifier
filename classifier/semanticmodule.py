@@ -71,10 +71,7 @@ class CSOClassifierSemantic:
         Returns:
             final_topics (list): list of identified topics.
         """
-        #### suppressing some warnings that can be raised by the kneed library
-        warnings.filterwarnings("ignore")
-        
-        
+
         ##################### Tokenizer with spaCy.io
         
         nlp = spacy.load('en_core_web_sm')
@@ -91,7 +88,6 @@ class CSOClassifierSemantic:
         ##################### Applying grammar
         
         GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<NN.*>+}"
-#        GRAMMAR = "DBW_CONCEPT: {<HYP.*|JJ.*>*<HYP.*|NN.*>+}"
         grammar_parser = nltk.RegexpParser(GRAMMAR)
         
         pos_tags_with_grammar = grammar_parser.parse(pos_tags)
@@ -247,6 +243,9 @@ class CSOClassifierSemantic:
         for tp in sort_t:
             vals.append(tp[1]) #in 0, there is the topic, in 1 there is the info
         
+        
+        #### suppressing some warnings that can be raised by the kneed library
+        warnings.filterwarnings("ignore")
         try:
             x = range(1,len(vals)+1) 
             kn = KneeLocator(x, vals, direction='decreasing')
