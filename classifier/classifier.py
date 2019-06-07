@@ -121,9 +121,10 @@ def run_cso_classifier_batch_mode(papers, modules = "both", enhancement = "first
         
         # In this case we avoiu computing other fields. We select only title, abstract and keywords
         paper = dict()
-        paper["title"] = paper_value["title"]
-        paper["abstract"] = paper_value["abstract"]
-        paper["keywords"] = ', '.join(paper_value["keywords"])
+
+        paper["title"] = paper_value["title"] if "title" in paper_value and not paper_value["title"] is None else ""
+        paper["abstract"] = paper_value["abstract"] if "abstract" in paper_value and not paper_value["abstract"] is None else ""
+        paper["keywords"] = ', '.join(paper_value["keywords"]) if "keywords" in paper_value and not paper_value["keywords"] is None else ""
         
         class_res[paper_id] = dict()
         class_res[paper_id]["syntactic"] = list()
