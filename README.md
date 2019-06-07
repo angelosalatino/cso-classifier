@@ -14,6 +14,7 @@ Classifying research papers according to their research topics is an important t
 * [About](#about)
 * [Requirements](#requirements)
 * [Releases](#releases)
+  * [v2.2](#v22)
   * [v2.1](#v21)
   * [v2.0](#v20)
   * [v1.0](#v10)
@@ -46,6 +47,15 @@ The CSO Classifier is a novel application that takes as input the text from abst
 
 Here we list the available releases for the CSO Classifier. These releases are available for download both from [Github](https://github.com/angelosalatino/cso-classifier/releases) and [Zenodo](10.5281/zenodo.2660819).
 
+### v2.2
+In this version (release v2.2), we (i) updated the requirements needed to run the classifier, (ii) removed all unnecessary warnings, and (iii) enabled multiprocessing. In particular, we removed all useless requirements that were installed in development mode, by cleaning the _requirements.txt_ file. 
+When computing certain research papers, the classifier display warnings raised by the [kneed library](https://pypi.org/project/kneed/). Since the classifier can automatically adapt to such warnings, we decided to hide them and prevent users from being concerned about such outcome.
+This version of the classifier provides improved **scalablibility** through multiprocessing. Once the number of workers is set (i.e. num_workers >= 1), each worker will be given a copy of the CSO Classifier with a chunk of the corpus to process. Then, the results will be aggregated once all processes are completed. Please be aware that this function is only available in batch mode. See section [Classifying in batch mode (BM)](#classifying-in-batch-mode-bm) for more details.
+
+Download from:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2660819.svg)](https://doi.org/10.5281/zenodo.2660819)
+
 ### v2.1
 This new release (version v2.1) makes the CSO Classifier more scalable. Compared to its previous version (v2.0), the classifier relies on a cached word2vec model which connects the words within the model vocabulary directly with the CSO topics. Thanks to this cache, the classifier is able to quickly retrieve all CSO topics that could be inferred by given tokens, speeding up the processing time. In addition, this cache is lighter (~64M) compared to the actual word2vec model (~366MB), which allows to save additional time at loading time.
 
@@ -54,7 +64,6 @@ Thanks to this improvement the CSO Classifier is around 24x faster and can be ea
 Download from:
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2689440.svg)](https://doi.org/10.5281/zenodo.2689440)
-
 
 ### v2.0
 
@@ -276,7 +285,7 @@ Import the python script and run the classifier:
 
 ```python
 import classifier.classifier as CSO
-result = CSO.run_cso_classifier_batch_mode(papers, modules = "both", enhancement = "first")
+result = CSO.run_cso_classifier_batch_mode(papers, workers = 1, modules = "both", enhancement = "first")
 print(result)
 ```
 
@@ -312,11 +321,21 @@ As output the classifier returns a dictionary of dictionaries. For each classifi
 ```
 
 ### Parameters
-Beside the paper(s), the function running the CSO Classifier accepts two additional parameters: (i) **modules** and (ii) **enhancement**. Both parameters are strings that define a particular behaviour for the classifier.
+Beside the paper(s), the function running the CSO Classifier accepts three additional parameters: (i) **workers**, (ii) **modules**, and (iii) **enhancement**. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier.
 
-(1) The parameter *modules* can be either "syntactic", "semantic", or "both". Using the value "syntactic", the classifier will run only the syntactic module. Using the "semantic" value, instead, the classifier will use only the semantic module. Finally, using "both", the classifier will run both syntactic and semantic modules and combine their results. The default value for *modules* is *both*.
+(1) The parameter *workers* defines the number of thread to run for classifying the input corpus. For instance, if workers is set to 4. There will be 4 instances of the CSO Classifier, each one receiving a chunk (equally split) of the corpus to process. Once all processes are completed, the results will be aggregated and returned. The default value for *workers* is *1*. This parameter is available only in *batch mode*.
 
-(2) The parameter *enhancement* can be either "first", "all", or "no". This parameters controls whether the classifier will try to infer, given a topic (e.g., Linked Data), only the direct super-topics (e.g., Semantic Web) or all its super-topics (e.g., Semantic Web, WWW, Computer Science). Using "first" as value, it will infer only the direct super topics. Instead, if using "all", the classifier will infer all its super-topics. Using "no" the classifier will not perform any enhancement. The default value for *enhancement* is *first*.
+(2) The parameter *modules* can be either "syntactic", "semantic", or "both". Using the value "syntactic", the classifier will run only the syntactic module. Using the "semantic" value, instead, the classifier will use only the semantic module. Finally, using "both", the classifier will run both syntactic and semantic modules and combine their results. The default value for *modules* is *both*.
+
+(3) The parameter *enhancement* can be either "first", "all", or "no". This parameters controls whether the classifier will try to infer, given a topic (e.g., Linked Data), only the direct super-topics (e.g., Semantic Web) or all its super-topics (e.g., Semantic Web, WWW, Computer Science). Using "first" as value, it will infer only the direct super topics. Instead, if using "all", the classifier will infer all its super-topics. Using "no" the classifier will not perform any enhancement. The default value for *enhancement* is *first*.
+
+| Parameter  |  Single Paper | Batch Mode |
+|---|---|---|
+| workers  | :x:  | :white_check_mark: |
+| modules  | :white_check_mark:  | :white_check_mark: |
+| enhancement  | :white_check_mark:  | :white_check_mark: |
+
+**Table 3**: Parameters availability when using CSO Classifier
 
 
 ## License
