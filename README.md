@@ -95,80 +95,75 @@ To observe the available settings please refer to the [Parameters](#parameters) 
 
 #### Sample Output (SP)
 
-As output the classifier returns a dictionary with four components: (i) syntactic, (ii) semantic, (iii) union, and (iv) enhanced. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas.
+As output the classifier returns a dictionary with four components: (i) syntactic, (ii) semantic, (iii) union, and (iv) enhanced. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. *Please be aware that the results may change according to the version of Computer Science Ontology.*
 
 ```json
 {
     "syntactic": [
+        "twitter",
         "sensitive informations",
         "graph theory",
-        "real-world networks",
-        "network topology",
-        "social networks",
-        "anonymity",
-        "anonymization",
-        "twitter",
-        "microblogging",
-        "privacy",
-        "data privacy",
+        "data mining",
         "online social networks",
-        "data mining"
+        "real-world networks",
+        "privacy",
+        "social networks",
+        "micro-blog",
+        "anonymization",
+        "data privacy",
+        "topology",
+        "anonymity"
     ],
     "semantic": [
         "social networks",
         "online social networks",
+        "sensitive informations",
         "data mining",
         "privacy",
         "data privacy",
         "anonymization",
         "anonymity",
         "twitter",
-        "microblogging",
+        "micro-blog",
         "topology",
-        "network topology",
         "graph theory",
-        "network architecture",
-        "network structures",
+        "social media",
         "social networking sites",
-        "association rules",
-        "micro-blog"
+        "network architecture",
+        "online communities",
+        "social graphs"
     ],
     "union": [
-        "sensitive informations",
-        "social networking sites",
-        "micro-blog",
-        "network architecture",
-        "graph theory",
-        "social networks",
-        "network topology",
-        "real-world networks",
-        "topology",
-        "anonymity",
-        "anonymization",
-        "association rules",
         "twitter",
-        "microblogging",
-        "network structures",
-        "privacy",
-        "data privacy",
+        "social media",
+        "sensitive informations",
+        "graph theory",
+        "data mining",
         "online social networks",
-        "data mining"
+        "real-world networks",
+        "privacy",
+        "social networks",
+        "micro-blog",
+        "anonymity",
+        "social networking sites",
+        "network architecture",
+        "online communities",
+        "social graphs",
+        "anonymization",
+        "data privacy",
+        "topology"
     ],
     "enhanced": [
-        "complex networks",
-        "privacy preserving",
-        "world wide web",
-        "theoretical computer science",
-        "social media",
         "network protocols",
+        "theoretical computer science",
+        "complex networks",
+        "online systems",
+        "privacy preserving",
+        "computer science",
         "access control",
         "security of data",
-        "online systems",
-        "electric network topology",
-        "computer science",
-        "facebook",
         "network security",
-        "neural networks",
+        "world wide web",
         "authentication"
     ]
 }
@@ -209,24 +204,24 @@ To observe the available settings please refer to the [Parameters](#parameters) 
 
 #### Sample Output (BM)
 
-As output the classifier returns a dictionary of dictionaries. For each classified paper (identified by their id), it returns a dictionary containing four components: (i) syntactic, (ii) semantic, (iii) union, and (iv) enhanced. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas.
+As output the classifier returns a dictionary of dictionaries. For each classified paper (identified by their id), it returns a dictionary containing four components: (i) syntactic, (ii) semantic, (iii) union, and (iv) enhanced. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. *Please be aware that the results may change according to the version of Computer Science Ontology.*
 
 ```json
 {
     "id1": {
-        "syntactic": [
-            "sensitive informations","graph theory", "real-world networks", "network topology", "social networks", "anonymity", "anonymization", "twitter", "microblogging", "privacy", "data privacy", "online social networks", "data mining"
-        ],
-        "semantic": [
-            "social networks", "online social networks", "data mining", "privacy", "data privacy", "anonymization", "anonymity", "twitter", "microblogging", "topology", "network topology", "graph theory", "network architecture", "network structures", "social networking sites", "association rules", "micro-blog"
-        ],
-        "union": [
-            "sensitive informations", "social networking sites", "micro-blog", "network architecture", "graph theory", "social networks", "network topology", "real-world networks", "topology", "anonymity", "anonymization", "association rules", "twitter", "microblogging", "network structures", "privacy", "data privacy", "online social networks", "data mining"
-        ],
-        "enhanced": [
-            "complex networks", "privacy preserving", "world wide web", "theoretical computer science", "social media", "network protocols", "access control", "security of data", "online systems", "electric network topology", "computer science", "facebook", "network security", "neural networks", "authentication"
-        ]
-    },
+    "syntactic": [
+        "twitter", "sensitive informations", "graph theory", "data mining", "online social networks", "real-world networks", "privacy", "social networks", "micro-blog", "anonymization", "data privacy", "topology", "anonymity"
+    ],
+    "semantic": [
+        "social networks", "online social networks", "sensitive informations", "data mining", "privacy", "data privacy", "anonymization", "anonymity", "twitter", "micro-blog", "topology", "graph theory", "social media", "social networking sites", "network architecture", "online communities", "social graphs"
+    ],
+    "union": [
+        "twitter", "social media", "sensitive informations", "graph theory", "data mining", "online social networks", "real-world networks", "privacy", "social networks", "micro-blog", "anonymity", "social networking sites", "network architecture", "online communities", "social graphs", "anonymization", "data privacy", "topology"
+    ],
+    "enhanced": [
+        "network protocols", "theoretical computer science", "complex networks", "online systems", "privacy preserving", "computer science", "access control", "security of data", "network security", "world wide web", "authentication"
+    ]
+},
     "id2": {
         "syntactic": [...],
         "semantic": [...],
