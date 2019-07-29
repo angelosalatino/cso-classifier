@@ -28,6 +28,7 @@ Classifying research papers according to their research topics is an important t
 * [Word2vec model and token-to-cso-combined file generation](#word2vec-model-and-token-to-cso-combined-file-generation)
   * [Word Embedding generation](#word-embedding-generation)
   * [token-to-cso-combined file](#token-to-cso-combined-file)
+* [How to Cite CSO Classifier](#how-to-cite-cso-classifier)
 * [License](#license)
 * [References](#references)
 <!--te-->
@@ -345,6 +346,9 @@ To this end, we decided to create a cached model (**token-to-cso-combined.json**
 
 To generate this file, we collected all the set of words available within the vocabulary of the model. Then iterating on each word, we retrieved its top 10 similar words from the model, and we computed their Levenshtein similarity against all CSO topics. If the similarity was above 0.7, we created a record which stored all CSO topics triggered by the initial word.
 
+## How to Cite CSO Classifier
+
+Salatino, A.A., Osborne, F., Thanapalasingam, T., Motta, E.: The CSO Classifier: Ontology-Driven Detection of Research Topics in Scholarly Articles. In: TPDL 2019: 23rd International Conference on Theory and Practice of Digital Libraries. Springer.
 
 ## License
 
