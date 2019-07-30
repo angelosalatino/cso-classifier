@@ -24,6 +24,7 @@ from itertools import islice
 dir = os.path.dirname(os.path.realpath(__file__))
 CSO_PATH = f"{dir}/models/cso.csv"
 CSO_PICKLE_PATH = f"{dir}/models/cso.p"
+CSO_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/cso.csv"
 MODEL_PICKLE_PATH = f"{dir}/models/model.p"
 MODEL_PICKLE_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/model.p"
 CACHED_MODEL = f"{dir}/models/token-to-cso-combined.json"
@@ -174,7 +175,13 @@ def check_ontology():
     
     if not os.path.exists(CSO_PICKLE_PATH):
         print("Ontology pickle file is missing.")
+        
+        if not os.path.exists(CSO_PATH):
+            print("The csv file of the Computer Science Ontology is missing. Attempting to download it now...")
+            download_file(CSO_REMOTE_URL, CSO_PATH) 
+        
         cso = load_cso()
+        
         with open(CSO_PICKLE_PATH, 'wb') as cso_file:
             print("Creating ontology pickle file from a copy of the CSO Ontology found in",CSO_PATH)
             pickle.dump(cso, cso_file)
@@ -216,7 +223,8 @@ def download_file(url, filename):
         total = response.headers.get('content-length')
 
         if total is None:
-            f.write(response.content)
+            #f.write(response.content)
+            print('There was an error while downloading the new version of the ontology.')
         else:
             downloaded = 0
             total = int(total)
@@ -226,8 +234,8 @@ def download_file(url, filename):
                 done = int(50*downloaded/total)
                 sys.stdout.write('\r[{}{}] {}/{}'.format('█' * done, '.' * (50-done), size(downloaded), size(total)))
                 sys.stdout.flush()
-    sys.stdout.write('\n')
-    print('[*] Done!')
+            sys.stdout.write('\n')
+            print('[*] Done!')
 
 
 def get_primary_label(topic, primary_labels):
