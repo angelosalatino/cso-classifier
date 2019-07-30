@@ -20,6 +20,7 @@ Classifying research papers according to their research topics is an important t
   * [Classifying in batch mode (BM)](#classifying-in-batch-mode-bm)
   * [Parameters](#parameters)
 * [Releases](#releases)
+  * [v2.3](#v23)
   * [v2.2](#v22)
   * [v2.1](#v21)
   * [v2.0](#v20)
@@ -253,6 +254,17 @@ Beside the paper(s), the function running the CSO Classifier accepts three addit
 ## Releases
 
 Here we list the available releases for the CSO Classifier. These releases are available for download both from [Github](https://github.com/angelosalatino/cso-classifier/releases) and [Zenodo](10.5281/zenodo.2660819).
+
+### v2.3
+This new release, contains a bug fix and the latest version of the CSO ontology.
+
+Bug Fix: When running in batch mode, the classifier was treating the keyword field as an array instead of string. In this way, instead of processing keywords (separated by comma), it was processing each single letters, hence inferring wrong topics. This now has been fixed. In addition, if the keyword field is actually an array, the classifier will first 'stringify' it and then process it.
+
+We also downloaded and packed the latest version of the CSO ontology.
+
+Download from:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3355629.svg)](https://doi.org/10.5281/zenodo.3355629)
 
 ### v2.2
 In this version (release v2.2), we (i) updated the requirements needed to run the classifier, (ii) removed all unnecessary warnings, and (iii) enabled multiprocessing. In particular, we removed all useless requirements that were installed in development mode, by cleaning the _requirements.txt_ file. 
