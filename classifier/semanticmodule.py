@@ -162,7 +162,7 @@ class CSOClassifierSemantic:
                     sim   = topic_item["sim_w"]
                     
                     
-                    if m >= min_similarity:
+                    if m >= min_similarity and topic in self.cso["topics_wu"]:
                         
     
                         if topic in found_topics:
@@ -227,6 +227,8 @@ class CSOClassifierSemantic:
         unique_topics = {}
         for tp,topic in found_topics.items():
             prim_label = self.get_primary_label(tp,self.cso["primary_labels_wu"])
+            if prim_label == 'network_structures':
+                print('Here I found you:', tp)
             if prim_label in unique_topics:
                 if unique_topics[prim_label] < topic["score"]:
                     unique_topics[prim_label] = topic["score"]
