@@ -18,7 +18,7 @@ def load_requirements(fname):
 
 setuptools.setup(
     name="cso-classifier",
-    version="2.2",
+    version="2.3",
     author="SKM3 Team",
     author_email="kmi-cso@open.ac.uk",
     description="A light-weight Python API for classifying scientific documents with the topics from the Computer Science Ontology (https://cso.kmi.open.ac.uk/home).",
