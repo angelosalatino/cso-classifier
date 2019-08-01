@@ -188,8 +188,8 @@ def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhance
         paper["abstract"] = paper_value["abstract"] if "abstract" in paper_value and not paper_value["abstract"] is None else ""
         paper["keywords"] = paper_value["keywords"] if "keywords" in paper_value and not paper_value["keywords"] is None else ""
         #just in case the value keywords contains an array of keywords
-        if isinstance(paper_value["keywords"], list):
-            paper["keywords"] = ', '.join(paper_value["keywords"])
+        if isinstance(paper["keywords"], list):
+            paper["keywords"] = ', '.join(paper["keywords"])
 
         class_res[paper_id] = dict()
         class_res[paper_id]["syntactic"] = list()
