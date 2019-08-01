@@ -39,19 +39,28 @@ class CSOClassifierSyntactic:
 
         """
 
-        if isinstance(paper, dict):
-            t_paper = paper
-            self.paper = ""
-            for key in list(t_paper.keys()):
-                self.paper = self.paper + t_paper[key] + ". "
-                
-            self.paper = self.paper.strip()
-        elif isinstance(paper, str):
-            self.paper = paper.strip()
+        try:
+            if isinstance(paper, dict):
+                t_paper = paper
+                self.paper = ""
+                try: 
+                    for key in list(t_paper.keys()):
+                        self.paper = self.paper + t_paper[key] + ". "
+                except TypeError:
+                    pass
+                    print(paper)
         
-        else:
-            raise TypeError("Error: Field format must be either 'json' or 'text'")
-            return
+                
+                self.paper = self.paper.strip()
+            elif isinstance(paper, str):
+                self.paper = paper.strip()
+            
+            else:
+                raise TypeError("Error: Field format must be either 'json' or 'text'")
+                return
+        except TypeError:
+            pass
+        
     
     def set_min__similarity(self, msm):
         """Function that sets a different value for the similarity.
