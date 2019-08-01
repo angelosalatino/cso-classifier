@@ -20,6 +20,7 @@ Classifying research papers according to their research topics is an important t
   * [Classifying in batch mode (BM)](#classifying-in-batch-mode-bm)
   * [Parameters](#parameters)
 * [Releases](#releases)
+  * [v2.3.1](#v231)
   * [v2.3](#v23)
   * [v2.2](#v22)
   * [v2.1](#v21)
@@ -254,6 +255,10 @@ Beside the paper(s), the function running the CSO Classifier accepts three addit
 ## Releases
 
 Here we list the available releases for the CSO Classifier. These releases are available for download both from [Github](https://github.com/angelosalatino/cso-classifier/releases) and [Zenodo](10.5281/zenodo.2660819).
+
+### v2.3.1
+
+Bug Fix. Added some exception handles.
 
 ### v2.3
 This new release, contains a bug fix and the latest version of the CSO ontology.
