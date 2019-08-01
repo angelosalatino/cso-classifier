@@ -261,6 +261,11 @@ Here we list the available releases for the CSO Classifier. These releases are a
 
 Version alignement with Pypi. Similar to version 2.3.1.
 
+Download from:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3357768.svg)](https://doi.org/10.5281/zenodo.3357768)
+
+
 ### v2.3.1
 
 Bug Fix. Added some exception handles. 
