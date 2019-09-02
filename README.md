@@ -376,6 +376,8 @@ To generate this file, we collected all the set of words available within the vo
 
 ## How to Cite CSO Classifier
 
+We kindly ask that any published research that makes use of the CSO Classifier cites our paper listed below:
+
 Salatino, A.A., Osborne, F., Thanapalasingam, T., Motta, E.: The CSO Classifier: Ontology-Driven Detection of Research Topics in Scholarly Articles. In: TPDL 2019: 23rd International Conference on Theory and Practice of Digital Libraries. Springer.
 
 ## License
