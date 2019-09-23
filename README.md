@@ -31,6 +31,7 @@ Classifying research papers according to their research topics is an important t
 * [Word2vec model and token-to-cso-combined file generation](#word2vec-model-and-token-to-cso-combined-file-generation)
   * [Word Embedding generation](#word-embedding-generation)
   * [token-to-cso-combined file](#token-to-cso-combined-file)
+* [Use the CSO Classifier in other domains of Science](#use-the-cso-classifier-in-other-domains-of-science)
 * [How to Cite CSO Classifier](#how-to-cite-cso-classifier)
 * [License](#license)
 * [References](#references)
@@ -373,6 +374,12 @@ To this end, we decided to create a cached model (**token-to-cso-combined.json**
 ### token-to-cso-combined file
 
 To generate this file, we collected all the set of words available within the vocabulary of the model. Then iterating on each word, we retrieved its top 10 similar words from the model, and we computed their Levenshtein similarity against all CSO topics. If the similarity was above 0.7, we created a record which stored all CSO topics triggered by the initial word.
+
+## Use the CSO Classifier in other domains of Science
+
+In order to use the CSO Classifier in other domains of Science, it is necessary to replace the two external sources mentioned in the previous section. In particular, there is a need for a comprehensive ontology or taxonomy of research areas, within the new domain, which will work as a controlled list of research topics. In addition, it is important to train a new word2vec model that fits the language model and the semantic of the terms, in this particular domain. In the next subsections, we will show how to integrate knowledge from other fields of Science within the CSO Classifier.
+
+Further information is available in this blog post: [How to use the CSO Classifier in other domains](https://infernusweb.altervista.org/wp/how-to-use-the-cso-classifier-in-other-domains/)
 
 ## How to Cite CSO Classifier
 
