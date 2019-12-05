@@ -1,20 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Nov 22 08:45:29 2018
-
-@author: angelosalatino
-
-This file mostly contains routines to deal with the Computer Science Ontology and the model.
-"""
-
 import pickle
 import os
 import sys
 import requests
-import networkx as nx
-from webweb import Web
-import numpy as np
 from hurry.filesize import size
 import csv as co
 import json
@@ -29,6 +16,8 @@ MODEL_PICKLE_PATH = f"{dir}/models/model.p"
 MODEL_PICKLE_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/model.p"
 CACHED_MODEL = f"{dir}/models/token-to-cso-combined.json"
 CACHED_MODEL_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/token-to-cso-combined.json"
+
+
 
 def load_cso():
     """Function that loads the CSO from the file in a dictionary.
@@ -98,12 +87,6 @@ def load_cso():
     return cso
         
 
-def load_token2cso_merger():
-    #print("Loading Model to CSO Merger")
-    with open(CACHED_MODEL) as f:
-       return json.load(f)
-
-
 
 def load_ontology_pickle():
     """Function that loads CSO. 
@@ -133,9 +116,9 @@ def load_ontology_and_model():
     
     check_ontology()
     check_model()
-    
-    fcso = pickle.load( open( CSO_PICKLE_PATH, "rb" ) )
-    fmodel = pickle.load( open( MODEL_PICKLE_PATH, "rb" ) )
+
+    fcso = pickle.load(open(CSO_PICKLE_PATH, "rb"))
+    fmodel = pickle.load(open(MODEL_PICKLE_PATH, "rb"))
     
     print("Computer Science Ontology and Word2vec model loaded.")
     return fcso, fmodel
@@ -161,7 +144,7 @@ def load_ontology_and_chached_model():
     fcso = pickle.load( open( CSO_PICKLE_PATH, "rb" ) )
     
     with open(CACHED_MODEL) as f:
-       fmodel =  json.load(f)
+       fmodel = json.load(f)
     
     print("Computer Science Ontology and cached model loaded.")
     return fcso, fmodel
@@ -205,7 +188,7 @@ def check_cached_model():
     
     if not os.path.exists(CACHED_MODEL):
         print('[*] Beginning download of cached model from', CACHED_MODEL_REMOTE_URL)
-        download_file(CACHED_MODEL_REMOTE_URL, CACHED_MODEL) 
+        download_file(CACHED_MODEL_REMOTE_URL, CACHED_MODEL)
         
         
 def download_file(url, filename):
@@ -345,231 +328,3 @@ def chunks(data, size):
     it = iter(data)
     for i in range(0, len(data), size):
         yield {k:data[k] for k in islice(it, size)}
-
-def get_network(cso, found_topics):
-    """Function that extracts the network from a given set of topics.
-    Args:
-        found_topics (list): It contains the list of identified topics.
-        cso (dictionary): the ontology previously loaded from the file.
-
-    Returns:
-        network (dictionary): = {"nodes":nodes, "edges":edges} contains the list of nodes and edges of the extracetd network.
-    """
-    
-    if type(found_topics) is dict:
-        list_of_topics = []
-        for key, value in found_topics.items():
-            list_of_topics += value
-        
-        list_of_topics = list(set(list_of_topics))
-    elif type(found_topics) is list:
-        list_of_topics = found_topics
-        
-    from collections import deque
-    topics = []
-    for topic in list_of_topics:
-        if topic in cso["topics"]:
-            topics.append(topic)
-        else: 
-            print("Asked to process '",topic,"', but I couldn't find it in the current version of the Ontology")
-
-    nodes = []
-    edges = []
-    
-    
-    nodes.append({"id":"paper", "label":"paper"})
-    t_id = 0
-    pos = {}
-    for topic in topics:
-        pos[topic] = t_id
-        pos[t_id] = topic
-        temp={"id":"topic"+str(t_id), "label":topic}
-        nodes.append(temp)
-        t_id += 1
-    
-    
-    matrix = np.ones((len(topics),len(topics)), dtype=int)*999
-    queue = deque()
-    for topic in topics:
-        queue.append({"t":topic,"d":1})
-        while len(queue) > 0:
-            dequeued = queue.popleft()
-            if dequeued["t"] in cso["broaders"]:
-                broaders = cso["broaders"][dequeued["t"]]
-                for broader in broaders:
-                    if broader in pos:
-                        matrix[pos[topic]][pos[broader]] = dequeued["d"]
-                    queue.append({"t":broader,"d":dequeued["d"]+1})
-    
-    
-    for topic in topics:
-        nearest_min = matrix[pos[topic]].min()
-        nearest_pos = np.where(matrix[pos[topic]] == nearest_min)[0]
-        
-        if(nearest_min == 1):
-            for near in nearest_pos:
-                edge = {"id":"edge","source":topic,"target":pos[near],"kind":"hard"}
-                edges.append(edge)
-        elif(nearest_min > 1 and nearest_min < 999):
-            for near in nearest_pos:
-                edge = {"id":"edge","source":topic,"target":pos[near],"kind":"soft"}
-                edges.append(edge)
-        else:
-            edge = {"id":"edge","source":topic,"target":"paper","kind":"conn"}
-            edges.append(edge)
-        
-        
-    
-    network = {"nodes":nodes, "edges":edges}
-    return network
-
-
-def plot_network(network):
-    """Function that plots the network of topics.
-        It mainly relies on networkx
-
-    Args:
-        network (dictionary): computed network.
-
-
-    Returns:
-        
-        """
-    
-    G = nx.DiGraph()
-    labels={}
-    for node in network["nodes"]:
-        G.add_node(node["label"])
-        labels[node["label"]] = r'$'+node["label"]+'$'
-        
-        
-    for edge in network["edges"]:
-        G.add_edge(edge["source"],edge["target"],kind=edge["kind"])
-        
-      
-        
-    pos = nx.spring_layout(G)
-    
-    
-        
-    hard=[(u,v) for (u,v,d) in G.edges(data=True) if d['kind'] == "hard"]
-    soft=[(u,v) for (u,v,d) in G.edges(data=True) if d['kind'] == "soft"]
-    conn=[(u,v) for (u,v,d) in G.edges(data=True) if d['kind'] == "conn"]
-    
-    
-    remain = [i for i in G.nodes() if i!="paper"]  
-    nx.draw_networkx_nodes(G,pos, nodelist=["paper"], node_color='orange',node_shape = 's', node_size=500, alpha=1)
-    nx.draw_networkx_nodes(G,pos, nodelist=remain, node_color='#167096',node_shape = 'o', node_size=100, alpha=1)
-    
-    
-    
-    nx.draw_networkx_edges(G,pos,edgelist=hard,width=1)
-    nx.draw_networkx_edges(G,pos,edgelist=soft,width=1,alpha=0.5,style='dashed')
-    nx.draw_networkx_edges(G,pos,edgelist=conn,width=1,edge_color='black')
-    
-    nx.draw_networkx_labels(G,pos,font_size=9,font_family='sans-serif')
-    
-    import matplotlib.pyplot as plt  
-    plt.axis('off')
-    plt.show()
-    
-    
-    
-def plot_network2(network):
-    """Function that plots the network of topics.
-        It mainly relies on webweb: https://github.com/dblarremore/webweb
-
-    Args:
-        network (dictionary): computed network.
-
-
-    Returns:
-        
-        """
-    
-    G = nx.Graph()
-    for node in network["nodes"]:
-        G.add_node(node["label"])
-        G.nodes[node["label"]]['isPaper'] = False
-        
-    G.nodes["paper"]['isPaper'] = True
-        
-        
-    for edge in network["edges"]:
-        G.add_edge(edge["source"],edge["target"],kind=edge["kind"],style='dashed')
-        
-        
-    # create the web
-    web = Web(nx_G=G)
-    
-    web.display.showNodeNames = True
-    web.display.colorBy = 'isPaper'
-
-    web.show()
-    
-def get_coverage(cso, found_topics):
-    """Function that for a given topics, it returns its coverage.
-    This coverage is computed based on how many its descendants have been identified.
-    
-    Args:
-        found_topics (list): It contains the list of identified topics.
-        cso (dictionary): the ontology previously loaded from the file.
-
-    Returns:
-        coverage (dictionary): = {"topic":percentage value} contains all found topics with their percentage of coverage.
-    """
-    
-    coverage = {}
-    
-    if type(found_topics) is dict:
-        list_of_topics = []
-        for key, value in found_topics.items():
-            list_of_topics += value
-        
-        list_of_topics = list(set(list_of_topics))
-    elif type(found_topics) is list:
-        list_of_topics = found_topics
-        
-    
-    t_id = 0
-    pos = {}     
-    topics = []
-    for topic in list_of_topics:
-        if topic in cso["topics"]:
-            topics.append(topic)
-            pos[topic] = t_id
-            pos[t_id] = topic
-            t_id += 1
-        else: 
-            print("Asked to process '",topic,"', but I couldn't find it in the current version of the Ontology")
-    
-    matrix = np.zeros((len(topics),len(topics)), dtype=int)
-    np.fill_diagonal(matrix, 1)
-    
-    from collections import deque
-    queue = deque()
-    for topic in topics:
-        queue.append(topic)
-        while len(queue) > 0:
-            dequeued = queue.popleft()
-            if dequeued in cso["broaders"]:
-                broaders = cso["broaders"][dequeued]
-                for broader in broaders:
-                    if broader in pos:
-                        matrix[pos[topic]][pos[broader]] = 1#dequeued["d"]
-                    queue.append(broader)
-    
-    
-    
-    dividend = len(topics) #or np.sum(matrix)
-    
-    if(dividend > 0):
-        general_coverage = np.sum(matrix,axis=0)
-        
-        for topic in topics:
-            coverage[topic] = round(general_coverage[pos[topic]]/dividend,3)
-    else:
-        print("I was about to perform a divide by zero operation")
-        
-    return coverage
-    
