@@ -5,12 +5,13 @@ Created on Thu Nov 22 11:38:18 2018
 
 @author: angelosalatino
 """
-import nltk
-import re
+
 from nltk import everygrams
 from kneed import KneeLocator
-import spacy
+
 import warnings
+
+from classifier.preprocessing import part_of_speech_tagger, extraxt_chuncks
 
 
 class CSOClassifierSemantic:
@@ -28,10 +29,9 @@ class CSOClassifierSemantic:
         
         self.cso = cso                  #Stores the CSO Ontology
         self.paper = {}                 #Paper to analyse
-        self.ngrammerger = model        #contains the cached model
-        self.merge_bigrams = True       #Allows to combine the topics of mutiple tokens, when analysing 2-grams or 3-grams
+        self.model = model        #contains the cached model
         self.set_paper(paper)           #Initialises the paper
-
+        self.min_similarity = 0.94      #Initialises the min_similarity
         
         
     def set_paper(self, paper):
@@ -64,7 +64,15 @@ class CSOClassifierSemantic:
         except TypeError:
             pass
         
+    
+    def set_min_similarity(self, min_similarity):
+        """Function that initializes the minimum similarity variable.
 
+        Args:
+            min_similarity (float): value of min_similarity between 0 and 1.
+
+        """
+        self.min_similarity = min_similarity
  
     
     def classify_semantic(self):
@@ -82,51 +90,35 @@ class CSOClassifierSemantic:
         """
 
         ##################### Tokenizer with spaCy.io
+        pos_tags = part_of_speech_tagger(self.paper)
         
-        nlp = spacy.load('en_core_web_sm')
-        doc = nlp(self.paper)
-        pos_tags_spacy = []
-        for token in doc:
-            if len(token.tag_) > 0:
-                pos_tags_spacy.append((token.text, token.tag_))
-        
-        pos_tags = pos_tags_spacy
-        
-        
-        
-        ##################### Applying grammar
-        
-        GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<NN.*>+}"
-        grammar_parser = nltk.RegexpParser(GRAMMAR)
-        
-        pos_tags_with_grammar = grammar_parser.parse(pos_tags)
-        #print(pos_tags_with_grammar)
-        concepts = []
-        for node in pos_tags_with_grammar:
-            if isinstance(node, nltk.tree.Tree) and node.label() == 'DBW_CONCEPT': # if matches our grammar 
-                concept = ''
-                for leaf in node.leaves():
-                    concept_chunk = leaf[0]
-                    concept_chunk = re.sub('[\=\,\…\’\'\+\-\–\“\”\"\/\‘\[\]\®\™\%]', ' ', concept_chunk)
-                    concept_chunk = re.sub('\.$|^\.', '', concept_chunk)
-                    concept_chunk = concept_chunk.lower().strip()
-                    concept += ' ' + concept_chunk
-                concept = re.sub('\.+', '.', concept)
-                concept = re.sub('\s+', ' ', concept)
-                concepts.append(concept)
-        
-        
+        ##################### Applying grammar          
+        concepts = extraxt_chuncks(list(pos_tags))        
 
         ##################### Core analysis
+        found_topics, topic_ngrams = self.find_topics(concepts)
+    
+        ##################### Ranking
+        final_topics = self.rank_topics(found_topics) 
+             
+        return final_topics
+
+
+    def find_topics(self, concepts):
+        """Function that identifies topics starting from the ngram forund in the paper
+
+        Args:
+            ceoncepts (list): Chuncks of text to analyse.
+
+        Returns:
+            found_topics (dict): cdictionary containing the identified topics.
+            successful_grams (dict): dictionary containing the ngrams that allowed to infer topics.
+        """
         
         # Set up
         found_topics = {} # to store the matched topics
         successful_grams = {} # to store the successful grams
 
-        min_similarity = 0.94 #
-
-        
-        
         # finding matches
         for concept in concepts:
             evgrams = everygrams(concept.split(), 1, 3) # list of unigrams, bigrams, trigrams
@@ -137,30 +129,11 @@ class CSOClassifierSemantic:
                 
                 list_of_matched_topics = []
 
-                if gram in self.ngrammerger:
-                    list_of_matched_topics = self.ngrammerger[gram]
+                if gram in self.model:
+                    list_of_matched_topics = self.model[gram]
                     
-                else:
-                    
-                    if len(grams) > 1 and self.merge_bigrams:
-                        
-                        temp_list_of_matches = {}
-                        
-                        list_of_merged_topics = {}
-                        
-                        for gram in grams:
-                            if gram in self.ngrammerger:
-                                list_of_matched_topics_t = self.ngrammerger[gram]
-                                for topic_item in list_of_matched_topics_t:
-                                    temp_list_of_matches[topic_item["topic"]] = topic_item
-                                    try:
-                                        list_of_merged_topics[topic_item["topic"]] += 1
-                                    except KeyError:
-                                        list_of_merged_topics[topic_item["topic"]] = 1
-                                    
-                        for topic_x, value in list_of_merged_topics.items():
-                            if value >= len(grams):
-                                list_of_matched_topics.append(temp_list_of_matches[topic_x])
+                else:                    
+                    list_of_matched_topics = self.match_ngram(grams)
                                     
                             
                 for topic_item in list_of_matched_topics:
@@ -171,7 +144,7 @@ class CSOClassifierSemantic:
                     sim   = topic_item["sim_w"]
                     
                     
-                    if m >= min_similarity and topic in self.cso["topics_wu"]:
+                    if m >= self.min_similarity and topic in self.cso["topics_wu"]:
                         
     
                         if topic in found_topics:
@@ -211,11 +184,45 @@ class CSOClassifierSemantic:
                             successful_grams[gram].append(topic)
                         else:
                             successful_grams[gram] = [topic]
-    
-    
-                
         
-        ##################### Ranking
+        return found_topics, successful_grams
+    
+    
+    def match_ngram(self, grams, merge=True):
+        """
+        Args:
+            grams ():
+            merge (boolean): #Allows to combine the topics of mutiple tokens, when analysing 2-grams or 3-grams
+        
+        Returns:
+            list_of_matched_topics (list): containing of all found topics 
+        """
+        
+        list_of_matched_topics = list()
+        if len(grams) > 1 and merge:
+            
+            temp_list_of_matches = {}
+            
+            list_of_merged_topics = {}
+            
+            for gram in grams:
+                if gram in self.model:
+                    list_of_matched_topics_t = self.model[gram]
+                    for topic_item in list_of_matched_topics_t:
+                        temp_list_of_matches[topic_item["topic"]] = topic_item
+                        try:
+                            list_of_merged_topics[topic_item["topic"]] += 1
+                        except KeyError:
+                            list_of_merged_topics[topic_item["topic"]] = 1
+                        
+            for topic_x, value in list_of_merged_topics.items():
+                if value >= len(grams):
+                    list_of_matched_topics.append(temp_list_of_matches[topic_x])
+        
+        return list_of_matched_topics
+                    
+        
+    def rank_topics(self, found_topics):
         
         max_value = 0
         scores = []
@@ -292,12 +299,9 @@ class CSOClassifierSemantic:
                 knee = len(sort_t)
 
         final_topics = []
-        final_topics = [self.cso["topics_wu"][sort_t[i][0]] for i in range(0,knee)]
-        
-             
-        return final_topics
+        final_topics = [self.cso["topics_wu"][sort_t[i][0]] for i in range(0,knee)]    
 
-    
+        return final_topics        
     
     def get_primary_label(self, topic, primary_labels):
         """Function that returns the primary (preferred) label for a topic. If this topic belongs to 
@@ -317,78 +321,4 @@ class CSOClassifierSemantic:
             pass
         
         return topic
-    
-    def get_top_similar_words(self, list_of_words, th):
-        """Function that identifies the top similar words in the model that have similarity higher than th.
-
-        Args:
-            list_of_words (list of tuples): It contains the topics found with string similarity.
-            th (integer): threshold
-
-        Returns:
-            result (dictionary): containing the found topics with their similarity and the n-gram analysed.
-        """
-        #result = [y for (x,y) in enumerate(list_of_words) if y[1] >= th]
-        result = [(x,y) for (x,y) in list_of_words if y >= th]
-        return result
-    
-    
-    def climb_ontology(self, found_topics):
-        """Function that climbs the ontology. This function might retrieve
-            just the first broader topic or the whole branch up until root
-
-        Args:
-            found_topics (dictionary): It contains the topics found with string similarity.
-
-
-        Returns:
-            found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
-        """
-
-        all_broaders = {}
-        inferred_topics = {}
-        num_narrower = 1
-        all_broaders = self.get_broader_of_topics(found_topics, all_broaders)
-
-        
-        
-        for broader, narrower in all_broaders.items():
-            if len(narrower) >= num_narrower:
-                broader = self.get_primary_label(broader, self.cso['primary_labels'])
-                if broader not in inferred_topics:
-                    inferred_topics[broader] = [{'matched': len(narrower), 'broader of': narrower}]
-                else:
-                    inferred_topics[broader].append({'matched': len(narrower), 'broader of': narrower})
-
-        return list(set(inferred_topics.keys()).difference(found_topics))
-    
-    
-    def get_broader_of_topics(self, found_topics, all_broaders):
-        """Function that returns all the broader topics for a given set of topics.
-            It analyses the broader topics of both the topics initially found in the paper, and the broader topics
-            found at the previous iteration.
-            It incrementally provides a more comprehensive set of broader topics.
-
-        Args:
-            found_topics (dictionary): It contains the topics found with string similarity.
-            all_broaders (dictionary): It contains the broader topics found in the previous run.
-
-        Returns:
-            all_broaders (dictionary): contains all the broaders found so far, including the previous iterations.
-        """
-
-        topics = list(found_topics)
-        for topic in topics:
-            if topic in self.cso['broaders']:
-                broaders = self.cso['broaders'][topic]
-                for broader in broaders:
-                    if broader in all_broaders:
-                        if topic not in all_broaders[broader]:
-                            all_broaders[broader].append(topic)
-                        else:
-                            pass  # the topic was listed before
-                    else:
-                        all_broaders[broader] = [topic]
-
-        return all_broaders
     
