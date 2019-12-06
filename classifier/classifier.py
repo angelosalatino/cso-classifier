@@ -15,6 +15,7 @@ from multiprocessing.pool import Pool
 from classifier import misc
 from classifier.semanticmodule import CSOClassifierSemantic as sema
 from classifier.syntacticmodule import CSOClassifierSyntactic as synt
+from classifier.ontology import Ontology as CSO
 
 
 def run_cso_classifier(paper, modules="both", enhancement="first"):
@@ -50,8 +51,10 @@ def run_cso_classifier(paper, modules="both", enhancement="first"):
     if enhancement not in ["first", "all", "no"]:
         raise ValueError("Error: Field enhances must be 'first', 'all' or 'no'")
 
+    cso = CSO()
     # Loading ontology and model
-    cso, model = misc.load_ontology_and_chached_model()
+    _, model = misc.load_ontology_and_chached_model()
+    
 
     # Passing parameters to the two classes (synt and sema)
     synt_module = synt(cso, paper)
@@ -73,10 +76,10 @@ def run_cso_classifier(paper, modules="both", enhancement="first"):
     class_res["union"] = union
 
     if enhancement == 'first':
-        enhanced = misc.climb_ontology(cso, union, "first")
+        enhanced = cso.climb_ontology(union, "first")
         class_res["enhanced"] = [x for x in enhanced if x not in union]
     elif enhancement == 'all':
-        enhanced = misc.climb_ontology(cso, union, "all")
+        enhanced = cso.climb_ontology(union, "all")
         class_res["enhanced"] = [x for x in enhanced if x not in union]
     elif enhancement == 'no':
         pass

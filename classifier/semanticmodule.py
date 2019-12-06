@@ -15,6 +15,7 @@ from classifier.preprocessing import part_of_speech_tagger, extraxt_chuncks
 
 
 class CSOClassifierSemantic:
+    """ A simple abstraction layer for using the Semantic module of the CSO classifier """
     
     def __init__(self, model = {}, cso = {}, paper = {}):
         """Function that initialises an object of class CSOClassifierSemantic and all its members.
@@ -144,7 +145,7 @@ class CSOClassifierSemantic:
                     sim   = topic_item["sim_w"]
                     
                     
-                    if m >= self.min_similarity and topic in self.cso["topics_wu"]:
+                    if m >= self.min_similarity and topic in self.cso.topics_wu:
                         
     
                         if topic in found_topics:
@@ -242,7 +243,7 @@ class CSOClassifierSemantic:
         # Selection of unique topics  
         unique_topics = {}
         for tp,topic in found_topics.items():
-            prim_label = self.get_primary_label(tp,self.cso["primary_labels_wu"])
+            prim_label = self.cso.get_primary_label_wu(tp)
             if prim_label in unique_topics:
                 if unique_topics[prim_label] < topic["score"]:
                     unique_topics[prim_label] = topic["score"]
@@ -299,26 +300,7 @@ class CSOClassifierSemantic:
                 knee = len(sort_t)
 
         final_topics = []
-        final_topics = [self.cso["topics_wu"][sort_t[i][0]] for i in range(0,knee)]    
+        final_topics = [self.cso.topics_wu[sort_t[i][0]] for i in range(0,knee)]    
 
         return final_topics        
-    
-    def get_primary_label(self, topic, primary_labels):
-        """Function that returns the primary (preferred) label for a topic. If this topic belongs to 
-        a cluster.
-
-        Args:
-            topic (string): Topic to analyse.
-            primary_labels (dictionary): It contains the primary labels of all the topics belonging to clusters.
-
-        Returns:
-            topic (string): primary label of the analysed topic.
-        """
-        
-        try:
-            topic = primary_labels[topic]
-        except KeyError:
-            pass
-        
-        return topic
     

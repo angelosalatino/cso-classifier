@@ -14,7 +14,7 @@ from Levenshtein.StringMatcher import StringMatcher
 
 
 class CSOClassifierSyntactic:
-    """ An simple abstraction layer for using CSO classifier """
+    """ A simple abstraction layer for using the Syntactic module of the CSO classifier """
 
     def __init__(self, cso = {}, paper = {}):
         """Function that initialises an object of class CSOClassifierSyntactic and all its members.
@@ -123,7 +123,7 @@ class CSOClassifierSyntactic:
                 gram = " ".join(grams)
                 try:
                     # if there isn't an exact match on the first 4 characters of the ngram and a topic, move on
-                    topic_block = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
+                    topic_block = [key for key, _ in self.cso.topics.items() if key.startswith(gram[:4])]
                 except KeyError:
                     continue
                 for topic in topic_block:
@@ -132,7 +132,7 @@ class CSOClassifierSyntactic:
                     if match_ratio >= min_similarity:
                         try:
                             # if a 'primary label' exists for the current topic, use it instead of the matched topic
-                            topic = self.cso['primary_labels'][topic]
+                            topic = self.cso.primary_labels[topic]
                         except KeyError:
                             pass
                         # note the tokens that matched the topic and how closely
@@ -163,24 +163,3 @@ class CSOClassifierSyntactic:
         topics = list(set(found_topics.keys()))  # Takes only the keys
         
         return topics
-    
-
-
-    def get_primary_label(self, topic, primary_labels):
-        """Function that returns the primary (preferred) label for a topic. If this topic belongs to 
-        a cluster.
-
-        Args:
-            topic (string): Topic to analyse.
-            primary_labels (dictionary): It contains the primary labels of all the topics belonging to clusters.
-
-        Returns:
-            topic (string): primary label of the analysed topic.
-        """
-        
-        try:
-            topic = primary_labels[topic]
-        except KeyError:
-            pass
-        
-        return topic
