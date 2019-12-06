@@ -123,7 +123,8 @@ class CSOClassifierSyntactic:
                 gram = " ".join(grams)
                 try:
                     # if there isn't an exact match on the first 4 characters of the ngram and a topic, move on
-                    topic_block = [key for key, _ in self.cso.topics.items() if key.startswith(gram[:4])]
+                    #topic_block = [key for key, _ in self.cso.topics.items() if key.startswith(gram[:4])]
+                    topic_block = self.cso.topic_stems[gram[:4]]
                 except KeyError:
                     continue
                 for topic in topic_block:
