@@ -9,7 +9,7 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 from nltk import ngrams
 from nltk.tokenize import word_tokenize
-import Levenshtein.StringMatcher as ls
+from Levenshtein.StringMatcher import StringMatcher
 
 
 
@@ -62,7 +62,7 @@ class CSOClassifierSyntactic:
             pass
         
     
-    def set_min__similarity(self, msm):
+    def set_min_similarity(self, msm):
         """Function that sets a different value for the similarity.
 
         Args:
@@ -104,76 +104,46 @@ class CSOClassifierSyntactic:
         return topics
 
         #shared_dict = topics
-
+        
     def statistic_similarity(self, paper, min_similarity):
-        """Function that splits the paper text in n-grams (unigrams,bigrams,trigrams)
-        and with a Levenshtein it check the similarity for each of them with the topics in the ontology.
-
-        Args:
-            paper (string): The paper to analyse. At this stage it is a string.
-            min_similarity (integer): minimum Levenshtein similarity between the n-gram and the topics within the CSO. 
-
-        Returns:
-            found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
-        """
-
-        # analysing grams
-        found_topics = {}
         
-        idx = 0
-        trigrams = ngrams(word_tokenize(paper, preserve_line=True), 3)
-        matched_trigrams = []
-        for grams in trigrams:
-            idx += 1
-            gram = " ".join(grams)
-            topics = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
-            for topic in topics:
-                m = ls.StringMatcher(None, topic, gram).ratio()
-                if m >= min_similarity:
-                    topic = self.get_primary_label(topic, self.cso['primary_labels'])
-                    if topic in found_topics:
-                        found_topics[topic].append({'matched': gram, 'similarity': m})
-                    else:
-                        found_topics[topic] = [{'matched': gram, 'similarity': m}]
-                    matched_trigrams.append(idx)
-            
+        found_topics = dict()
+        matched_trigrams = set()
+        matched_bigrams = set()
         
-        idx = 0
-        bigrams = ngrams(word_tokenize(paper, preserve_line=True), 2)
-        matched_bigrams = []
-        for grams in bigrams:
-            idx += 1
-            if (idx not in matched_trigrams) and ((idx-1) not in matched_trigrams):
+        for n in range(3, 0, -1):
+            # i indexes the same token in the text whether we're matching by unigram, bigram, or trigram
+            for i, grams in enumerate(ngrams(word_tokenize(paper, preserve_line=True), n)):
+                # if we already matched the current token to a topic, don't reprocess it
+                if i in matched_bigrams or i-1 in matched_bigrams:
+                    continue           
+                if i in matched_trigrams or i-1 in matched_trigrams or i-2 in matched_trigrams:
+                    continue
+                # otherwise unsplit the ngram for matching so ('quick', 'brown') => 'quick brown'
                 gram = " ".join(grams)
-                topics = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
-                for topic in topics:
-                    m = ls.StringMatcher(None, topic, gram).ratio()
-                    if m >= min_similarity:
-                        topic = self.get_primary_label(topic, self.cso['primary_labels'])
-                        if topic in found_topics:
-                            found_topics[topic].append({'matched': gram, 'similarity': m})
-                        else:
-                            found_topics[topic] = [{'matched': gram, 'similarity': m}]
-                        matched_bigrams.append(idx)
-            
-
-        idx = 0
-        unigrams = ngrams(word_tokenize(paper, preserve_line=True), 1)
-        for grams in unigrams:
-            idx += 1
-            if (idx not in matched_trigrams) and ((idx-1) not in matched_trigrams) and (idx not in matched_bigrams) and ((idx-1) not in matched_bigrams) and ((idx-1) not in matched_bigrams):
-                gram = " ".join(grams)
-                topics = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
-                for topic in topics:
-                    m = ls.StringMatcher(None, topic, gram).ratio()
-                    if m >= min_similarity:
-                        topic = self.get_primary_label(topic, self.cso['primary_labels'])
-                        if topic in found_topics:
-                            found_topics[topic].append({'matched': gram, 'similarity': m})
-                        else:
-                            found_topics[topic] = [{'matched': gram, 'similarity': m}]
-            
-
+                try:
+                    # if there isn't an exact match on the first 4 characters of the ngram and a topic, move on
+                    topic_block = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
+                except KeyError:
+                    continue
+                for topic in topic_block:
+                    # otherwise look for an inexact match
+                    match_ratio = StringMatcher(None, topic, gram).ratio()
+                    if match_ratio >= min_similarity:
+                        try:
+                            # if a 'primary label' exists for the current topic, use it instead of the matched topic
+                            topic = self.cso['primary_labels'][topic]
+                        except KeyError:
+                            pass
+                        # note the tokens that matched the topic and how closely
+                        if topic not in found_topics: 
+                            found_topics[topic] = list()
+                        found_topics[topic].append({'matched': gram, 'similarity': match_ratio})
+                        # don't reprocess the current token
+                        
+                        if n == 2: matched_bigrams.add(i)
+                        elif n == 3: matched_trigrams.add(i)
+                        
         return found_topics
     
 
