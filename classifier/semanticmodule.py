@@ -30,7 +30,7 @@ class CSOClassifierSemantic:
         
         self.cso = cso                  #Stores the CSO Ontology
         self.paper = {}                 #Paper to analyse
-        self.model = model        #contains the cached model
+        self.model = model              #contains the cached model
         self.set_paper(paper)           #Initialises the paper
         self.min_similarity = 0.94      #Initialises the min_similarity
         
@@ -130,8 +130,8 @@ class CSOClassifierSemantic:
                 
                 list_of_matched_topics = []
 
-                if gram in self.model:
-                    list_of_matched_topics = self.model[gram]
+                if self.model.check_word_in_model(gram):
+                    list_of_matched_topics = self.model.get_words_from_model(gram)
                     
                 else:                    
                     list_of_matched_topics = self.match_ngram(grams)
@@ -207,8 +207,8 @@ class CSOClassifierSemantic:
             list_of_merged_topics = {}
             
             for gram in grams:
-                if gram in self.model:
-                    list_of_matched_topics_t = self.model[gram]
+                if self.model.check_word_in_model(gram):
+                    list_of_matched_topics_t = self.model.get_words_from_model(gram)
                     for topic_item in list_of_matched_topics_t:
                         temp_list_of_matches[topic_item["topic"]] = topic_item
                         try:

@@ -16,6 +16,7 @@ from classifier import misc
 from classifier.semanticmodule import CSOClassifierSemantic as sema
 from classifier.syntacticmodule import CSOClassifierSyntactic as synt
 from classifier.ontology import Ontology as CSO
+from classifier.model import Model as MODEL
 
 
 def run_cso_classifier(paper, modules="both", enhancement="first"):
@@ -51,9 +52,10 @@ def run_cso_classifier(paper, modules="both", enhancement="first"):
     if enhancement not in ["first", "all", "no"]:
         raise ValueError("Error: Field enhances must be 'first', 'all' or 'no'")
 
-    cso = CSO()
+    
     # Loading ontology and model
-    _, model = misc.load_ontology_and_chached_model()
+    cso = CSO()
+    model = MODEL()
     
 
     # Passing parameters to the two classes (synt and sema)
