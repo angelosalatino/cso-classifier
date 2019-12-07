@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue May  7 17:19:22 2019
-
-@author: angelosalatino
-"""
-
-
-
 import math
 from functools import partial
 from multiprocessing.pool import Pool
@@ -17,6 +7,7 @@ from classifier.semanticmodule import CSOClassifierSemantic as sema
 from classifier.syntacticmodule import CSOClassifierSyntactic as synt
 from classifier.ontology import Ontology as CSO
 from classifier.model import Model as MODEL
+from classifier.paper import Paper
 
 
 def run_cso_classifier(paper, modules="both", enhancement="first"):
@@ -56,11 +47,12 @@ def run_cso_classifier(paper, modules="both", enhancement="first"):
     # Loading ontology and model
     cso = CSO()
     model = MODEL()
+    t_paper = Paper(paper)
     
 
     # Passing parameters to the two classes (synt and sema)
     synt_module = synt(cso, paper)
-    sema_module = sema(model, cso, paper)
+    sema_module = sema(model, cso, t_paper)
 
     # initializing variable that will contain output
     class_res = dict()

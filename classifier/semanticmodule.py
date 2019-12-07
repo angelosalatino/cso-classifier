@@ -1,23 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Nov 22 11:38:18 2018
-
-@author: angelosalatino
-"""
-
 from nltk import everygrams
 from kneed import KneeLocator
 
 import warnings
 
-from classifier.preprocessing import part_of_speech_tagger, extraxt_chuncks
-
-
 class CSOClassifierSemantic:
     """ A simple abstraction layer for using the Semantic module of the CSO classifier """
     
-    def __init__(self, model = {}, cso = {}, paper = {}):
+    def __init__(self, model = None, cso = None, paper = None):
         """Function that initialises an object of class CSOClassifierSemantic and all its members.
 
         Args:
@@ -29,9 +18,8 @@ class CSOClassifierSemantic:
         """
         
         self.cso = cso                  #Stores the CSO Ontology
-        self.paper = {}                 #Paper to analyse
-        self.model = model              #contains the cached model
-        self.set_paper(paper)           #Initialises the paper
+        self.paper = paper              #Paper to analyse
+        self.model = model              #contains the cached model          
         self.min_similarity = 0.94      #Initialises the min_similarity
         
         
@@ -43,27 +31,7 @@ class CSOClassifierSemantic:
             is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
 
         """
-        try:
-            if isinstance(paper, dict):
-                t_paper = paper
-                self.paper = ""
-                try: 
-                    for key in list(t_paper.keys()):
-                        self.paper = self.paper + t_paper[key] + ". "
-                except TypeError:
-                    pass
-                    print(paper)
-        
-                
-                self.paper = self.paper.strip()
-            elif isinstance(paper, str):
-                self.paper = paper.strip()
-            
-            else:
-                raise TypeError("Error: Field format must be either 'json' or 'text'")
-                return
-        except TypeError:
-            pass
+        self.paper = paper
         
     
     def set_min_similarity(self, min_similarity):
@@ -88,16 +56,10 @@ class CSOClassifierSemantic:
 
         Returns:
             final_topics (list): list of identified topics.
-        """
-
-        ##################### Tokenizer with spaCy.io
-        pos_tags = part_of_speech_tagger(self.paper)
-        
-        ##################### Applying grammar          
-        concepts = extraxt_chuncks(list(pos_tags))        
+        """     
 
         ##################### Core analysis
-        found_topics, topic_ngrams = self.find_topics(concepts)
+        found_topics, topic_ngrams = self.find_topics(self.paper.get_chunks())
     
         ##################### Ranking
         final_topics = self.rank_topics(found_topics) 
