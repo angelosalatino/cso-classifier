@@ -8,6 +8,7 @@ from classifier.syntacticmodule import CSOClassifierSyntactic as synt
 from classifier.ontology import Ontology as CSO
 from classifier.model import Model as MODEL
 from classifier.paper import Paper
+from classifier.result import Result
 
 
 def run_cso_classifier(paper, modules="both", enhancement="first"):
@@ -48,37 +49,21 @@ def run_cso_classifier(paper, modules="both", enhancement="first"):
     cso = CSO()
     model = MODEL()
     t_paper = Paper(paper)
-    
+    result = Result()
 
     # Passing parameters to the two classes (synt and sema)
     synt_module = synt(cso, paper)
     sema_module = sema(model, cso, t_paper)
 
-    # initializing variable that will contain output
-    class_res = dict()
-    class_res["syntactic"] = list()
-    class_res["semantic"] = list()
-    class_res["union"] = list()
-    class_res["enhanced"] = list()
-
     if modules == 'syntactic' or modules == 'both':
-        class_res["syntactic"] = synt_module.classify_syntactic()
+        result.set_syntactic(synt_module.classify_syntactic())
     if modules == 'semantic' or modules == 'both':
-        class_res["semantic"] = sema_module.classify_semantic()
+        result.set_semantic(sema_module.classify_semantic())
+       
+    result.set_enhanced(cso.climb_ontology(getattr(result, "union"), enhancement))
 
-    union = list(set(class_res["syntactic"] + class_res["semantic"]))
-    class_res["union"] = union
 
-    if enhancement == 'first':
-        enhanced = cso.climb_ontology(union, "first")
-        class_res["enhanced"] = [x for x in enhanced if x not in union]
-    elif enhancement == 'all':
-        enhanced = cso.climb_ontology(union, "all")
-        class_res["enhanced"] = [x for x in enhanced if x not in union]
-    elif enhancement == 'no':
-        pass
-
-    return class_res
+    return result.get_dict()
 
 
 def run_cso_classifier_batch_mode(papers, workers=1, modules="both", enhancement="first"):
