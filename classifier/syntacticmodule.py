@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Nov 22 09:09:10 2018
-
-@author: angelosalatino
-"""
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 from nltk import ngrams
@@ -16,7 +9,7 @@ from Levenshtein.StringMatcher import StringMatcher
 class CSOClassifierSyntactic:
     """ A simple abstraction layer for using the Syntactic module of the CSO classifier """
 
-    def __init__(self, cso = {}, paper = {}):
+    def __init__(self, cso = None, paper = None):
         """Function that initialises an object of class CSOClassifierSyntactic and all its members.
 
         Args:
