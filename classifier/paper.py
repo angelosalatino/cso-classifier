@@ -6,7 +6,7 @@ tagger = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
 GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<NN.*>+}"
 
 class Paper:
-    """ A simple abstraction layer for using the Computer Science Ontology """
+    """ A simple abstraction layer for working on the paper object"""
     
     def __init__(self, paper = None):
         """ Initialising the ontology class
