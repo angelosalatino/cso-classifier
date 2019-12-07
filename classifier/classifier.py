@@ -52,7 +52,7 @@ def run_cso_classifier(paper, modules="both", enhancement="first"):
     result = Result()
 
     # Passing parameters to the two classes (synt and sema)
-    synt_module = synt(cso, paper)
+    synt_module = synt(cso, t_paper)
     sema_module = sema(model, cso, t_paper)
 
     if modules == 'syntactic' or modules == 'both':
