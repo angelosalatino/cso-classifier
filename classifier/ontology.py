@@ -27,7 +27,11 @@ class Ontology:
         self.primary_labels = dict()
         self.primary_labels_wu = dict()
         self.topic_stems = dict()
+        
+        self.ontology_attr = ('topics', 'topics_wu', 'broaders', 'narrowers', 'same_as', 'primary_labels', 'primary_labels_wu', 'topic_stems')
+        
         self.load_ontology_pickle()
+        
         
 
     def load_cso_from_csv(self):
@@ -40,12 +44,6 @@ class Ontology:
                - primary_labels, all the primary labels of topics, if they belong to clusters
                - topics_wu, topic with underscores
                - primary_labels_wu, primary labels with underscores
-    
-        Args:
-            
-    
-        Returns:
-            cso (dictionary): {'topics':topics, 'broaders':broaders, 'narrowers':narrowers, 'same_as':same_as, 'primary_labels': primary_labels}.
         """
     
         with open(CSO_PATH, 'r') as ontoFile:
@@ -84,41 +82,22 @@ class Ontology:
                 self.topic_stems[topic[:4]].append(topic)
             
     
-    def from_single_items_to_cso(self):
-        return {
-            'topics': self.topics,
-            'broaders': self.broaders,
-            'narrowers': self.narrowers,
-            'same_as': self.same_as,
-            'primary_labels': self.primary_labels,
-            'topics_wu': self.topics_wu,
-            'primary_labels_wu': self.primary_labels_wu,
-            'topic_stems': self.topic_stems
-        } 
         
+    def from_single_items_to_cso(self):
+        return {attr: getattr(self, attr) for attr in self.ontology_attr}
+    
     def from_cso_to_single_items(self, cso):
-        self.topics = cso['topics']
-        self.broaders = cso['broaders'] 
-        self.narrowers = cso['narrowers']
-        self.same_as = cso['same_as']
-        self.primary_labels = cso['primary_labels']
-        self.topics_wu = cso['topics_wu']
-        self.primary_labels_wu = cso['primary_labels_wu']
-        self.topic_stems = cso['topic_stems']
+        for attr in self.ontology_attr:
+            setattr(self, attr, cso[attr])
     
 
     def load_ontology_pickle(self):
         """Function that loads CSO. 
         This file has been serialised using Pickle allowing to be loaded quickly.
-        
-        Args:
-    
-        Returns:
-            fcso (dictionary): contains the CSO Ontology.
         """
         self.check_ontology()
-        fcso = pickle.load(open( CSO_PICKLE_PATH, "rb" ))
-        self.from_cso_to_single_items(fcso)
+        ontology = pickle.load(open(CSO_PICKLE_PATH, "rb" ))
+        self.from_cso_to_single_items(ontology)
         print("Computer Science Ontology loaded.")
 
 
@@ -126,7 +105,6 @@ class Ontology:
     def check_ontology(self):
         """Function that checks if the ontology is available. 
         If not, it will check if a csv version exists and then it will create the pickle file.
-        
         """ 
         
         if not os.path.exists(CSO_PICKLE_PATH):
