@@ -1,17 +1,9 @@
 import pickle
 import os
-import sys
-import requests
-from hurry.filesize import size
 import json
 
-
-#some global variables
-dir = os.path.dirname(os.path.realpath(__file__))
-MODEL_PICKLE_PATH = f"{dir}/models/model.p"
-MODEL_PICKLE_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/model.p"
-CACHED_MODEL = f"{dir}/models/token-to-cso-combined.json"
-CACHED_MODEL_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/token-to-cso-combined.json"
+from classifier.config import Config
+from classifier import misc
 
 
 class Model:
@@ -21,7 +13,9 @@ class Model:
         """ Initialising the model class
         """
         self.model = dict()
+        self.config = Config()
         self.load_chached_model()
+
         
     def check_word_in_model(self, word):
         
@@ -51,7 +45,7 @@ class Model:
         """
         
         self.check_cached_model()
-        with open(CACHED_MODEL) as f:
+        with open(self.config.get_cached_model()) as f:
            self.model = json.load(f)
         
 
@@ -63,50 +57,20 @@ class Model:
     
         """
         
-        if not os.path.exists(CACHED_MODEL):
-            print('[*] Beginning download of cached model from', CACHED_MODEL_REMOTE_URL)
-            self.download_file(CACHED_MODEL_REMOTE_URL, CACHED_MODEL)
-        
-        
-    def download_file(self, url, filename):
-        """Function that downloads the model from the web.
-    
-        Args:
-            url (string): Url of where the model is located.
-            filename (string): location of where to save the model
-    
-        Returns:
-            
-        """
-        with open(filename, 'wb') as f:
-            response = requests.get(url, stream=True)
-            total = response.headers.get('content-length')
-    
-            if total is None:
-                #f.write(response.content)
-                print('There was an error while downloading the new version of the ontology.')
-            else:
-                downloaded = 0
-                total = int(total)
-                for data in response.iter_content(chunk_size=max(int(total/1000), 1024*1024)):
-                    downloaded += len(data)
-                    f.write(data)
-                    done = int(50*downloaded/total)
-                    sys.stdout.write('\r[{}{}] {}/{}'.format('█' * done, '.' * (50-done), size(downloaded), size(total)))
-                    sys.stdout.flush()
-                sys.stdout.write('\n')
-                print('[*] Done!')
+        if not os.path.exists(self.config.get_cached_model()):
+            print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
+            misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
+
+
+
+
+
+      
+# =============================================================================
+#         LEGACY CODE: just in case we want to use the model as is
+# =============================================================================
                 
             
-            
-            
-    ###########################################################
-    #########
-    ######### 
-    #########  LEGACY CODE: just in case we want to use 
-    #########   the model as is
-    #########
-    ###########################################################
             
     def load_model(self):
         """Function that loads both CSO and Word2vec model. 
@@ -120,7 +84,7 @@ class Model:
         """
         
         self.check_model()
-        self.model = pickle.load(open(MODEL_PICKLE_PATH, "rb"))
+        self.model = pickle.load(open(self.config.get_model_pickle_path(), "rb"))
     
                 
     def check_model(self):
@@ -129,9 +93,9 @@ class Model:
     
         """
         
-        if not os.path.exists(MODEL_PICKLE_PATH):
-            print('[*] Beginning model download from', MODEL_PICKLE_REMOTE_URL)
-            self.download_file(MODEL_PICKLE_REMOTE_URL, MODEL_PICKLE_PATH)  
+        if not os.path.exists(self.config.get_model_pickle_path()):
+            print('[*] Beginning model download from', self.config.get_model_pickle_remote_url())
+            misc.download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())  
 
 
 
