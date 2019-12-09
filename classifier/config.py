@@ -18,45 +18,51 @@ class Config:
 #     CLASSIFIER
 # =============================================================================
     def get_classifier_version(self):
-        return self.config['Classifier']['CLASSIFIER_VERSION']
+        return self.config['Classifier']['classifier_version']
+    
+    def get_package_name(self):
+        return self.config['Classifier']['package_name']
     
     def set_classifier_version(self, version):
-        self.config['Classifier']['CLASSIFIER_VERSION'] = version
+        self.config['Classifier']['classifier_version'] = version
         self.write_config_file()
 
 # =============================================================================
 #     ONTOLOGY
 # =============================================================================
     def get_cso_path(self):
-        return os.path.join(self.dir, self.config['Ontology']['CSO_PATH'])
+        return os.path.join(self.dir, self.config['Ontology']['cso_path'])
     
     def get_cso_pickle_path(self):
-        return os.path.join(self.dir, self.config['Ontology']['CSO_PICKLE_PATH'])
+        return os.path.join(self.dir, self.config['Ontology']['cso_pickle_path'])
     
     def get_cso_remote_url(self):
-        return self.config['Ontology']['CSO_REMOTE_URL']
+        return self.config['Ontology']['cso_remote_url']
     
     def get_ontology_version(self):
-        return self.config['Ontology']['CSO_VERSION']
+        return self.config['Ontology']['cso_version']
+    
+    def get_cso_last_version_url(self):
+        return self.config['Ontology']['cso_last_version_url']
     
     def set_cso_version(self, version):
-        self.config['Ontology']['CSO_VERSION'] = version
+        self.config['Ontology']['cso_version'] = version
         self.write_config_file()
 
 # =============================================================================
 #     MODEL  
 # =============================================================================
     def get_model_pickle_path(self):
-        return os.path.join(self.dir, self.config['Model']['MODEL_PICKLE_PATH'])
+        return os.path.join(self.dir, self.config['Model']['model_pickle_path'])
     
     def get_model_pickle_remote_url(self):
-        return self.config['Model']['MODEL_PICKLE_REMOTE_URL']
+        return self.config['Model']['model_pickle_remote_url']
     
     def get_cached_model(self):
-        return os.path.join(self.dir, self.config['Model']['CACHED_MODEL'])
+        return os.path.join(self.dir, self.config['Model']['cached_model'])
     
     def get_cahed_model_remote_url(self):
-        return self.config['Model']['CACHED_MODEL_REMOTE_URL']
+        return self.config['Model']['cached_model_remote_url']
     
 # =============================================================================
 #     READ AND WRITE CONFIG FILE
