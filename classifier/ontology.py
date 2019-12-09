@@ -1,16 +1,9 @@
 import pickle
 import os
-import sys
-import requests
-from hurry.filesize import size
 import csv as co
 
-
-#some global variables
-dir = os.path.dirname(os.path.realpath(__file__))
-CSO_PATH = f"{dir}/models/cso.csv"
-CSO_PICKLE_PATH = f"{dir}/models/cso.p"
-CSO_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/cso.csv"
+from classifier.config import Config
+from classifier import misc
 
 
 class Ontology:
@@ -27,6 +20,8 @@ class Ontology:
         self.primary_labels = dict()
         self.primary_labels_wu = dict()
         self.topic_stems = dict()
+        
+        self.config = Config()
         
         self.ontology_attr = ('topics', 'topics_wu', 'broaders', 'narrowers', 'same_as', 'primary_labels', 'primary_labels_wu', 'topic_stems')
         
@@ -46,7 +41,7 @@ class Ontology:
                - primary_labels_wu, primary labels with underscores
         """
     
-        with open(CSO_PATH, 'r') as ontoFile:
+        with open(self.config.get_cso_path(), 'r') as ontoFile:
 
             ontology = co.reader(ontoFile, delimiter=';')
     
@@ -96,7 +91,7 @@ class Ontology:
         This file has been serialised using Pickle allowing to be loaded quickly.
         """
         self.check_ontology()
-        ontology = pickle.load(open(CSO_PICKLE_PATH, "rb" ))
+        ontology = pickle.load(open(self.config.get_cso_pickle_path(), "rb" ))
         self.from_cso_to_single_items(ontology)
         print("Computer Science Ontology loaded.")
 
@@ -107,50 +102,20 @@ class Ontology:
         If not, it will check if a csv version exists and then it will create the pickle file.
         """ 
         
-        if not os.path.exists(CSO_PICKLE_PATH):
+        if not os.path.exists(self.config.get_cso_pickle_path()):
             print("Ontology pickle file is missing.")
             
-            if not os.path.exists(CSO_PATH):
-                print("The csv file of the Computer Science Ontology is missing. Attempting to download it now...")
-                self.download_file(CSO_REMOTE_URL, CSO_PATH) 
+            if not os.path.exists(self.config.get_cso_path()):
+                print("The source file of the Computer Science Ontology is missing. Attempting to download it now...")
+                misc.download_file(self.config.get_cso_remote_url(), self.config.get_cso_path()) 
             
             self.load_cso_from_csv()
 
-            with open(CSO_PICKLE_PATH, 'wb') as cso_file:
-                print("Creating ontology pickle file from a copy of the CSO Ontology found in",CSO_PATH)
+            with open(self.config.get_cso_pickle_path(), 'wb') as cso_file:
+                print("Creating ontology pickle file from a copy of the CSO Ontology found in",self.config.get_cso_path())
                 pickle.dump(self.from_single_items_to_cso(), cso_file)
                 
 
-        
-        
-    def download_file(self, url, filename):
-        """Function that downloads the model from the web.
-    
-        Args:
-            url (string): Url of where the model is located.
-            filename (string): location of where to save the model
-    
-        Returns:
-            
-        """
-        with open(filename, 'wb') as f:
-            response = requests.get(url, stream=True)
-            total = response.headers.get('content-length')
-    
-            if total is None:
-                #f.write(response.content)
-                print('There was an error while downloading the new version of the ontology.')
-            else:
-                downloaded = 0
-                total = int(total)
-                for data in response.iter_content(chunk_size=max(int(total/1000), 1024*1024)):
-                    downloaded += len(data)
-                    f.write(data)
-                    done = int(50*downloaded/total)
-                    sys.stdout.write('\r[{}{}] {}/{}'.format('█' * done, '.' * (50-done), size(downloaded), size(total)))
-                    sys.stdout.flush()
-                sys.stdout.write('\n')
-                print('[*] Done!')
 
 
     def get_primary_label(self, topic):
