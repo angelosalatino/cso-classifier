@@ -20,8 +20,9 @@ class CSOClassifierSyntactic:
         # Initialise variables to store CSO data - loads into memory 
         self.cso = cso
         self.min_similarity = 0.94
-        self.paper = {}
-        self.set_paper(paper)
+        self.paper = None
+        if paper is not None:
+            self.set_paper(paper)
     
     def set_paper(self, paper):
         """Function that initializes the paper variable in the class.
