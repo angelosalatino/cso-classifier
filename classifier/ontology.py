@@ -9,7 +9,7 @@ from classifier import misc
 class Ontology:
     """ A simple abstraction layer for using the Computer Science Ontology """
     
-    def __init__(self):
+    def __init__(self, load_ontology = True):
         """ Initialising the ontology class
         """
         self.topics = dict()
@@ -25,7 +25,8 @@ class Ontology:
         
         self.ontology_attr = ('topics', 'topics_wu', 'broaders', 'narrowers', 'same_as', 'primary_labels', 'primary_labels_wu', 'topic_stems')
         
-        self.load_ontology_pickle()
+        if load_ontology:
+            self.load_ontology_pickle()
         
         
 
@@ -97,23 +98,43 @@ class Ontology:
 
 
      
-    def check_ontology(self):
+    def check_ontology(self, notification = False):
         """Function that checks if the ontology is available. 
         If not, it will check if a csv version exists and then it will create the pickle file.
         """ 
+        
+        if notification:
+            print("# ==============================")
+            print("#     ONTOLOGY")
+            print("# ==============================")
         
         if not os.path.exists(self.config.get_cso_pickle_path()):
             print("Ontology pickle file is missing.")
             
             if not os.path.exists(self.config.get_cso_path()):
                 print("The source file of the Computer Science Ontology is missing. Attempting to download it now...")
-                misc.download_file(self.config.get_cso_remote_url(), self.config.get_cso_path()) 
+                task_completed = misc.download_file(self.config.get_cso_remote_url(), self.config.get_cso_path()) 
+                
+                if notification:
+                    if task_completed:
+                        print("Ontology file downloaded successfully.")
+                    else:
+                        print("We were unable to complete the download of the ontology.")
             
             self.load_cso_from_csv()
 
             with open(self.config.get_cso_pickle_path(), 'wb') as cso_file:
                 print("Creating ontology pickle file from a copy of the CSO Ontology found in",self.config.get_cso_path())
                 pickle.dump(self.from_single_items_to_cso(), cso_file)
+                if notification:
+                    print("Ontology file created successfully.")
+                    print()
+        else:
+            if notification:
+                print("Nothing to do. The ontology file was already available.")
+                print()
+                
+        
                 
 
 

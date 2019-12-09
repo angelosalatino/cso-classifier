@@ -190,10 +190,15 @@ def run_cso_classifier_batch_mode(papers, workers=1, modules="both", enhancement
 
 
 def setup():
-    import os
-    os.system("python -m spacy download en_core_web_sm")
-    cso = CSO()
-    model = MODEL()
+    
+    notification = True
+    misc.download_language_model(notification = notification)
+    
+    cso = CSO(load_ontology = False)
+    cso.check_ontology(notification = notification)
+    
+    model = MODEL(load_model = False)
+    model.check_cached_model(notification = notification)
     
 def update():
     print("to be developed")

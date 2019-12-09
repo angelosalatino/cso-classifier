@@ -9,12 +9,13 @@ from classifier import misc
 class Model:
     """ A simple abstraction layer for using the Word Embedding Model """
     
-    def __init__(self):
+    def __init__(self, load_model = True):
         """ Initialising the model class
         """
         self.model = dict()
         self.config = Config()
-        self.load_chached_model()
+        if load_model:
+            self.load_chached_model()
 
         
     def check_word_in_model(self, word):
@@ -51,15 +52,31 @@ class Model:
 
      
 
-    def check_cached_model(self):
+    def check_cached_model(self, notification = False):
         """Function that checks if the cached model is available. If not, it will attempt to download it from a remote location.
         Tipically hosted on the CSO Portal.
     
         """
         
+        if notification:
+            print("# ==============================")
+            print("#     CACHED WORD2VEC MODEL")
+            print("# ==============================")
+        
         if not os.path.exists(self.config.get_cached_model()):
             print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
-            misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
+            task_completed = misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
+            if notification:
+                if task_completed:
+                    print("File containing the model has been downloaded successfully.")
+                else:
+                    print("We were unable to complete the download of the model.")
+        else:
+            if notification:
+                print("Nothing to do. The model was already available.")
+            
+
+     
 
 
 

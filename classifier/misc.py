@@ -2,6 +2,7 @@ import sys
 import requests
 from hurry.filesize import size
 from itertools import islice
+import os
 
 
 def download_file(url, filename):
@@ -21,6 +22,7 @@ def download_file(url, filename):
         if total is None:
             #f.write(response.content)
             print('There was an error while downloading the new version of the ontology.')
+            return False
         else:
             downloaded = 0
             total = int(total)
@@ -32,6 +34,9 @@ def download_file(url, filename):
                 sys.stdout.flush()
             sys.stdout.write('\n')
             print('[*] Done!')
+            return True
+    
+    return False
 
 
 def chunks(data, size):
@@ -41,3 +46,13 @@ def chunks(data, size):
     it = iter(data)
     for i in range(0, len(data), size):
         yield {k:data[k] for k in islice(it, size)}
+        
+        
+def download_language_model(notification = True):
+    
+    if notification:
+        print("# ==============================")
+        print("#     LANGUAGE MODEL")
+        print("# ==============================")
+              
+    os.system("python -m spacy download en_core_web_sm")
