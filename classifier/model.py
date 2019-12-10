@@ -18,8 +18,7 @@ class Model:
             self.load_chached_model()
 
         
-    def check_word_in_model(self, word):
-        
+    def check_word_in_model(self, word):      
         if word in self.model:
             return True
         
@@ -59,9 +58,7 @@ class Model:
         """
         
         if notification:
-            print("# ==============================")
-            print("#     CACHED WORD2VEC MODEL")
-            print("# ==============================")
+            misc.print_header("CACHED WORD2VEC MODEL")
         
         if not os.path.exists(self.config.get_cached_model()):
             print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
@@ -73,13 +70,16 @@ class Model:
                     print("We were unable to complete the download of the model.")
         else:
             if notification:
-                print("Nothing to do. The model was already available.")
+                print("Nothing to do. The model is already available.")
             
 
      
 
-
-
+    def update(self, force = False): # force is for the future
+        misc.print_header("CACHED WORD2VEC MODEL")
+        os.remove(self.config.get_cached_model())
+        print("Updating the cached word2vec model")
+        misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
 
 
       

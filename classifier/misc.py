@@ -51,8 +51,13 @@ def chunks(data, size):
 def download_language_model(notification = True):
     
     if notification:
-        print("# ==============================")
-        print("#     LANGUAGE MODEL")
-        print("# ==============================")
+        print_header("LANGUAGE MODEL")
               
     os.system("python -m spacy download en_core_web_sm")
+    
+    
+def print_header(header):
+    print()
+    print("# ==============================")
+    print("#     {}".format(header))
+    print("# ==============================")

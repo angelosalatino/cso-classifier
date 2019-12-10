@@ -200,15 +200,18 @@ def setup():
     model = MODEL(load_model = False)
     model.check_cached_model(notification = notification)
     
-def update():
-    print("to be developed")
+
+def update(force = False):
+    
+    cso = CSO(load_ontology = False)
+    cso.update(force = force)
+    
+    model = MODEL(load_model = False)
+    model.update(force = force)
     
 def version():
     config = Config()
-
-    print("# ==============================")
-    print("#     CLASSIFIER")
-    print("# ==============================")
+    misc.print_header("CLASSIFIER")
     print("CSO Classifier version {}".format(config.get_classifier_version()))
 
     import subprocess   
@@ -225,23 +228,8 @@ def version():
     elif latest_version == config.get_classifier_version():
         print("The version of the CSO Classifier you are using is already up to date.")
     elif latest_version < config.get_classifier_version():
-        print("The latest availble package is version {} and you are using version {}. There is an error in your configuration file.".format(latest_version,config.get_classifier_version()))
+        print("The latest available package is version {} and you are using version {}. There is an error in your configuration file.".format(latest_version,config.get_classifier_version()))
     
-    print()
-    print("# ==============================")
-    print("#     ONTOLOGY")
-    print("# ==============================")
-    print("CSO ontology version {}".format(config.get_ontology_version()))
+    cso = CSO(load_ontology = False)
+    cso.version()
     
-    import urllib.request, json  
-    with urllib.request.urlopen(config.get_cso_last_version_url()) as url:
-        data = json.loads(url.read().decode())
-        if data['last_version'] > config.get_ontology_version():
-            print("A more recent version ({}) of the Computer Science Ontology is available.".format(data['last_version']))
-            print("You can update this package by running the following instructions:")
-            print("1) import classifier.classifier as CSO")
-            print("2) CSO.update()")
-        elif data['last_version'] == config.get_ontology_version():
-            print("The version of the CSO Ontology you are using is already up to date.") 
-        elif data['last_version'] < config.get_ontology_version():
-            print("The latest availble package is version {} and you are using version {}. There is an error in your configuration file.".format(data['last_version'],config.get_ontology_version()))

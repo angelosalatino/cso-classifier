@@ -77,6 +77,10 @@ class Ontology:
                     self.topic_stems[topic[:4]] = list()
                 self.topic_stems[topic[:4]].append(topic)
             
+            with open(self.config.get_cso_pickle_path(), 'wb') as cso_file:
+                print("Creating ontology pickle file from a copy of the CSO Ontology found in",self.config.get_cso_path())
+                pickle.dump(self.from_single_items_to_cso(), cso_file)
+
     
         
     def from_single_items_to_cso(self):
@@ -104,16 +108,14 @@ class Ontology:
         """ 
         
         if notification:
-            print("# ==============================")
-            print("#     ONTOLOGY")
-            print("# ==============================")
+            misc.print_header("ONTOLOGY")
         
         if not os.path.exists(self.config.get_cso_pickle_path()):
             print("Ontology pickle file is missing.")
             
             if not os.path.exists(self.config.get_cso_path()):
                 print("The source file of the Computer Science Ontology is missing. Attempting to download it now...")
-                task_completed = misc.download_file(self.config.get_cso_remote_url(), self.config.get_cso_path()) 
+                task_completed = self.download_ontology() 
                 
                 if notification:
                     if task_completed:
@@ -122,20 +124,17 @@ class Ontology:
                         print("We were unable to complete the download of the ontology.")
             
             self.load_cso_from_csv()
-
-            with open(self.config.get_cso_pickle_path(), 'wb') as cso_file:
-                print("Creating ontology pickle file from a copy of the CSO Ontology found in",self.config.get_cso_path())
-                pickle.dump(self.from_single_items_to_cso(), cso_file)
-                if notification:
-                    print("Ontology file created successfully.")
-                    print()
+            
+            if notification and os.path.exists(self.config.get_cso_pickle_path()):
+                print("Ontology file created successfully.")
+                print()
+            
         else:
             if notification:
-                print("Nothing to do. The ontology file was already available.")
+                print("Nothing to do. The ontology file is already available.")
                 print()
                 
         
-                
 
 
 
@@ -258,3 +257,58 @@ class Ontology:
                         all_broaders[broader] = [topic]
     
         return all_broaders
+    
+    def download_ontology(self):
+        try:
+            os.remove(self.config.get_cso_pickle_path())
+        except FileNotFoundError:
+            pass
+        
+        try:
+            os.remove(self.config.get_cso_path())
+        except FileNotFoundError:
+            pass
+        task_completed = misc.download_file(self.config.get_cso_remote_url(), self.config.get_cso_path())
+        return task_completed
+    
+    def update(self, force = False):
+        misc.print_header("ONTOLOGY")
+        if force:
+            print("Updating the ontology file")
+            self.download_ontology() 
+            self.load_cso_from_csv()
+
+        else:
+            last_version = self.retrieve_latest_version_available()
+            if last_version > self.config.get_ontology_version():
+                print("Updating the ontology file")
+                self.download_ontology() 
+                self.load_cso_from_csv()
+            else:
+                print("The ontology is already currently up to date.")
+    
+                    
+    def retrieve_latest_version_available(self):
+        import urllib.request, json  
+        with urllib.request.urlopen(self.config.get_cso_last_version_url()) as url:
+            data = json.loads(url.read().decode())
+            return data['last_version']
+        return "0.0"
+    
+    def version(self):
+        
+        misc.print_header("ONTOLOGY")
+        print("CSO ontology version {}".format(self.config.get_ontology_version()))
+        
+        last_version = self.retrieve_latest_version_available()
+
+        if last_version > self.config.get_ontology_version():
+            print("A more recent version ({}) of the Computer Science Ontology is available.".format(last_version))
+            print("You can update this package by running the following instructions:")
+            print("1) import classifier.classifier as classifier")
+            print("2) classifier.update()")
+        elif last_version == self.config.get_ontology_version():
+            print("The version of the CSO Ontology you are using is already up to date.") 
+        elif last_version < self.config.get_ontology_version():
+            print("Something is not right. The version you are using ({}) is ahead compared to the latest available ({}).".format(self.config.get_ontology_version(),last_version))
+        
