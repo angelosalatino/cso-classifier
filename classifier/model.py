@@ -54,26 +54,30 @@ class Model:
     def check_cached_model(self, notification = False):
         """Function that checks if the cached model is available. If not, it will attempt to download it from a remote location.
         Tipically hosted on the CSO Portal.
-    
         """
-        
-        if notification:
-            misc.print_header("CACHED WORD2VEC MODEL")
+        if not os.path.exists(self.config.get_cached_model()):
+            print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
+            misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
+
+  
+            
+
+    def setup(self):
+        """Function that sets up the word2vec model
+        """
+        misc.print_header("CACHED WORD2VEC MODEL")
         
         if not os.path.exists(self.config.get_cached_model()):
             print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
             task_completed = misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
-            if notification:
-                if task_completed:
-                    print("File containing the model has been downloaded successfully.")
-                else:
-                    print("We were unable to complete the download of the model.")
-        else:
-            if notification:
-                print("Nothing to do. The model is already available.")
-            
 
-     
+            if task_completed:
+                print("File containing the model has been downloaded successfully.")
+            else:
+                print("We were unable to complete the download of the model.")
+        else:
+            print("Nothing to do. The model is already available.")
+    
 
     def update(self, force = False): # force is for the future
         misc.print_header("CACHED WORD2VEC MODEL")

@@ -40,6 +40,7 @@ class Ontology:
                - primary_labels, all the primary labels of topics, if they belong to clusters
                - topics_wu, topic with underscores
                - primary_labels_wu, primary labels with underscores
+               - topic_stems, groups together topics that start with the same 4 letters
         """
     
         with open(self.config.get_cso_path(), 'r') as ontoFile:
@@ -84,15 +85,19 @@ class Ontology:
     
         
     def from_single_items_to_cso(self):
+        """ Function that returns a single dictionary containing all relevant values for the ontology.
+        """
         return {attr: getattr(self, attr) for attr in self.ontology_attr}
     
     def from_cso_to_single_items(self, cso):
+        """ Function that fills all the single relevant variables in this class.
+        """
         for attr in self.ontology_attr:
             setattr(self, attr, cso[attr])
     
 
     def load_ontology_pickle(self):
-        """Function that loads CSO. 
+        """ Function that loads CSO. 
         This file has been serialised using Pickle allowing to be loaded quickly.
         """
         self.check_ontology()
@@ -102,49 +107,26 @@ class Ontology:
 
 
      
-    def check_ontology(self, notification = False):
-        """Function that checks if the ontology is available. 
+    def check_ontology(self):
+        """ Function that checks if the ontology is available. 
         If not, it will check if a csv version exists and then it will create the pickle file.
-        """ 
-        
-        if notification:
-            misc.print_header("ONTOLOGY")
-        
+        """         
         if not os.path.exists(self.config.get_cso_pickle_path()):
             print("Ontology pickle file is missing.")
             
             if not os.path.exists(self.config.get_cso_path()):
                 print("The source file of the Computer Science Ontology is missing. Attempting to download it now...")
-                task_completed = self.download_ontology() 
-                
-                if notification:
-                    if task_completed:
-                        print("Ontology file downloaded successfully.")
-                    else:
-                        print("We were unable to complete the download of the ontology.")
+                self.download_ontology() 
             
             self.load_cso_from_csv()
             
-            if notification and os.path.exists(self.config.get_cso_pickle_path()):
-                print("Ontology file created successfully.")
-                print()
-            
-        else:
-            if notification:
-                print("Nothing to do. The ontology file is already available.")
-                print()
-                
-        
-
-
 
     def get_primary_label(self, topic):
-        """Function that returns the primary (preferred) label for a topic. If this topic belongs to 
+        """ Function that returns the primary (preferred) label for a topic. If this topic belongs to 
         a cluster.
 
         Args:
             topic (string): Topic to analyse.
-            primary_labels (dictionary): It contains the primary labels of all the topics belonging to clusters.
 
         Returns:
             topic (string): primary label of the analysed topic.
@@ -159,12 +141,11 @@ class Ontology:
     
     
     def get_primary_label_wu(self, topic):
-        """Function that returns the primary (preferred) label for a topic with underscore. If this topic belongs to 
+        """ Function that returns the primary (preferred) label for a topic *with underscore*. If this topic belongs to 
         a cluster.
 
         Args:
             topic (string): Topic to analyse.
-            primary_labels (dictionary): It contains the primary labels of all the topics belonging to clusters.
 
         Returns:
             topic (string): primary label of the analysed topic with underscore.
@@ -179,13 +160,10 @@ class Ontology:
 
 
     def climb_ontology(self, found_topics, climb_ont):
-        """Function that climbs the ontology. This function might retrieve
+        """ Function that climbs the ontology. This function might retrieve
             just the first broader topic or the whole branch up until root
         Args:
             found_topics (dictionary): It contains the topics found with string similarity.
-            cso (dictionary): the ontology previously loaded from the file.
-            num_narrower (integer): it defines the number of narrower topics before their broader topic gets included
-            in the final set of topics. Default = 1.
             climb_ont (string): either "first" or "all" for selecting "just the first broader topic" or climbing
             the "whole tree".
         Returns:
@@ -226,19 +204,16 @@ class Ontology:
         return inferred_topics
 
 
-
     def get_broader_of_topics(self, found_topics, all_broaders):
-        """Function that returns all the broader topics for a given set of topics.
+        """ Function that returns all the broader topics for a given set of topics.
             It analyses the broader topics of both the topics initially found in the paper, and the broader topics
             found at the previous iteration.
             It incrementally provides a more comprehensive set of broader topics.
     
         Args:
             found_topics (dictionary): It contains the topics found with string similarity.
-            all_broaders (dictionary): It contains the broader topics found in the previous run.
-            Otherwise an empty object.
-            cso (dictionary): the ontology previously loaded from the file.
-    
+            all_broaders (dictionary): It contains the broader topics found in the previous run. Otherwise an empty object.
+   
         Returns:
             all_broaders (dictionary): contains all the broaders found so far, including the previous iterations.
         """
@@ -258,7 +233,11 @@ class Ontology:
     
         return all_broaders
     
+    
     def download_ontology(self):
+        """ Function that allows to download the latest version of the ontology.
+            If older versions of the ontology (both csv and pickle) are available they will be deleted.
+        """
         try:
             os.remove(self.config.get_cso_pickle_path())
         except FileNotFoundError:
@@ -271,7 +250,13 @@ class Ontology:
         task_completed = misc.download_file(self.config.get_cso_remote_url(), self.config.get_cso_path())
         return task_completed
     
+    
     def update(self, force = False):
+        """ This funciton updates the ontology.
+        
+        Args:
+            force (boolean): If false, it checks if a newer version is available. If false, it will delete all files and download the most recent version.
+        """
         misc.print_header("ONTOLOGY")
         if force:
             print("Updating the ontology file")
@@ -285,18 +270,49 @@ class Ontology:
                 self.download_ontology() 
                 self.load_cso_from_csv()
             else:
-                print("The ontology is already currently up to date.")
+                print("The ontology is already up to date.")
+                
+        
+    def setup(self):
+        """ Function that sets up the ontology. 
+        """ 
+        misc.print_header("ONTOLOGY")
+        
+        if not os.path.exists(self.config.get_cso_pickle_path()):
+            
+            if not os.path.exists(self.config.get_cso_path()):
+                print("Downloading the Computer Science Ontology ...")
+                task_completed = self.download_ontology() 
+                
+                if task_completed:
+                    print("Ontology file downloaded successfully.")
+                else:
+                    print("We were unable to complete the download of the ontology.")
+            
+            self.load_cso_from_csv()
+            
+            if os.path.exists(self.config.get_cso_pickle_path()):
+                print("Ontology file created successfully.")
+            
+        else:
+            print("Nothing to do. The ontology file is already available.")
+
     
                     
     def retrieve_latest_version_available(self):
+        """ Function that retireves the version number of the latest ontology. 
+        """
         import urllib.request, json  
         with urllib.request.urlopen(self.config.get_cso_last_version_url()) as url:
             data = json.loads(url.read().decode())
             return data['last_version']
         return "0.0"
     
+    
     def version(self):
-        
+        """ Function that returns the current version of the ontology available in this classifier
+            It also checks whether there is a more up-to-date version.
+        """
         misc.print_header("ONTOLOGY")
         print("CSO ontology version {}".format(self.config.get_ontology_version()))
         

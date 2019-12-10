@@ -190,25 +190,27 @@ def run_cso_classifier_batch_mode(papers, workers=1, modules="both", enhancement
 
 
 def setup():
-    
-    notification = True
-    misc.download_language_model(notification = notification)
+    """ Setting up the classifier: language model, ontology and word2vec model
+    """
+    misc.download_language_model()
     
     cso = CSO(load_ontology = False)
-    cso.check_ontology(notification = notification)
+    cso.setup()
     
     model = MODEL(load_model = False)
-    model.check_cached_model(notification = notification)
+    model.setup()
     
 
 def update(force = False):
-    
+    """ Update the ontology and the word2vec model
+    """
     cso = CSO(load_ontology = False)
     cso.update(force = force)
     
     model = MODEL(load_model = False)
     model.update(force = force)
     
+
 def version():
     config = Config()
     misc.print_header("CLASSIFIER")
