@@ -3,7 +3,8 @@ from nltk import RegexpParser, tree
 import re
 
 tagger = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
-GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<NN.*>+}"
+GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<HYPH>*<JJ.*>*<HYPH>*<NN.*>*<HYPH>*<NN.*>+}" #good for syntactic
+#GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<NN.*>+}" #good for semantic (or at least for what we know)
 
 class Paper:
     """ A simple abstraction layer for working on the paper object"""
@@ -82,7 +83,7 @@ class Paper:
     def extraxt_chuncks(self, pos_tags):
         
         grammar_parser = RegexpParser(GRAMMAR)
-        
+        chunks = list()
         pos_tags_with_grammar = grammar_parser.parse(pos_tags)
         #print(pos_tags_with_grammar)
         for node in pos_tags_with_grammar:
@@ -96,7 +97,8 @@ class Paper:
                     chunk += ' ' + concept_chunk
                 chunk = re.sub('\.+', '.', chunk)
                 chunk = re.sub('\s+', ' ', chunk)
-                yield chunk
+                chunks.append(chunk)
+        return chunks
                 
                 
     def pre_process(self):
