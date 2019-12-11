@@ -35,18 +35,13 @@ class Model:
         The ontology file has been serialised with Pickle. 
         The cached model is a json file (dictionary) containing all words in the corpus vocabulary with the corresponding CSO topics.
         The latter has been created to speed up the process of retrieving CSO topics given a token in the metadata
-        
-    
-        Args:
-    
-        Returns:
-            fcso (dictionary): contains the CSO Ontology.
-            fmodel (dictionary): contains a cache of the model, i.e., each token is linked to the corresponding CSO topic.
         """
         
         self.check_cached_model()
         with open(self.config.get_cached_model()) as f:
            self.model = json.load(f)
+        print("Model loaded.")
+           
         
 
      
