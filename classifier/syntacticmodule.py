@@ -14,17 +14,15 @@ class Syntactic:
 
         Args:
             cso (dictionary): Computer Science Ontology
-            paper (dictionary): paper{"title":"...","abstract":"...","keywords":"..."} the paper.
+            paper (Paper class): object containing the paper.
 
         """
         # Initialise variables to store CSO data - loads into memory 
         self.cso = cso
         self.min_similarity = 0.94
-        self.paper = None
+        self.paper = paper
         self.explanation = dict()
-        # this will be changed in the future
-        if paper is not None:
-            self.set_paper(paper)
+
         
     
     def set_paper(self, paper):
@@ -36,7 +34,7 @@ class Syntactic:
 
         """
 
-        self.paper = paper._text
+        self.paper = paper
         self.explanation = dict()
         
     
@@ -77,37 +75,31 @@ class Syntactic:
             found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
         """
 
-
-        # pre-processing
-        paper = self.paper.lower()
-        tokenizer = RegexpTokenizer(r'[\w\-\(\)]*')
-        tokens = tokenizer.tokenize(paper)
-        filtered_words = [w for w in tokens if w not in stopwords.words('english')]
-        paper = " ".join(filtered_words)
-
+        
         # analysing similarity with terms in the ontology
-        extracted_topics = self.statistic_similarity(paper, self.min_similarity)
+        extracted_topics = self.statistic_similarity(self.paper.get_chunks())
         
-        topics = {}
-        topics = self.strip_explanation(extracted_topics)
+        final_topics = list()
+        final_topics = self.strip_explanation(extracted_topics)
+        
+        return final_topics
         
         
-        return topics
-        
-        
-    def statistic_similarity(self, paper, min_similarity):
+    def statistic_similarity(self, concepts):
         
         found_topics = dict()
-        matched_trigrams = set()
-        matched_bigrams = set()
-        
-        for n in range(3, 0, -1):
-            # i indexes the same token in the text whether we're matching by unigram, bigram, or trigram
-            for i, grams in enumerate(ngrams(word_tokenize(paper, preserve_line=True), n)):
+         
+        for concept in concepts: 
+            matched_trigrams = set()
+            matched_bigrams = set()
+            for comprehensive_grams in self.get_ngrams(concept):
+                position = comprehensive_grams["position"]
+                size = comprehensive_grams["size"]
+                grams = comprehensive_grams["ngram"]
                 # if we already matched the current token to a topic, don't reprocess it
-                if i in matched_bigrams or i-1 in matched_bigrams:
+                if position in matched_bigrams or position-1 in matched_bigrams:
                     continue           
-                if i in matched_trigrams or i-1 in matched_trigrams or i-2 in matched_trigrams:
+                if position in matched_trigrams or position-1 in matched_trigrams or position-2 in matched_trigrams:
                     continue
                 # otherwise unsplit the ngram for matching so ('quick', 'brown') => 'quick brown'
                 gram = " ".join(grams)
@@ -120,7 +112,7 @@ class Syntactic:
                 for topic in topic_block:
                     # otherwise look for an inexact match
                     match_ratio = StringMatcher(None, topic, gram).ratio()
-                    if match_ratio >= min_similarity:
+                    if match_ratio >= self.min_similarity:
                         try:
                             # if a 'primary label' exists for the current topic, use it instead of the matched topic
                             topic = self.cso.primary_labels[topic]
@@ -132,8 +124,8 @@ class Syntactic:
                         found_topics[topic].append({'matched': gram, 'similarity': match_ratio})
                         # don't reprocess the current token
                         
-                        if n == 2: matched_bigrams.add(i)
-                        elif n == 3: matched_trigrams.add(i)
+                        if size == 2: matched_bigrams.add(position)
+                        elif size == 3: matched_trigrams.add(position)
                         
                         # explanation bit
                         if topic not in self.explanation:
@@ -143,6 +135,61 @@ class Syntactic:
                         
         return found_topics
     
+    def statistic_similarity2(self):
+        
+        found_topics = dict()
+         
+        for concept in self.paper.get_chunks(): 
+            matched_trigrams = set()
+            matched_bigrams = set()
+            for n in range(3, 0, -1):
+                # i indexes the same token in the text whether we're matching by unigram, bigram, or trigram
+                for i, grams in enumerate(ngrams(word_tokenize(concept, preserve_line=True), n)):
+                    # if we already matched the current token to a topic, don't reprocess it
+                    if i in matched_bigrams or i-1 in matched_bigrams:
+                        continue           
+                    if i in matched_trigrams or i-1 in matched_trigrams or i-2 in matched_trigrams:
+                        continue
+                    # otherwise unsplit the ngram for matching so ('quick', 'brown') => 'quick brown'
+                    gram = " ".join(grams)
+                    try:
+                        # if there isn't an exact match on the first 4 characters of the ngram and a topic, move on
+                        #topic_block = [key for key, _ in self.cso.topics.items() if key.startswith(gram[:4])]
+                        topic_block = self.cso.topic_stems[gram[:4]]
+                    except KeyError:
+                        continue
+                    for topic in topic_block:
+                        # otherwise look for an inexact match
+                        match_ratio = StringMatcher(None, topic, gram).ratio()
+                        if match_ratio >= self.min_similarity:
+                            try:
+                                # if a 'primary label' exists for the current topic, use it instead of the matched topic
+                                topic = self.cso.primary_labels[topic]
+                            except KeyError:
+                                pass
+                            # note the tokens that matched the topic and how closely
+                            if topic not in found_topics: 
+                                found_topics[topic] = list()
+                            found_topics[topic].append({'matched': gram, 'similarity': match_ratio})
+                            # don't reprocess the current token
+                            
+                            if n == 2: matched_bigrams.add(i)
+                            elif n == 3: matched_trigrams.add(i)
+                            
+                            # explanation bit
+                            if topic not in self.explanation:
+                                self.explanation[topic] = set()
+                                                    
+                            self.explanation[topic].add(gram)
+                        
+        return found_topics
+    
+    def get_ngrams(self, concept):
+        for n in range(3, 0, -1):
+            pos = 0
+            for ng in ngrams(word_tokenize(concept, preserve_line=True), n):
+                yield {"position": pos, "size": n, "ngram": ng}
+                pos += 1
 
     def strip_explanation(self, found_topics):
         """Function that removes statistical values from the dictionary containing the found topics.
