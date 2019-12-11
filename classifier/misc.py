@@ -13,7 +13,7 @@ def download_file(url, filename):
         filename (string): location of where to save the model
 
     Returns:
-        
+        boolean: whether it is successful or not.
     """
     with open(filename, 'wb') as f:
         response = requests.get(url, stream=True)
@@ -40,8 +40,8 @@ def download_file(url, filename):
 
 
 def chunks(data, size):
-    """Yield successive n-sized chunks from l."""
-    
+    """Yield successive n-sized chunks from l.
+    """
     # https://stackoverflow.com/questions/22878743/how-to-split-dictionary-into-multiple-dictionaries-fast
     it = iter(data)
     for i in range(0, len(data), size):
@@ -49,7 +49,8 @@ def chunks(data, size):
         
         
 def download_language_model(notification = True):
-    
+    """ Function for downloading the language model.
+    """
     if notification:
         print_header("LANGUAGE MODEL")
               
@@ -57,6 +58,8 @@ def download_language_model(notification = True):
     
     
 def print_header(header):
+    """ Printing header. Used when setting up, updating, versioning and so on.
+    """
     print()
     print("# ==============================")
     print("#     {}".format(header))
