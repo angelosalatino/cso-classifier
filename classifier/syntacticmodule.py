@@ -6,7 +6,7 @@ from Levenshtein.StringMatcher import StringMatcher
 
 
 
-class CSOClassifierSyntactic:
+class Syntactic:
     """ A simple abstraction layer for using the Syntactic module of the CSO classifier """
 
     def __init__(self, cso = None, paper = None):
@@ -21,8 +21,11 @@ class CSOClassifierSyntactic:
         self.cso = cso
         self.min_similarity = 0.94
         self.paper = None
+        self.explanation = dict()
+        # this will be changed in the future
         if paper is not None:
             self.set_paper(paper)
+        
     
     def set_paper(self, paper):
         """Function that initializes the paper variable in the class.
@@ -34,6 +37,7 @@ class CSOClassifierSyntactic:
         """
 
         self.paper = paper._text
+        self.explanation = dict()
         
     
     def set_min_similarity(self, msm):
@@ -43,6 +47,19 @@ class CSOClassifierSyntactic:
             msm (integer): similairity value.
         """
         self.min_similarity = msm
+      
+        
+    def reset_explanation(self):
+        """ Resetting the explanation 
+        """
+        self.explanation = dict()
+        
+        
+    def get_explanation(self):
+        """ Returns the explanation 
+        """
+        return self.explanation
+ 
 
     def classify_syntactic(self):
         """Function that classifies a single paper. If you have a collection of papers, 
@@ -76,8 +93,7 @@ class CSOClassifierSyntactic:
         
         
         return topics
-
-        #shared_dict = topics
+        
         
     def statistic_similarity(self, paper, min_similarity):
         
@@ -119,9 +135,14 @@ class CSOClassifierSyntactic:
                         if n == 2: matched_bigrams.add(i)
                         elif n == 3: matched_trigrams.add(i)
                         
+                        # explanation bit
+                        if topic not in self.explanation:
+                            self.explanation[topic] = set()
+                                                
+                        self.explanation[topic].add(gram)
+                        
         return found_topics
     
-
 
     def strip_explanation(self, found_topics):
         """Function that removes statistical values from the dictionary containing the found topics.

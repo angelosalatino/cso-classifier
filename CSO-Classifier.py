@@ -46,7 +46,7 @@ print(paper["keywords"])
 
 # In[Run Classifier]
 
-result = classifier.run_cso_classifier(paper)
+result = classifier.run_cso_classifier(paper, explanation = False)
 
 
 

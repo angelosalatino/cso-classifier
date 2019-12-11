@@ -3,8 +3,8 @@ from functools import partial
 from multiprocessing.pool import Pool
 
 from classifier import misc
-from classifier.semanticmodule import CSOClassifierSemantic as sema
-from classifier.syntacticmodule import CSOClassifierSyntactic as synt
+from classifier.semanticmodule import Semantic as sema
+from classifier.syntacticmodule import Syntactic as synt
 from classifier.ontology import Ontology as CSO
 from classifier.model import Model as MODEL
 from classifier.paper import Paper
@@ -12,7 +12,7 @@ from classifier.result import Result
 from classifier.config import Config
 
 
-def run_cso_classifier(paper, modules="both", enhancement="first"):
+def run_cso_classifier(paper, modules="both", enhancement="first", explanation=False):
     """Run the CSO Classifier.
 
     It takes as input the text from abstract, title, and keywords of a research paper and outputs a list of relevant
@@ -44,22 +44,27 @@ def run_cso_classifier(paper, modules="both", enhancement="first"):
 
     if enhancement not in ["first", "all", "no"]:
         raise ValueError("Error: Field enhances must be 'first', 'all' or 'no'")
+    
+    if type(explanation) != bool:
+        raise ValueError("Error: Explanation must be set to either True or False")
 
     
     # Loading ontology and model
     cso = CSO()
     model = MODEL()
     t_paper = Paper(paper)
-    result = Result()
+    result = Result(explanation)
 
     # Passing parameters to the two classes (synt and sema) and actioning classifiers
 
     if modules == 'syntactic' or modules == 'both':
         synt_module = synt(cso, t_paper)
         result.set_syntactic(synt_module.classify_syntactic())
+        if explanation: result.dump_temporary_explanation(synt_module.get_explanation())
     if modules == 'semantic' or modules == 'both':
         sema_module = sema(model, cso, t_paper)
         result.set_semantic(sema_module.classify_semantic())
+        if explanation: result.dump_temporary_explanation(sema_module.get_explanation())
        
     result.set_enhanced(cso.climb_ontology(getattr(result, "union"), enhancement))
 
@@ -67,7 +72,7 @@ def run_cso_classifier(paper, modules="both", enhancement="first"):
     return result.get_dict()
 
 
-def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhancement="first"):
+def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhancement="first", explanation = False):
     """Run the CSO Classifier in *BATCH MODE*.
 
     It takes as input a set of papers, which include abstract, title, and keywords and for each one of them returns a
@@ -99,6 +104,9 @@ def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhance
 
     if enhancement not in ["first", "all", "no"]:
         raise ValueError("Error: Field enhances must be 'first', 'all' or 'no'")
+    
+    if type(explanation) != bool:
+        raise ValueError("Error: Explanation must be set to either True or False")
 
     # Loading ontology and model
     cso = CSO()
@@ -137,7 +145,7 @@ def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhance
 
 
 
-def run_cso_classifier_batch_mode(papers, workers=1, modules="both", enhancement="first"):
+def run_cso_classifier_batch_mode(papers, workers=1, modules="both", enhancement="first", explanation = False):
     """Run the CSO Classifier in *BATCH MODE* and with multiprocessing.
 
     It takes as input a set of papers, which include abstract, title, and keywords and for each one of them returns a
@@ -168,12 +176,17 @@ def run_cso_classifier_batch_mode(papers, workers=1, modules="both", enhancement
 
     if enhancement not in ["first", "all", "no"]:
         raise ValueError("Error: Field enhances must be 'first', 'all' or 'no'")
+    
+    if type(workers) != int:
+        raise ValueError("Error: Number of workers must be integer")
 
     if workers < 1:
         raise ValueError("Error: Number of workers must be equal or greater than 1")
+    
+    if type(explanation) != bool:
+        raise ValueError("Error: Explanation must be set to either True or False")
+    
 
-    if type(workers) != int:
-        raise ValueError("Error: Number of workers must be integer")
 
     size_of_corpus = len(papers)
     chunk_size = math.ceil(size_of_corpus / workers)
@@ -212,6 +225,8 @@ def update(force = False):
     
 
 def version():
+    """ Function that returns the version number of different components: classifier and ontology
+    """
     config = Config()
     misc.print_header("CLASSIFIER")
     print("CSO Classifier version {}".format(config.get_classifier_version()))

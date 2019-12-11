@@ -3,7 +3,7 @@ from kneed import KneeLocator
 
 import warnings
 
-class CSOClassifierSemantic:
+class Semantic:
     """ A simple abstraction layer for using the Semantic module of the CSO classifier """
     
     def __init__(self, model = None, cso = None, paper = None):
@@ -21,6 +21,8 @@ class CSOClassifierSemantic:
         self.paper = paper              #Paper to analyse
         self.model = model              #contains the cached model          
         self.min_similarity = 0.94      #Initialises the min_similarity
+        self.explanation = dict()
+        
         
         
     def set_paper(self, paper):
@@ -32,6 +34,7 @@ class CSOClassifierSemantic:
 
         """
         self.paper = paper
+        self.reset_explanation()
         
     
     def set_min_similarity(self, min_similarity):
@@ -42,6 +45,16 @@ class CSOClassifierSemantic:
 
         """
         self.min_similarity = min_similarity
+        
+    def reset_explanation(self):
+        """ Resetting the explanation 
+        """
+        self.explanation = dict()
+        
+    def get_explanation(self):
+        """ Returns the explanation 
+        """
+        return self.explanation
  
     
     def classify_semantic(self):
@@ -59,10 +72,10 @@ class CSOClassifierSemantic:
         """     
 
         ##################### Core analysis
-        found_topics, topic_ngrams = self.find_topics(self.paper.get_chunks())
+        found_topics, explanation = self.find_topics(self.paper.get_chunks())
     
         ##################### Ranking
-        final_topics = self.rank_topics(found_topics) 
+        final_topics = self.rank_topics(found_topics, explanation) 
              
         return final_topics
 
@@ -71,23 +84,22 @@ class CSOClassifierSemantic:
         """Function that identifies topics starting from the ngram forund in the paper
 
         Args:
-            ceoncepts (list): Chuncks of text to analyse.
+            concepts (list): Chuncks of text to analyse.
 
         Returns:
             found_topics (dict): cdictionary containing the identified topics.
-            successful_grams (dict): dictionary containing the ngrams that allowed to infer topics.
         """
         
         # Set up
-        found_topics = {} # to store the matched topics
-        successful_grams = {} # to store the successful grams
+        found_topics = dict() # to store the matched topics
+        explanation = dict()
 
         # finding matches
         for concept in concepts:
             evgrams = everygrams(concept.split(), 1, 3) # list of unigrams, bigrams, trigrams
             for grams in evgrams:
                 gram = "_".join(grams)
-                
+                gram_without_underscore = " ".join(grams)
                 #### Finding similar words contained in the model
                 
                 list_of_matched_topics = []
@@ -141,14 +153,15 @@ class CSOClassifierSemantic:
                         if sim == 1:
                             found_topics[topic]["syntactic"] = True
     
-    
-                        # reporting successful grams: it is the inverse of found_topics["topic"]["grams"]
-                        if gram in successful_grams:
-                            successful_grams[gram].append(topic)
-                        else:
-                            successful_grams[gram] = [topic]
+                            
+                            
+                        primary_label_topic = self.cso.get_primary_label_wu(topic)
+                        if primary_label_topic not in explanation:
+                            explanation[primary_label_topic] = set()
+                        
+                        explanation[primary_label_topic].add(gram_without_underscore)
         
-        return found_topics, successful_grams
+        return found_topics, explanation
     
     
     def match_ngram(self, grams, merge=True):
@@ -185,7 +198,7 @@ class CSOClassifierSemantic:
         return list_of_matched_topics
                     
         
-    def rank_topics(self, found_topics):
+    def rank_topics(self, found_topics, explanation):
         
         max_value = 0
         scores = []
@@ -262,7 +275,9 @@ class CSOClassifierSemantic:
                 knee = len(sort_t)
 
         final_topics = []
-        final_topics = [self.cso.topics_wu[sort_t[i][0]] for i in range(0,knee)]    
+        final_topics = [self.cso.get_topic_wu(sort_t[i][0]) for i in range(0,knee)] 
+        self.reset_explanation()
+        self.explanation = {self.cso.topics_wu[sort_t[i][0]]: explanation[sort_t[i][0]] for i in range(0,knee)}
 
         return final_topics        
     
