@@ -157,25 +157,42 @@ class Ontology:
             pass
         
         return topic
+    
+    
+    def get_topic_wu(self, topic):
+        """ Function that returns the topic label (without underscore) from its underscored version.
+
+        Args:
+            topic (string): Topic to analyse.
+
+        Returns:
+            topic (string): primary label of the analysed topic with underscore.
+        """
+        
+        try:
+            topic = self.topics_wu[topic]
+        except KeyError:
+            pass
+        
+        return topic
 
 
     def climb_ontology(self, found_topics, climb_ont):
         """ Function that climbs the ontology. This function might retrieve
             just the first broader topic or the whole branch up until root
         Args:
-            found_topics (dictionary): It contains the topics found with string similarity.
+            found_topics (list): It contains the topics found with string similarity.
             climb_ont (string): either "first" or "all" for selecting "just the first broader topic" or climbing
             the "whole tree".
         Returns:
             found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
         """
 
-        all_broaders = {}
-        inferred_topics = {}
-        num_narrower = 1
+        all_broaders = dict()
+        num_narrowers = 1
 
         if climb_ont == 'first':
-            all_broaders = self.get_broader_of_topics(found_topics, all_broaders)
+            all_broaders = self.get_broader_of_topics(found_topics)
         elif climb_ont == 'all':
             while True:
                 """
@@ -187,50 +204,56 @@ class Ontology:
                 if all_broaders_back == all_broaders:  # no more broaders have been found
                     break
         elif climb_ont == 'no':
-            return inferred_topics #it is empty at this stage
+            return dict() #it is empty at this stage
         else:
             raise ValueError("Error: Field climb_ontology must be 'first', 'all' or 'no'")
             return
         
         
-        for broader, narrower in all_broaders.items():
-            if len(narrower) >= num_narrower:
+        inferred_topics = dict()
+        for broader, narrowers in all_broaders.items():
+            if len(narrowers) >= num_narrowers:
                 broader = self.get_primary_label(broader)
                 if broader not in inferred_topics:
-                    inferred_topics[broader] = [{'matched': len(narrower), 'broader of': narrower}]
-                else:
-                    inferred_topics[broader].append({'matched': len(narrower), 'broader of': narrower})
-
+                    inferred_topics[broader] = {'matched': len(narrowers), 'broader of': list(narrowers)}
+                else: # this branch folds when we have same as
+                    this_broader_narrowers = set(inferred_topics[broader]['broader of'])
+                    this_broader_narrowers = this_broader_narrowers.union(narrowers)
+                    inferred_topics[broader] = {'matched': len(this_broader_narrowers), 'broader of': list(this_broader_narrowers)}
+                    
         return inferred_topics
 
 
-    def get_broader_of_topics(self, found_topics, all_broaders):
+    def get_broader_of_topics(self, found_topics, all_broaders={}):
         """ Function that returns all the broader topics for a given set of topics.
             It analyses the broader topics of both the topics initially found in the paper, and the broader topics
             found at the previous iteration.
             It incrementally provides a more comprehensive set of broader topics.
     
         Args:
-            found_topics (dictionary): It contains the topics found with string similarity.
+            found_topics (list): It contains the topics found with string similarity.
             all_broaders (dictionary): It contains the broader topics found in the previous run. Otherwise an empty object.
    
         Returns:
             all_broaders (dictionary): contains all the broaders found so far, including the previous iterations.
         """
-    
+        
+        
+        
         topics = list(found_topics) + list(all_broaders.keys())
         for topic in topics:
-            if topic in self.broaders:
+            try:
                 broaders = self.broaders[topic]
                 for broader in broaders:
-                    if broader in all_broaders:
-                        if topic not in all_broaders[broader]:
-                            all_broaders[broader].append(topic)
-                        else:
-                            pass  # the topic was listed before
-                    else:
-                        all_broaders[broader] = [topic]
-    
+                    if broader not in all_broaders:
+                        all_broaders[broader] = set()
+                    all_broaders[broader].add(topic)
+                    if topic in all_broaders:
+                        all_broaders[broader] = all_broaders[broader].union(all_broaders[topic])
+
+            except KeyError:
+                pass
+            
         return all_broaders
     
     
