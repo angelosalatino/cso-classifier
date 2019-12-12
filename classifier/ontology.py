@@ -270,7 +270,10 @@ class Ontology:
             os.remove(self.config.get_cso_path())
         except FileNotFoundError:
             pass
-        task_completed = misc.download_file(self.config.get_cso_remote_url(), self.config.get_cso_path())
+        
+        ontology_remote_url = self.retrieve_url_of_latest_version_available()
+        print("Downloading the Computer Science Ontology from {}".format(ontology_remote_url))
+        task_completed = misc.download_file(ontology_remote_url, self.config.get_cso_path())
         return task_completed
     
     
@@ -292,6 +295,7 @@ class Ontology:
                 print("Updating the ontology file")
                 self.download_ontology() 
                 self.load_cso_from_csv()
+                self.config.set_cso_version(last_version)
             else:
                 print("The ontology is already up to date.")
                 
@@ -304,7 +308,7 @@ class Ontology:
         if not os.path.exists(self.config.get_cso_pickle_path()):
             
             if not os.path.exists(self.config.get_cso_path()):
-                print("Downloading the Computer Science Ontology ...")
+                
                 task_completed = self.download_ontology() 
                 
                 if task_completed:
@@ -313,6 +317,8 @@ class Ontology:
                     print("We were unable to complete the download of the ontology.")
             
             self.load_cso_from_csv()
+            last_version = self.retrieve_latest_version_available()
+            self.config.set_cso_version(last_version)
             
             if os.path.exists(self.config.get_cso_pickle_path()):
                 print("Ontology file created successfully.")
@@ -322,13 +328,30 @@ class Ontology:
 
     
                     
+    def retrieve_url_of_latest_version_available(self):
+        """ Function that retireves the version number of the latest ontology. 
+        """
+        version = self.retrieve_latest_version_available()
+        composite_url = "{}/version-{}/cso_v{}.csv".format(self.config.get_cso_remote_url(),version,version)
+        import urllib.request, json  
+        with urllib.request.urlopen(self.config.get_cso_version_logger_url()) as url:
+            data = json.loads(url.read().decode())
+            if "last_version" in data and "url" in data['last_version']:
+                return data['last_version']["url"]
+            else:
+                return composite_url
+        return composite_url
+    
     def retrieve_latest_version_available(self):
         """ Function that retireves the version number of the latest ontology. 
         """
         import urllib.request, json  
-        with urllib.request.urlopen(self.config.get_cso_last_version_url()) as url:
+        with urllib.request.urlopen(self.config.get_cso_version_logger_url()) as url:
             data = json.loads(url.read().decode())
-            return data['last_version']
+            if "last_version" in data and "version" in data['last_version']:
+                return data['last_version']["version"]
+            else:
+                return "0.0"
         return "0.0"
     
     

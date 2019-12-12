@@ -42,8 +42,8 @@ class Config:
     def get_ontology_version(self):
         return self.config['Ontology']['cso_version']
     
-    def get_cso_last_version_url(self):
-        return self.config['Ontology']['cso_last_version_url']
+    def get_cso_version_logger_url(self):
+        return self.config['Ontology']['cso_versions_logger_url']
     
     def set_cso_version(self, version):
         self.config['Ontology']['cso_version'] = version
