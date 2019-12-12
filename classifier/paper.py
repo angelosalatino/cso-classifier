@@ -32,7 +32,6 @@ class Paper:
             is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
 
         """
-        
         self.title = None
         self.abstract = None
         self.keywords = None
@@ -62,18 +61,29 @@ class Paper:
         except TypeError:
             pass
 
+
     def text(self):
+        """ Text aggregator
+        """
         attr_text = [getattr(self, attr) for attr in self.text_attr]
         self._text = '. '.join((s.rstrip('.') for s in attr_text if s is not None))
 
+
     def treat_keywords(self):
+        """ Function that handles different version of keyword field
+        """
         if self.keywords is None:
             return
         if isinstance(self.keywords, list):
             self.keywords = ', '.join(self.keywords)
 
+
     def part_of_speech_tagger(self):
-        
+        """ Part of speech tagger
+        Returns:
+            text (string): single token
+            tag_ (string): POS tag
+        """
         doc = tagger(self._text)
         for token in doc:
             if token.tag_:
@@ -81,7 +91,11 @@ class Paper:
             
 
     def extraxt_chuncks(self, pos_tags):
-        
+        """ Extract chunks of text from the paper taking advantage of the parts of speech previously extracted.
+        It uses a grammar
+        Returns:
+            chunks (list): list of all chunks of text 
+        """
         grammar_parser = RegexpParser(GRAMMAR)
         chunks = list()
         pos_tags_with_grammar = grammar_parser.parse(pos_tags)
@@ -102,10 +116,15 @@ class Paper:
                 
                 
     def pre_process(self):
+        """ Pre-processes the paper: identifies the parts of speech and then extracts chunks using a grammar
+        """
         ##################### Tokenizer with spaCy.io
         pos_tags = self.part_of_speech_tagger()
         ##################### Applying grammar          
         self.chunks = self.extraxt_chuncks(list(pos_tags))  
+     
         
     def get_chunks(self):
+        """Returns the chunks extracted from the paper
+        """
         return self.chunks

@@ -237,9 +237,6 @@ class Ontology:
         Returns:
             all_broaders (dictionary): contains all the broaders found so far, including the previous iterations.
         """
-        
-        
-        
         topics = list(found_topics) + list(all_broaders.keys())
         for topic in topics:
             try:
