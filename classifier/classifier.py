@@ -33,10 +33,11 @@ def run_cso_classifier(paper, modules="both", enhancement="first", explanation=F
         enhancement (string): either "first", "all" or "no". With "first" the CSO classifier returns only the topics
         one level above. With "all" it returns all topics above the resulting topics. With "no" the CSO Classifier
         does not provide any enhancement.
+        explanation (boolean): if true it returns the chunks of text that allowed to infer a particular topic. This feature
+        of the classifier is useful as it allows users to asses the result
 
     Returns:
-        fcso (dictionary): contains the CSO Ontology.
-        fmodel (dictionary): contains a cache of the model, i.e., each token is linked to the corresponding CSO topic.
+        class_res (dictionary): containing teh result of each classification
     """
 
     if modules not in ["syntactic", "semantic", "both"]:
@@ -93,10 +94,11 @@ def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhance
         enhancement (string): either "first", "all" or "no". With "first" the CSO classifier returns only the topics
         one level above. With "all" it returns all topics above the resulting topics. With "no" the CSO Classifier
         does not provide any enhancement.
+        explanation (boolean): if true it returns the chunks of text that allowed to infer a particular topic. This feature
+        of the classifier is useful as it allows users to asses the result
 
     Returns:
-        fcso (dictionary): contains the CSO Ontology.
-        fmodel (dictionary): contains a cache of the model, i.e., each token is linked to the corresponding CSO topic.
+        class_res (dictionary): containing teh result of each classification
     """
 
     if modules not in ["syntactic", "semantic", "both"]:
@@ -165,10 +167,11 @@ def run_cso_classifier_batch_mode(papers, workers=1, modules="both", enhancement
         enhancement (string): either "first", "all" or "no". With "first" the CSO classifier returns only the topics
         one level above. With "all" it returns all topics above the resulting topics. With "no" the CSO Classifier
         does not provide any enhancement.
+        explanation (boolean): if true it returns the chunks of text that allowed to infer a particular topic. This feature
+        of the classifier is useful as it allows users to asses the result
 
     Returns:
-        fcso (dictionary): contains the CSO Ontology.
-        fmodel (dictionary): contains a cache of the model, i.e., each token is linked to the corresponding CSO topic.
+        class_res (dictionary): containing teh result of each classification
     """
 
     if modules not in ["syntactic", "semantic", "both"]:

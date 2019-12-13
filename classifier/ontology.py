@@ -323,7 +323,6 @@ class Ontology:
         else:
             print("Nothing to do. The ontology file is already available.")
 
-    
                     
     def retrieve_url_of_latest_version_available(self):
         """ Function that retireves the version number of the latest ontology. 
@@ -338,6 +337,7 @@ class Ontology:
             else:
                 return composite_url
         return composite_url
+    
     
     def retrieve_latest_version_available(self):
         """ Function that retireves the version number of the latest ontology. 

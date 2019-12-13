@@ -13,16 +13,12 @@ class Semantic:
             model (dictionary): word2vec model.
             cso (dictionary): Computer Science Ontology
             paper (dictionary): paper{"title":"...","abstract":"...","keywords":"..."} the paper.
-
-            
         """
-        
         self.cso = cso                  #Stores the CSO Ontology
         self.paper = paper              #Paper to analyse
         self.model = model              #contains the cached model          
         self.min_similarity = 0.94      #Initialises the min_similarity
         self.explanation = dict()
-        
         
         
     def set_paper(self, paper):
@@ -46,10 +42,12 @@ class Semantic:
         """
         self.min_similarity = min_similarity
         
+        
     def reset_explanation(self):
         """ Resetting the explanation 
         """
         self.explanation = dict()
+        
         
     def get_explanation(self):
         """ Returns the explanation 
@@ -167,7 +165,7 @@ class Semantic:
     def match_ngram(self, grams, merge=True):
         """
         Args:
-            grams ():
+            grams (list): list of tokens to be analysed and founf in the model
             merge (boolean): #Allows to combine the topics of mutiple tokens, when analysing 2-grams or 3-grams
         
         Returns:
@@ -199,7 +197,15 @@ class Semantic:
                     
         
     def rank_topics(self, found_topics, explanation):
+        """ Function that ranks the list of found topics. It also cleans the explanation accordingly
         
+        Args:
+            found_topics (dictionary): contains all information about the found topics
+            explanation (dictionary): contains information about the explanation of topics
+        
+        Returns:
+            final_topics (list): list of final topics
+        """
         max_value = 0
         scores = []
         for tp,topic in found_topics.items(): 
@@ -279,5 +285,4 @@ class Semantic:
         self.reset_explanation()
         self.explanation = {self.cso.topics_wu[sort_t[i][0]]: explanation[sort_t[i][0]] for i in range(0,knee)}
 
-        return final_topics        
-    
+        return final_topics
