@@ -67,7 +67,7 @@ class Result:
             for enhanced_topic, value in enhanced.items():
                 if enhanced_topic not in self.explanation:
                     self.explanation[enhanced_topic] = set()
-                self.explanation[enhanced_topic] = self.explanation[enhanced_topic].union(*[self.explanation[topic] for topic in value['broader of']])
+                self.explanation[enhanced_topic] = self.explanation[enhanced_topic].union(*[self.explanation[topic] for topic in value['broader of'] if topic in self.explanation])
         
             self.explanation = {topic: list(value) for topic, value in self.explanation.items()}
                 

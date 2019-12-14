@@ -192,7 +192,7 @@ class Ontology:
         num_narrowers = 1
 
         if climb_ont == 'first':
-            all_broaders = self.get_broader_of_topics(found_topics)
+            all_broaders = self.get_broader_of_topics(found_topics, all_broaders)
         elif climb_ont == 'all':
             while True:
                 """
