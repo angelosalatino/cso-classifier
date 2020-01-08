@@ -15,11 +15,15 @@ Classifying research papers according to their research topics is an important t
 * [Getting started](#getting-started)
   * [Installation using PIP](#installation-using-pip)
   * [Installation using Github](#installation-using-github)
+  * [Setup](#setup)
+  * [Update](#update)
+  * [Version](#version)
 * [Usage examples](#usage-examples)
   * [Classifying a single paper (SP)](#classifying-a-single-paper-sp)
   * [Classifying in batch mode (BM)](#classifying-in-batch-mode-bm)
   * [Parameters](#parameters)
 * [Releases](#releases)
+  * [v2.4](#v24)
   * [v2.3.2](#v232)
   * [v2.3.1](#v231)
   * [v2.3](#v23)
@@ -50,13 +54,50 @@ The CSO Classifier is a novel application that takes as input the text from abst
 
 1. Ensure you have **Python 3.6** or above installed. Download [latest version](https://www.python.org/downloads/).
 2. Use pip to install the classifier: ```pip install cso-classifier```
-3. Download English package for spaCy using ```python -m spacy download en_core_web_sm```
+3. Seting up the classifier. Go to [Setup](#setup)
 
 ### Installation using Github
 
 1. Ensure you have [**Python 3.6**](https://www.python.org/downloads/) or above installed.
 2. Install the necessary depepencies by executing the following command:```pip install -r requirements.txt```
-3. Download English package for spaCy using ```python -m spacy download en_core_web_sm```
+3. Seting up the classifier. Go to [Setup](#setup)
+
+### Setup
+
+After installing the CSO Classifier, it is important to set up the classifier with the right dependencies. To set up the classifier, please run the following code.
+
+```python
+import classifier.classifier as classifier
+classifier.setup()
+```
+
+This function downloads the English package of spaCy, which is equivalent to run ```python -m spacy download en_core_web_sm```.
+Then it downloads the latest version of CSO available as well as the latest version of the word2vec model, which will be then used by the semantic module.
+
+### Update
+
+This functionality allows to update both ontology and word2vec model.
+
+```python
+import classifier.classifier as classifier
+classifier.update()
+
+#or
+classifier.update(force = True)
+```
+
+By just running ```update()``` without parameters, the system will check the version of the ontology/model that is currently using against the lastest version remotely available. The update will be performed if one of the two or both are outdated.
+Instead with ```update(force = True)``` the system will force the update by deleting the ontology/model that is currently using and downloading their latest version.
+
+### Version
+
+This functionality return the version of the CSO Classifier and CSO ontology you are currently using. It will also check online if there is a newer version for both of them and suggest how to update.
+
+```python
+import classifier.classifier as classifier
+classifier.version()
+```
+
 
 ## Usage examples
 
@@ -91,8 +132,8 @@ paper = {
 Just import the classifier and run it:
 
 ```python
-import classifier.classifier as CSO
-result = CSO.run_cso_classifier(paper, modules = "both", enhancement = "first")
+import classifier.classifier as classifier
+result = classifier.run_cso_classifier(paper, modules = "both", enhancement = "first", explanation = True)
 print(result)
 ```
 
@@ -105,24 +146,23 @@ As output the classifier returns a dictionary with four components: (i) syntacti
 ```json
 {
     "syntactic": [
+        "real-world networks",
+        "network topology",
+        "anonymization",
+        "online social networks",
+        "micro-blog",
+        "privacy",
         "twitter",
         "sensitive informations",
-        "graph theory",
-        "data mining",
-        "online social networks",
-        "real-world networks",
-        "privacy",
-        "social networks",
-        "micro-blog",
-        "anonymization",
         "data privacy",
-        "topology",
-        "anonymity"
+        "graph theory",
+        "social networks",
+        "anonymity",
+        "data mining"
     ],
     "semantic": [
         "social networks",
         "online social networks",
-        "sensitive informations",
         "data mining",
         "privacy",
         "data privacy",
@@ -131,46 +171,40 @@ As output the classifier returns a dictionary with four components: (i) syntacti
         "twitter",
         "micro-blog",
         "topology",
-        "graph theory",
-        "social media",
-        "social networking sites",
-        "network architecture",
-        "online communities",
-        "social graphs"
+        "network topology",
+        "graph theory"
     ],
     "union": [
-        "twitter",
-        "social media",
-        "sensitive informations",
-        "graph theory",
-        "data mining",
-        "online social networks",
         "real-world networks",
-        "privacy",
-        "social networks",
-        "micro-blog",
-        "anonymity",
-        "social networking sites",
-        "network architecture",
-        "online communities",
-        "social graphs",
+        "network topology",
         "anonymization",
+        "micro-blog",
+        "online social networks",
+        "privacy",
+        "twitter",
+        "sensitive informations",
         "data privacy",
-        "topology"
+        "graph theory",
+        "social networks",
+        "topology",
+        "anonymity",
+        "data mining"
     ],
     "enhanced": [
-        "network protocols",
-        "theoretical computer science",
         "complex networks",
-        "online systems",
+        "computer networks",
         "privacy preserving",
-        "computer science",
+        "online systems",
+        "computer security",
+        "social media",
         "access control",
-        "security of data",
         "network security",
+        "theoretical computer science",
         "world wide web",
-        "authentication"
-    ]
+        "authentication",
+        "computer science"
+    ],
+    "explanation": {"social networks": ["social networking","social network","real world networks","online social networks","microblogging service","twitter graph","twitter","microblogging","anonymous twitter","social networks"],"online social networks": ["social networks","social network","online social networks"],"sensitive informations": ["sensitive information"],"data mining": ["mining","data mining"],"privacy": ["privacy","data privacy","anonymous","sensitive information","anonymity"],"anonymization": ["anonymization"],"anonymity": ["anonymous","anonymity"],"real-world networks": ["real world networks"],"twitter": ["twitter graph","twitter","microblogging","anonymous twitter","microblogging service"],"micro-blog": ["twitter graph","twitter","microblogging","anonymous twitter","microblogging service"],"network topology": ["network topology","topology"],"data privacy": ["privacy","data privacy"],"graph theory": ["graph theory"],"topology": ["network topology","topology"],"complex networks": ["real world networks"],"computer networks": ["network topology","topology"],"privacy preserving": ["anonymization"],"online systems": ["social networks","social network","online social networks"],"computer security": ["privacy","data privacy","anonymity"],"social media": ["twitter graph","twitter","microblogging","anonymous twitter","microblogging service"],"access control": ["sensitive information"],"network security": ["anonymous","anonymity","sensitive information"],"theoretical computer science": ["graph theory"],"world wide web": ["social networking","online social networks","twitter","social network","social networks","real world networks","twitter graph","microblogging","anonymous twitter","microblogging service"],"authentication": ["anonymous","anonymity"],"computer science": ["mining","data mining"]}
 }
 ```
 
@@ -200,8 +234,8 @@ papers = {
 Import the python script and run the classifier:
 
 ```python
-import classifier.classifier as CSO
-result = CSO.run_cso_classifier_batch_mode(papers, workers = 1, modules = "both", enhancement = "first")
+import classifier.classifier as classifier
+result = classifier.run_cso_classifier_batch_mode(papers, workers = 1, modules = "both", enhancement = "first", explanation = True)
 print(result)
 ```
 
@@ -209,47 +243,54 @@ To observe the available settings please refer to the [Parameters](#parameters) 
 
 #### Sample Output (BM)
 
-As output the classifier returns a dictionary of dictionaries. For each classified paper (identified by their id), it returns a dictionary containing four components: (i) syntactic, (ii) semantic, (iii) union, and (iv) enhanced. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. *Please be aware that the results may change according to the version of Computer Science Ontology.*
+As output the classifier returns a dictionary of dictionaries. For each classified paper (identified by their id), it returns a dictionary containing four components: (i) syntactic, (ii) semantic, (iii) union, (iv) enhanced, and (v) explanation. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. *Please be aware that the results may change according to the version of Computer Science Ontology.*
 
 ```json
 {
     "id1": {
-    "syntactic": [
-        "twitter", "sensitive informations", "graph theory", "data mining", "online social networks", "real-world networks", "privacy", "social networks", "micro-blog", "anonymization", "data privacy", "topology", "anonymity"
-    ],
-    "semantic": [
-        "social networks", "online social networks", "sensitive informations", "data mining", "privacy", "data privacy", "anonymization", "anonymity", "twitter", "micro-blog", "topology", "graph theory", "social media", "social networking sites", "network architecture", "online communities", "social graphs"
-    ],
-    "union": [
-        "twitter", "social media", "sensitive informations", "graph theory", "data mining", "online social networks", "real-world networks", "privacy", "social networks", "micro-blog", "anonymity", "social networking sites", "network architecture", "online communities", "social graphs", "anonymization", "data privacy", "topology"
-    ],
-    "enhanced": [
-        "network protocols", "theoretical computer science", "complex networks", "online systems", "privacy preserving", "computer science", "access control", "security of data", "network security", "world wide web", "authentication"
-    ]
-},
+        "syntactic": [
+            "real-world networks","network topology","anonymization","online social networks","micro-blog","privacy","twitter","sensitive informations","data privacy","graph theory","social networks","anonymity","data mining"
+            ],
+        "semantic": [
+            "social networks","online social networks","data mining","privacy","data privacy","anonymization","anonymity","twitter","micro-blog","topology","network topology","graph theory"
+            ],
+        "union": [
+            "real-world networks","network topology","anonymization","micro-blog","online social networks","privacy","twitter","sensitive informations","data privacy","graph theory","social networks","topology","anonymity","data mining"
+            ],
+        "enhanced": [
+            "complex networks","computer networks","privacy preserving","online systems","computer security","social media","access control","network security","theoretical computer science","world wide web","authentication","computer science"
+            ],
+        "explanation": {
+            "social networks": ["social networking","social network","real world networks","online social networks","microblogging service","twitter graph","twitter","microblogging","anonymous twitter","social networks"],"online social networks": ["social networks","social network","online social networks"],"sensitive informations": ["sensitive information"],"data mining": ["mining","data mining"],"privacy": ["privacy","data privacy","anonymous","sensitive information","anonymity"],"anonymization": ["anonymization"],"anonymity": ["anonymous","anonymity"],"real-world networks": ["real world networks"],"twitter": ["twitter graph","twitter","microblogging","anonymous twitter","microblogging service"],"micro-blog": ["twitter graph","twitter","microblogging","anonymous twitter","microblogging service"],"network topology": ["network topology","topology"],"data privacy": ["privacy","data privacy"],"graph theory": ["graph theory"],"topology": ["network topology","topology"],"complex networks": ["real world networks"],"computer networks": ["network topology","topology"],"privacy preserving": ["anonymization"],"online systems": ["social networks","social network","online social networks"],"computer security": ["privacy","data privacy","anonymity"],"social media": ["twitter graph","twitter","microblogging","anonymous twitter","microblogging service"],"access control": ["sensitive information"],"network security": ["anonymous","anonymity","sensitive information"],"theoretical computer science": ["graph theory"],"world wide web": ["social networking","online social networks","twitter","social network","social networks","real world networks","twitter graph","microblogging","anonymous twitter","microblogging service"],"authentication": ["anonymous","anonymity"],"computer science": ["mining","data mining"]
+            }
+    },
     "id2": {
         "syntactic": [...],
         "semantic": [...],
         "union": [...],
-        "enhanced": [...]
+        "enhanced": [...],
+        "explanation": {...}
     }
 }
 ```
 
 ### Parameters
-Beside the paper(s), the function running the CSO Classifier accepts three additional parameters: (i) **workers**, (ii) **modules**, and (iii) **enhancement**. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier.
+Beside the paper(s), the function running the CSO Classifier accepts three additional parameters: (i) **workers**, (ii) **modules**, (iii) **enhancement**, and (iv) **explanation**. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier.
 
 (1) The parameter *workers* defines the number of thread to run for classifying the input corpus. For instance, if workers is set to 4. There will be 4 instances of the CSO Classifier, each one receiving a chunk (equally split) of the corpus to process. Once all processes are completed, the results will be aggregated and returned. The default value for *workers* is *1*. This parameter is available only in *batch mode*.
 
 (2) The parameter *modules* can be either "syntactic", "semantic", or "both". Using the value "syntactic", the classifier will run only the syntactic module. Using the "semantic" value, instead, the classifier will use only the semantic module. Finally, using "both", the classifier will run both syntactic and semantic modules and combine their results. The default value for *modules* is *both*.
 
-(3) The parameter *enhancement* can be either "first", "all", or "no". This parameters controls whether the classifier will try to infer, given a topic (e.g., Linked Data), only the direct super-topics (e.g., Semantic Web) or all its super-topics (e.g., Semantic Web, WWW, Computer Science). Using "first" as value, it will infer only the direct super topics. Instead, if using "all", the classifier will infer all its super-topics. Using "no" the classifier will not perform any enhancement. The default value for *enhancement* is *first*.
+(3) The parameter *enhancement* can be either "first", "all", or "no". This parameter controls whether the classifier will try to infer, given a topic (e.g., Linked Data), only the direct super-topics (e.g., Semantic Web) or all its super-topics (e.g., Semantic Web, WWW, Computer Science). Using "first" as value, it will infer only the direct super topics. Instead, if using "all", the classifier will infer all its super-topics. Using "no" the classifier will not perform any enhancement. The default value for *enhancement* is *first*.
+
+(4) The parameters *explanation* can be either *True* or *False*. This parameter defines whether the classifier should return an explanation. This explanation consists of chunks of text, coming from the input paper, that allowed the classifier to infer a given topic. This supports the user in better understanding why a certain topic has been returned. The classifier will return an explanation for all topics, even for the enhanced ones. In this case, it will join all the text chunck of all its sub-topics. The default value for *explanation* is *False*.
 
 | Parameter  |  Single Paper | Batch Mode |
 |---|---|---|
 | workers  | :x:  | :white_check_mark: |
 | modules  | :white_check_mark:  | :white_check_mark: |
 | enhancement  | :white_check_mark:  | :white_check_mark: |
+| explanation  | :white_check_mark:  | :white_check_mark: |
 
 **Table 1**: Parameters availability when using CSO Classifier
 
@@ -257,6 +298,15 @@ Beside the paper(s), the function running the CSO Classifier accepts three addit
 ## Releases
 
 Here we list the available releases for the CSO Classifier. These releases are available for download both from [Github](https://github.com/angelosalatino/cso-classifier/releases) and [Zenodo](10.5281/zenodo.2660819).
+
+### v2.4
+
+This release welcomes some improvements under the hood. In particular:
+* we refactored the code, reorganising scripts into more elegant classes
+* we added functionalities to automatically setup and update the classifier to the latest version of CSO
+* we added the *explanation* feature, which returns chunks of text that allowed to infer a given topic
+* the syntactic module takes now advantage of Spacy POS tagger (as previously done only by semantic module)
+* the grammar for the chunk parser is now more robust: ```{<JJ.*>*<HYPH>*<JJ.*>*<HYPH>*<NN.*>*<HYPH>*<NN.*>+}```
 
 ### v2.3.2
 
@@ -331,8 +381,8 @@ Download from:
 * **images**: :file_folder: folder containing some pictures, e.g., the workflow showed above
 * **classifier**: :file_folder: Folder containing the main functionalities of the classifier
   * **classifier.py**: :page_facing_up: contains the function for running the CSO Classifier
-  * **syntacticmodule.py**: :page_facing_up: functionalities that implement the syntactic module
-  * **semanticmodule.py**: :page_facing_up: functionalities that implement the semantic module
+  * **syntacticmodule.py**: :page_facing_up: class that implements the syntactic module
+  * **semanticmodule.py**: :page_facing_up: class that implements the semantic module
   * **misc.py**: :page_facing_up: some miscellaneous functionalities
   * **models**: :file_folder: Folder containing the word2vec model and CSO
     * **cso.csv**: :page_facing_up: file containing the Computer Science Ontology in csv

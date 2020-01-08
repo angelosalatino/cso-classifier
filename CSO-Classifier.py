@@ -36,17 +36,16 @@ paper = {
         "between the target network and the adversary's auxiliary information is small.",
         "keywords": "data mining, data privacy, graph theory, social networking (online)"
         }
+
         
 
 print(paper["title"])
 print(paper["abstract"])
 print(paper["keywords"])
 
-
-
 # In[Run Classifier]
 
-result = classifier.run_cso_classifier(paper, explanation = False)
+result = classifier.run_cso_classifier(paper, explanation = True)
 
 
 
