@@ -64,7 +64,7 @@ The CSO Classifier is a novel application that takes as input the text from abst
 
 ### Setup
 
-After installing the CSO Classifier, it is important to set up the classifier with the right dependencies. To set up the classifier, please run the following code.
+After installing the CSO Classifier, it is important to set up the classifier with the right dependencies. To set up the classifier, please run the following code:
 
 ```python
 import classifier.classifier as classifier
@@ -72,7 +72,7 @@ classifier.setup()
 ```
 
 This function downloads the English package of spaCy, which is equivalent to run ```python -m spacy download en_core_web_sm```.
-Then it downloads the latest version of CSO available as well as the latest version of the word2vec model, which will be then used by the semantic module.
+Then it downloads the latest version of CSO ontology available as well as the latest version of the word2vec model, which will be then used by the semantic module.
 
 ### Update
 
@@ -86,12 +86,12 @@ classifier.update()
 classifier.update(force = True)
 ```
 
-By just running ```update()``` without parameters, the system will check the version of the ontology/model that is currently using against the lastest version remotely available. The update will be performed if one of the two or both are outdated.
-Instead with ```update(force = True)``` the system will force the update by deleting the ontology/model that is currently using and downloading their latest version.
+By just running ```update()``` without parameters, the system will check the version of the ontology/model that is currently using, against the lastest available version. The update will be performed if one of the two or both are outdated.
+Instead with ```update(force = True)``` the system will force the update by deleting the ontology/model that is currently using, and downloading their latest version.
 
 ### Version
 
-This functionality return the version of the CSO Classifier and CSO ontology you are currently using. It will also check online if there is a newer version for both of them and suggest how to update.
+This functionality returns the version of the CSO Classifier and CSO ontology you are currently using. It will also check online if there is a newer version, for both of them, and suggest how to update.
 
 ```python
 import classifier.classifier as classifier
@@ -141,7 +141,7 @@ To observe the available settings please refer to the [Parameters](#parameters) 
 
 #### Sample Output (SP)
 
-As output the classifier returns a dictionary with four components: (i) syntactic, (ii) semantic, (iii) union, and (iv) enhanced. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. *Please be aware that the results may change according to the version of Computer Science Ontology.*
+As output the classifier returns a dictionary with five components: (i) syntactic, (ii) semantic, (iii) union, (iv) enhanced, and (v) explanation. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. In explanation, you can find all chunks of text that allowed the classifier to infer a given topic. *Please be aware that the results may change according to the version of Computer Science Ontology.*
 
 ```json
 {
@@ -243,7 +243,7 @@ To observe the available settings please refer to the [Parameters](#parameters) 
 
 #### Sample Output (BM)
 
-As output the classifier returns a dictionary of dictionaries. For each classified paper (identified by their id), it returns a dictionary containing four components: (i) syntactic, (ii) semantic, (iii) union, (iv) enhanced, and (v) explanation. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. *Please be aware that the results may change according to the version of Computer Science Ontology.*
+As output the classifier returns a dictionary of dictionaries. For each classified paper (identified by their id), it returns a dictionary containing five components: (i) syntactic, (ii) semantic, (iii) union, (iv) enhanced, and (v) explanation. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. In explanation, you can find all chunks of text that allowed the classifier to infer a given topic. *Please be aware that the results may change according to the version of Computer Science Ontology.*
 
 ```json
 {
@@ -275,7 +275,7 @@ As output the classifier returns a dictionary of dictionaries. For each classifi
 ```
 
 ### Parameters
-Beside the paper(s), the function running the CSO Classifier accepts three additional parameters: (i) **workers**, (ii) **modules**, (iii) **enhancement**, and (iv) **explanation**. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier.
+Beside the paper(s), the function running the CSO Classifier accepts four additional parameters: (i) **workers**, (ii) **modules**, (iii) **enhancement**, and (iv) **explanation**. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier. The explanation parameter is boolean.
 
 (1) The parameter *workers* defines the number of thread to run for classifying the input corpus. For instance, if workers is set to 4. There will be 4 instances of the CSO Classifier, each one receiving a chunk (equally split) of the corpus to process. Once all processes are completed, the results will be aggregated and returned. The default value for *workers* is *1*. This parameter is available only in *batch mode*.
 
@@ -283,7 +283,7 @@ Beside the paper(s), the function running the CSO Classifier accepts three addit
 
 (3) The parameter *enhancement* can be either "first", "all", or "no". This parameter controls whether the classifier will try to infer, given a topic (e.g., Linked Data), only the direct super-topics (e.g., Semantic Web) or all its super-topics (e.g., Semantic Web, WWW, Computer Science). Using "first" as value, it will infer only the direct super topics. Instead, if using "all", the classifier will infer all its super-topics. Using "no" the classifier will not perform any enhancement. The default value for *enhancement* is *first*.
 
-(4) The parameters *explanation* can be either *True* or *False*. This parameter defines whether the classifier should return an explanation. This explanation consists of chunks of text, coming from the input paper, that allowed the classifier to infer a given topic. This supports the user in better understanding why a certain topic has been returned. The classifier will return an explanation for all topics, even for the enhanced ones. In this case, it will join all the text chunck of all its sub-topics. The default value for *explanation* is *False*.
+(4) The parameter *explanation* can be either *True* or *False*. This parameter defines whether the classifier should return an explanation. This explanation consists of chunks of text, coming from the input paper, that allowed the classifier to return a given topic. This supports the user in better understanding why a certain topic has been inferred. The classifier will return an explanation for all topics, even for the enhanced ones. In this case, it will join all the text chunck of all its sub-topics. The default value for *explanation* is *False*.
 
 | Parameter  |  Single Paper | Batch Mode |
 |---|---|---|
@@ -307,6 +307,8 @@ This release welcomes some improvements under the hood. In particular:
 * we added the *explanation* feature, which returns chunks of text that allowed to infer a given topic
 * the syntactic module takes now advantage of Spacy POS tagger (as previously done only by semantic module)
 * the grammar for the chunk parser is now more robust: ```{<JJ.*>*<HYPH>*<JJ.*>*<HYPH>*<NN.*>*<HYPH>*<NN.*>+}```
+
+We would like to thank James Dunham @jamesdunham from CSET (Georgetown University) for suggesting us how to improve the code.
 
 ### v2.3.2
 
@@ -383,7 +385,13 @@ Download from:
   * **classifier.py**: :page_facing_up: contains the function for running the CSO Classifier
   * **syntacticmodule.py**: :page_facing_up: class that implements the syntactic module
   * **semanticmodule.py**: :page_facing_up: class that implements the semantic module
+  * **paper.py**: :page_facing_up: class that implements the functionalities to operate on papers, such as POS tagger, grammar-based chunk parser
+  * **result.py**: :page_facing_up: class that implements the functionality to operate on the results
+  * **ontology.py**: :page_facing_up: class that implements the functionalities to operate on the ontology: get primary label, get topics and so on
+  * **model.py**: :page_facing_up: class that implements the functionalities to operate on the word2vec model: get similar words and so on
   * **misc.py**: :page_facing_up: some miscellaneous functionalities
+  * **config.py**: :page_facing_up: class that implements the functionalities to operate on the config file
+  * **config.ini**: :page_facing_up: config file. It contains all information about packaage, ontology and model.
   * **models**: :file_folder: Folder containing the word2vec model and CSO
     * **cso.csv**: :page_facing_up: file containing the Computer Science Ontology in csv
     * **cso.p**: :page_facing_up: serialised file containing the Computer Science Ontology (pickled)
@@ -427,9 +435,9 @@ To generate this file, we collected all the set of words available within the vo
 
 ## Use the CSO Classifier in other domains of Science
 
-In order to use the CSO Classifier in other domains of Science, it is necessary to replace the two external sources mentioned in the previous section. In particular, there is a need for a comprehensive ontology or taxonomy of research areas, within the new domain, which will work as a controlled list of research topics. In addition, it is important to train a new word2vec model that fits the language model and the semantic of the terms, in this particular domain. In the next subsections, we will show how to integrate knowledge from other fields of Science within the CSO Classifier.
+In order to use the CSO Classifier in other domains of Science, it is necessary to replace the two external sources mentioned in the previous section. In particular, there is a need for a comprehensive ontology or taxonomy of research areas, within the new domain, which will work as a controlled list of research topics. In addition, it is important to train a new word2vec model that fits the language model and the semantic of the terms, in this particular domain. We wrote a blog article on how to integrate knowledge from other fields of Science within the CSO Classifier.
 
-Further information is available in this blog post: [How to use the CSO Classifier in other domains](https://infernusweb.altervista.org/wp/how-to-use-the-cso-classifier-in-other-domains/)
+Please read here for more info: [How to use the CSO Classifier in other domains](https://salatino.org/wp/how-to-use-the-cso-classifier-in-other-domains/)
 
 ## How to Cite CSO Classifier
 
