@@ -31,7 +31,7 @@ setuptools.setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
-    package_data = {'classifier' : ['models/*'] },
+    package_data = {'classifier' : ['models/*','config.ini'] },
     install_requires=load_requirements("requirements.txt"),
     python_requires='>=3.6.0',
 )
