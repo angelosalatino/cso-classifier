@@ -85,7 +85,10 @@ class Model:
         The variable force is for the future when we will have model versioning.
         """
         misc.print_header("CACHED WORD2VEC MODEL")
-        os.remove(self.config.get_cached_model())
+        try:
+            os.remove(self.config.get_cached_model())
+        except FileNotFoundError:
+            print("The file model not found")
         print("Updating the cached word2vec model")
         misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
 
