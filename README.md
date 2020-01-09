@@ -70,6 +70,7 @@ After installing the CSO Classifier, it is important to set up the classifier wi
 ```python
 import classifier.classifier as classifier
 classifier.setup()
+exit() # it is important to close the current console, to make those changes effective
 ```
 
 This function downloads the English package of spaCy, which is equivalent to run ```python -m spacy download en_core_web_sm```.
