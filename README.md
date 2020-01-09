@@ -18,6 +18,7 @@ Classifying research papers according to their research topics is an important t
   * [Setup](#setup)
   * [Update](#update)
   * [Version](#version)
+  * [Test](#test)
 * [Usage examples](#usage-examples)
   * [Classifying a single paper (SP)](#classifying-a-single-paper-sp)
   * [Classifying in batch mode (BM)](#classifying-in-batch-mode-bm)
@@ -98,6 +99,17 @@ import classifier.classifier as classifier
 classifier.version()
 ```
 
+### Test
+
+This functionality allows to observe whether the classifier has been installed correctly.
+
+```python
+import classifier.test as test
+test.test_classifier_single_paper() # to test it with one paper
+test.test_classifier_batch_mode() # to test it with multiple papers
+```
+
+To ensure that the classifier has been installed successfully, these two functions ```test_classifier_single_paper()``` and ```test_classifier_batch_mode()``` print on the console the paper(s) and then the result of the classification. 
 
 ## Usage examples
 
@@ -390,6 +402,7 @@ Download from:
   * **ontology.py**: :page_facing_up: class that implements the functionalities to operate on the ontology: get primary label, get topics and so on
   * **model.py**: :page_facing_up: class that implements the functionalities to operate on the word2vec model: get similar words and so on
   * **misc.py**: :page_facing_up: some miscellaneous functionalities
+  * **test.py**: :page_facing_up: some test functionalities
   * **config.py**: :page_facing_up: class that implements the functionalities to operate on the config file
   * **config.ini**: :page_facing_up: config file. It contains all information about packaage, ontology and model.
   * **models**: :file_folder: Folder containing the word2vec model and CSO
