@@ -2,7 +2,7 @@ import spacy
 from nltk import RegexpParser, tree
 import re
 
-tagger = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
+
 GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<HYPH>*<JJ.*>*<HYPH>*<NN.*>*<HYPH>*<NN.*>+}" #good for syntactic
 #GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<NN.*>+}" #good for semantic (or at least for what we know)
 
@@ -18,6 +18,7 @@ class Paper:
         self._text = None
         self.chunks = None
         self.text_attr = ('title', 'abstract', 'keywords')
+        self.tagger = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
         
         if paper is not None:
             self.set_paper(paper)
@@ -84,7 +85,7 @@ class Paper:
             text (string): single token
             tag_ (string): POS tag
         """
-        doc = tagger(self._text)
+        doc = self.tagger(self._text)
         for token in doc:
             if token.tag_:
                 yield token.text, token.tag_
