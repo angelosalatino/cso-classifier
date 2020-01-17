@@ -104,21 +104,6 @@ class Ontology:
         ontology = pickle.load(open(self.config.get_cso_pickle_path(), "rb" ))
         self.from_cso_to_single_items(ontology)
         print("Computer Science Ontology loaded.")
-
-
-     
-    def check_ontology(self):
-        """ Function that checks if the ontology is available. 
-        If not, it will check if a csv version exists and then it will create the pickle file.
-        """         
-        if not os.path.exists(self.config.get_cso_pickle_path()):
-            print("Ontology pickle file is missing.")
-            
-            if not os.path.exists(self.config.get_cso_path()):
-                print("The source file of the Computer Science Ontology is missing. Attempting to download it now...")
-                self.download_ontology() 
-            
-            self.load_cso_from_csv()
             
 
     def get_primary_label(self, topic):
@@ -252,6 +237,20 @@ class Ontology:
                 pass
             
         return all_broaders
+
+    
+    def check_ontology(self):
+        """ Function that checks if the ontology is available. 
+        If not, it will check if a csv version exists and then it will create the pickle file.
+        """         
+        if not os.path.exists(self.config.get_cso_pickle_path()):
+            print("Ontology pickle file is missing.")
+            
+            if not os.path.exists(self.config.get_cso_path()):
+                print("The source file of the Computer Science Ontology is missing. Attempting to download it now...")
+                self.download_ontology() 
+            
+            self.load_cso_from_csv()
     
     
     def download_ontology(self):
@@ -268,9 +267,10 @@ class Ontology:
         except FileNotFoundError:
             pass
         
-        ontology_remote_url = self.retrieve_url_of_latest_version_available()
+        ontology_remote_url, last_version = self.retrieve_url_of_latest_version_available()
         print("Downloading the Computer Science Ontology from {}".format(ontology_remote_url))
         task_completed = misc.download_file(ontology_remote_url, self.config.get_cso_path())
+        self.config.set_cso_version(last_version)
         return task_completed
     
     
@@ -292,7 +292,6 @@ class Ontology:
                 print("Updating the ontology file")
                 self.download_ontology() 
                 self.load_cso_from_csv()
-                self.config.set_cso_version(last_version)
             else:
                 print("The ontology is already up to date.")
                 
@@ -314,8 +313,6 @@ class Ontology:
                     print("We were unable to complete the download of the ontology.")
             
             self.load_cso_from_csv()
-            last_version = self.retrieve_latest_version_available()
-            self.config.set_cso_version(last_version)
             
             if os.path.exists(self.config.get_cso_pickle_path()):
                 print("Ontology file created successfully.")
@@ -333,10 +330,10 @@ class Ontology:
         with urllib.request.urlopen(self.config.get_cso_version_logger_url()) as url:
             data = json.loads(url.read().decode())
             if "last_version" in data and "url" in data['last_version']:
-                return data['last_version']["url"]
+                return data['last_version']["url"], version
             else:
-                return composite_url
-        return composite_url
+                return composite_url, version
+        return composite_url, version
     
     
     def retrieve_latest_version_available(self):
