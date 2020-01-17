@@ -70,7 +70,7 @@ class Semantic:
         """     
 
         ##################### Core analysis
-        found_topics, explanation = self.find_topics(self.paper.get_chunks())
+        found_topics, explanation = self.find_topics(self.paper.get_semantic_chunks())
     
         ##################### Ranking
         final_topics = self.rank_topics(found_topics, explanation) 
