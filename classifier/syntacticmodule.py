@@ -1,8 +1,7 @@
-from nltk.tokenize import RegexpTokenizer
-from nltk.corpus import stopwords
 from nltk import ngrams
 from nltk.tokenize import word_tokenize
 from Levenshtein.StringMatcher import StringMatcher
+
 
 
 
@@ -80,9 +79,9 @@ class Syntactic:
         # stripping explanation
         final_topics = self.strip_explanation(extracted_topics)
         return final_topics
-        
-        
-    def statistic_similarity(self): 
+    
+    
+    def statistic_similarity(self):
         """Function that finds the similarity between the previously extracted concepts and topics in the ontology
 
         Returns:
@@ -90,7 +89,8 @@ class Syntactic:
         """
         
         found_topics = dict()
-        concepts = self.paper.get_chunks()
+                        
+        concepts = self.paper.get_syntactic_chunks()
         for concept in concepts: 
             matched_trigrams = set()
             matched_bigrams = set()
@@ -99,9 +99,9 @@ class Syntactic:
                 size = comprehensive_grams["size"]
                 grams = comprehensive_grams["ngram"]
                 # if we already matched the current token to a topic, don't reprocess it
-                if position in matched_bigrams or position-1 in matched_bigrams:
+                if size <= 1 and (position in matched_bigrams or position-1 in matched_bigrams):
                     continue           
-                if position in matched_trigrams or position-1 in matched_trigrams or position-2 in matched_trigrams:
+                if size <= 2 and (position in matched_trigrams or position-1 in matched_trigrams or position-2 in matched_trigrams):
                     continue
                 # otherwise unsplit the ngram for matching so ('quick', 'brown') => 'quick brown'
                 gram = " ".join(grams)
@@ -136,7 +136,7 @@ class Syntactic:
                         self.explanation[topic].add(gram)
                         
         return found_topics
-
+        
     
     def get_ngrams(self, concept):
         """ Function that returns n-grams of concept in reverse order (3,2, and 1)
