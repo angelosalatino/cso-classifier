@@ -53,7 +53,7 @@ def run_cso_classifier(paper, modules="both", enhancement="first", explanation=F
     # Loading ontology and model
     cso = CSO()
     model = MODEL()
-    t_paper = Paper(paper)
+    t_paper = Paper(paper, modules)
     result = Result(explanation)
 
     # Passing parameters to the two classes (synt and sema) and actioning classifiers
@@ -113,7 +113,7 @@ def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhance
     # Loading ontology and model
     cso = CSO()
     model = MODEL()
-    paper = Paper()
+    paper = Paper(modules = modules)
     
     
 
