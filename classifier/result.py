@@ -35,6 +35,12 @@ class Result:
         self.merge()
         
         
+    def get_syntactic(self):
+        """ Gets the syntactic variable
+        """
+        return self.syntactic
+    
+        
     def set_semantic(self, semantic):
         """ Sets the semantic variable
         """
@@ -42,12 +48,36 @@ class Result:
         self.merge()
         
         
+    def get_semantic(self):
+        """ Gets the semantic variable
+        """
+        return self.semantic
+    
+    
+    def set_union(self, union):
+        """ Sets the union variable
+        """
+        self.union = union
+            
+        
+    def get_union(self):
+        """ Gets the syntactic variable
+        """
+        return self.union
+    
+        
     def set_enhanced(self, enhanced):
         """ Sets the enhanced variable
         """
         self.enhanced = [x for x in list(enhanced.keys()) if x not in self.union]
         self.complete_explanation(enhanced)
         
+    
+    def get_enhanced(self):
+        """ Gets the enhanced variable
+        """
+        return self.enhanced
+    
     
     def dump_temporary_explanation(self, temporary_explanation):
         """ It dumps the temporary explanation. After it will be reorganised better for all topics (including the enhanced ones)
