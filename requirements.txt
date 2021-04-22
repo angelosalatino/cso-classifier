@@ -6,3 +6,4 @@ python-igraph==0.9.1
 python-Levenshtein==0.12.2
 requests==2.25.1
 spacy==3.0.5
+strsimpy==0.2.0
