@@ -5,6 +5,7 @@ from multiprocessing.pool import Pool
 from classifier import misc
 from classifier.semanticmodule import Semantic as sema
 from classifier.syntacticmodule import Syntactic as synt
+from classifier.postprocess import PostProcess as post
 from classifier.ontology import Ontology as CSO
 from classifier.model import Model as MODEL
 from classifier.paper import Paper
@@ -55,6 +56,7 @@ def run_cso_classifier(paper, modules="both", enhancement="first", explanation=F
     model = MODEL()
     t_paper = Paper(paper, modules)
     result = Result(explanation)
+    
 
     # Passing parameters to the two classes (synt and sema) and actioning classifiers
 
@@ -66,9 +68,10 @@ def run_cso_classifier(paper, modules="both", enhancement="first", explanation=F
         sema_module = sema(model, cso, t_paper)
         result.set_semantic(sema_module.classify_semantic())
         if explanation: result.dump_temporary_explanation(sema_module.get_explanation())
-       
-    result.set_enhanced(cso.climb_ontology(getattr(result, "union"), enhancement))
-
+        
+        
+    postprocess = post(model, cso, enhancement, result)
+    result = postprocess.filtering_outliers()
 
     return result.get_dict()
 
@@ -120,6 +123,8 @@ def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhance
     # Passing parameters to the two classes (synt and sema)
     synt_module = synt(cso)
     sema_module = sema(model, cso)
+    postprocess = post(model, cso, enhancement)
+    
 
     # initializing variable that will contain output
     class_res = dict()
@@ -138,7 +143,8 @@ def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhance
             sema_module.set_paper(paper)
             result.set_semantic(sema_module.classify_semantic())
            
-        result.set_enhanced(cso.climb_ontology(getattr(result, "union"), enhancement))
+        postprocess.set_result(result)
+        result = postprocess.filtering_outliers()
         
         class_res[paper_id] = result.get_dict()
 
@@ -215,6 +221,7 @@ def setup():
     
     model = MODEL(load_model = False)
     model.setup()
+    print("Setup completed.")
     
 
 def update(force = False):
@@ -225,6 +232,7 @@ def update(force = False):
     
     model = MODEL(load_model = False)
     model.update(force = force)
+    print("Update completed.")
     
 
 def version():
@@ -234,6 +242,8 @@ def version():
     misc.print_header("CLASSIFIER")
     print("CSO Classifier version {}".format(config.get_classifier_version()))
 
+
+    # This section identifies the last version of the CSO Classifier on pipy.
     import subprocess   
     import sys
     
