@@ -1,6 +1,8 @@
 import pickle
 import os
 import csv as co
+from collections import deque
+from igraph import Graph
 
 from classifier.config import Config
 from classifier import misc
@@ -20,10 +22,12 @@ class Ontology:
         self.primary_labels = dict()
         self.primary_labels_wu = dict()
         self.topic_stems = dict()
+        self.all_broaders = dict()
+        self.graph = None
         
         self.config = Config()
         
-        self.ontology_attr = ('topics', 'topics_wu', 'broaders', 'narrowers', 'same_as', 'primary_labels', 'primary_labels_wu', 'topic_stems')
+        self.ontology_attr = ('topics', 'topics_wu', 'broaders', 'narrowers', 'same_as', 'primary_labels', 'primary_labels_wu', 'topic_stems', 'all_broaders')
         
         if load_ontology:
             self.load_ontology_pickle()
@@ -72,17 +76,61 @@ class Ontology:
                     self.primary_labels[triple[0]] = triple[2]
                     self.primary_labels_wu[triple[0].replace(" ", "_")] = triple[2].replace(" ", "_")
             
+            
+            self.generate_topic_stems()
+            self.get_all_branches()
 
-            for topic in self.topics.keys():
-                if topic[:4] not in self.topic_stems:
-                    self.topic_stems[topic[:4]] = list()
-                self.topic_stems[topic[:4]].append(topic)
             
             with open(self.config.get_cso_pickle_path(), 'wb') as cso_file:
                 print("Creating ontology pickle file from a copy of the CSO Ontology found in",self.config.get_cso_path())
                 pickle.dump(self.from_single_items_to_cso(), cso_file)
+                
+            self.create_graph_from_cso()
 
+
+    def generate_topic_stems(self):
+        """ Function that generates all topics stems which will be useful in the syntactic module
+        """
+        for topic in self.topics.keys():
+            if topic[:4] not in self.topic_stems:
+                self.topic_stems[topic[:4]] = list()
+            self.topic_stems[topic[:4]].append(topic)
     
+    
+    def get_all_branches(self):
+        """ Function that identifies all broaders of a given topic.
+        """
+        for topic in self.topics.keys():
+            this_topic_broaders = list()
+            queue = deque() 
+            queue.append(topic)
+            while len(queue) > 0:
+                dequeued = queue.popleft()
+                if dequeued in self.broaders:
+                    broaders = self.broaders[dequeued]
+                    for broader in broaders:
+                        queue.append(broader)
+                        this_topic_broaders.append(broader)
+            self.all_broaders[topic] = list(set(this_topic_broaders))
+            
+    
+    def create_graph_from_cso(self):
+        """ Function that generates the graph version of the ontology. It will be used by the postprocessing module
+        """
+        self.graph = Graph()
+        self.graph.add_vertices(list(self.topics.keys()))
+        
+        for topic, broaders in self.broaders.items():
+            list_of_edges = list()
+            for broader in broaders:
+                list_of_edges.append((topic,broader))
+            self.graph.add_edges(list_of_edges)
+            
+        self.graph.simplify()
+        print("Creating a graph representation of the ontology (saved in a pickle object) in",self.config.get_cso_graph_path())
+        self.graph.write_pickle(self.config.get_cso_graph_path())
+    
+        
         
     def from_single_items_to_cso(self):
         """ Function that returns a single dictionary containing all relevant values for the ontology.
@@ -103,6 +151,7 @@ class Ontology:
         self.check_ontology()
         ontology = pickle.load(open(self.config.get_cso_pickle_path(), "rb" ))
         self.from_cso_to_single_items(ontology)
+        self.read_ontology_graph_version()
         print("Computer Science Ontology loaded.")
             
 
@@ -237,6 +286,24 @@ class Ontology:
                 pass
             
         return all_broaders
+    
+    def read_ontology_graph_version(self):
+        """ Function that reads the graph representation of the CSO Ontology
+        """
+        if not os.path.isfile(self.config.get_cso_graph_path()):
+            self.create_graph_from_cso()
+        
+        self.graph = Graph.Read_Pickle(self.config.get_cso_graph_path())
+        
+        
+    def get_ontology_graph(self):
+        """ Function that returns the graph representation of the CSO Ontology
+        """
+        if self.graph is None:
+            self.read_ontology_graph_version()
+        
+        return self.graph
+
 
     
     def check_ontology(self):
