@@ -289,13 +289,24 @@ class Ontology:
             
         return all_broaders
     
-    def read_ontology_graph_version(self):
-        """ Function that reads the graph representation of the CSO Ontology
+    
+    def get_all_broaders_of_topic(self, topic):
+        """ Function that returns all the broader topics up to the root.
+    
+        Args:
+            topic (string): the input topic.
+   
+        Returns:
+            all_broaders (list): contains all the broaders topics of topic within CSO.
         """
-        if not os.path.isfile(self.config.get_cso_graph_path()):
-            self.create_graph_from_cso()
+        all_broaders = list()
+        try:
+            all_broaders = self.all_broaders[topic]
+        except KeyError:
+            pass
         
-        self.graph = Graph.Read_Pickle(self.config.get_cso_graph_path())
+        return all_broaders
+        
         
         
     def get_ontology_graph(self):
@@ -307,6 +318,27 @@ class Ontology:
         return self.graph
 
 
+    def get_graph_distance_in_topics(self, first_topic, second_topic):
+        """ Function that returns the distance between two topics in a graph. 
+        The distance is computed using the DIJKSTRA algorithm.
+        """
+        try:
+            this_dist = self.graph.shortest_paths_dijkstra(first_topic, second_topic)
+            this_dist = this_dist[0][0]
+        except ValueError:
+            this_dist = 99
+            
+        return this_dist
+            
+            
+    def read_ontology_graph_version(self):
+        """ Function that reads the graph representation of the CSO Ontology
+        """
+        if not os.path.isfile(self.config.get_cso_graph_path()):
+            self.create_graph_from_cso()
+        
+        self.graph = Graph.Read_Pickle(self.config.get_cso_graph_path())
+    
     
     def check_ontology(self):
         """ Function that checks if the ontology is available. 
