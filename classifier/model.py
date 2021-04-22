@@ -13,9 +13,10 @@ class Model:
         """ Initialising the model class
         """
         self.model = dict()
+        self.full_model = None
         self.config = Config()
         if load_model:
-            self.load_chached_model()
+            self.load_models()
 
         
     def check_word_in_model(self, word):
@@ -39,6 +40,13 @@ class Model:
             return self.model[word]
         except KeyError:
             return {}
+        
+        
+    def load_models(self):
+        """Function that loads both models. 
+        """
+        self.load_chached_model()
+        self.load_word2vec_model()
 
 
     def load_chached_model(self):
@@ -61,58 +69,75 @@ class Model:
         if not os.path.exists(self.config.get_cached_model()):
             print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
             misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
-
-  
-    def setup(self):
-        """Function that sets up the word2vec model
-        """
-        misc.print_header("CACHED WORD2VEC MODEL")
-        
-        if not os.path.exists(self.config.get_cached_model()):
-            print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
-            task_completed = misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
-
-            if task_completed:
-                print("File containing the model has been downloaded successfully.")
-            else:
-                print("We were unable to complete the download of the model.")
-        else:
-            print("Nothing to do. The model is already available.")
-    
-
-    def update(self, force = False): 
-        """Function that updates the model
-        The variable force is for the future when we will have model versioning.
-        """
-        misc.print_header("CACHED WORD2VEC MODEL")
-        try:
-            os.remove(self.config.get_cached_model())
-        except FileNotFoundError:
-            print("The file model not found")
-        print("Updating the cached word2vec model")
-        misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
-
-
-      
-# =============================================================================
-#         LEGACY CODE: just in case we want to use the model as is
-# =============================================================================
             
-    def load_model(self):
+            
+    def load_word2vec_model(self):
         """Function that loads Word2vec model. 
         This file has been serialised using Pickle allowing to be loaded quickly.
         """
-        self.check_model()
-        self.model = pickle.load(open(self.config.get_model_pickle_path(), "rb"))
+        self.check_word2vec_model()
+        self.full_model = pickle.load(open(self.config.get_model_pickle_path(), "rb"))
     
                 
-    def check_model(self):
+    def check_word2vec_model(self):
         """Function that checks if the model is available. If not, it will attempt to download it from a remote location.
         Tipically hosted on the CSO Portal.
         """
         if not os.path.exists(self.config.get_model_pickle_path()):
             print('[*] Beginning model download from', self.config.get_model_pickle_remote_url())
             misc.download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())  
+
+  
+    def setup(self):
+        """Function that sets up the word2vec model
+        """
+        misc.print_header("MODELS: CACHED & WORD2VEC")
+        
+        if not os.path.exists(self.config.get_cached_model()):
+            print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
+            task_completed = misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
+
+            if task_completed:
+                print("File containing the cached model has been downloaded successfully.")
+            else:
+                print("We were unable to complete the download of the cached model.")
+        else:
+            print("Nothing to do. The cached model is already available.")
+            
+        if not os.path.exists(self.config.get_cached_model()):
+            print('[*] Beginning download of word2vec model from', self.config.get_model_pickle_remote_url())
+            task_completed = misc.download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())
+
+            if task_completed:
+                print("File containing the word2vec model has been downloaded successfully.")
+            else:
+                print("We were unable to complete the download of the word2vec model.")
+        else:
+            print("Nothing to do. The word2vec model is already available.")
+    
+
+    def update(self, force = False): 
+        """Function that updates the models
+        The variable force is for the future when we will have models versioning.
+        """
+        misc.print_header("MODELS: CACHED & WORD2VEC")
+        try:
+            os.remove(self.config.get_cached_model())
+        except FileNotFoundError:
+            print("Couldn't delete file cached model: not found")
+        
+        try:
+            os.remove(self.config.get_model_pickle_path())
+        except FileNotFoundError:
+            print("Couldn't delete file word2vec model: not found")
+        print("Updating the models: cached and word2vec")
+        task_completed1 = misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
+        task_completed2 = misc.download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())
+        if task_completed1 and task_completed2:
+            print("Models downloaded successfully.")
+
+            
+
 
 
 
