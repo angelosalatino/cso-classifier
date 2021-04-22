@@ -15,18 +15,41 @@ class Model:
         self.model = dict()
         self.full_model = None
         self.config = Config()
+        
+        self.embedding_size = 0
+        
         if load_model:
             self.load_models()
 
         
     def check_word_in_model(self, word):
-        """ It checks whether a word is available in the model
+        """ It checks whether a word is available in the cached model
         """
         if word in self.model:
             return True
         
         return False
+    
+    def check_word_in_full_model(self, word):
+        """ It checks whether a word is available in the word2vec model
+        """
+        if word in self.full_model:
+            return True
+        
+        return False
 
+    def get_embedding_from_full_model(self, word):
+        """ Returns the embedding vector of the word:word
+        Args:
+            word (string): word that potentially belongs to the model
+        
+        Return:
+            list (of size self.embedding_size): containing all embedding values
+        """
+        try:
+            return self.full_model[word]
+        except KeyError:
+            return [0]*self.embedding_size #array full of zeros: just don't move in the embedding space
 
     def get_words_from_model(self, word):
         """ Returns the similar words to the word:word
@@ -77,8 +100,14 @@ class Model:
         """
         self.check_word2vec_model()
         self.full_model = pickle.load(open(self.config.get_model_pickle_path(), "rb"))
+        self.embedding_size = self.full_model.vector_size
     
-                
+    
+    def get_embedding_size(self):
+        """Function that returns the size of the embedding model. 
+        """
+        return self.embedding_size
+          
     def check_word2vec_model(self):
         """Function that checks if the model is available. If not, it will attempt to download it from a remote location.
         Tipically hosted on the CSO Portal.
