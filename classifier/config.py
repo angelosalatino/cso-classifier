@@ -41,6 +41,10 @@ class Config:
         """ Returns the path of the local pickle version of CSO """
         return os.path.join(self.dir, self.config['ontology']['cso_pickle_path'])
     
+    def get_cso_graph_path(self):
+        """ Returns the path of the local pickle version of CSO (GRAPH) """
+        return os.path.join(self.dir, self.config['ontology']['cso_graph_path'])
+    
     def get_cso_remote_url(self):
         """ Returns the remote url where the latest version of CSO is located """
         return self.config['ontology']['cso_remote_url']
