@@ -46,7 +46,8 @@ class Ontology:
                - primary_labels_wu, primary labels with underscores
                - topic_stems, groups together topics that start with the same 4 letters
         """
-    
+        
+        print("Extracting and converting ontology.")
         with open(self.config.get_cso_path(), 'r') as ontoFile:
 
             ontology = co.reader(ontoFile, delimiter=';')
@@ -117,6 +118,7 @@ class Ontology:
     def create_graph_from_cso(self):
         """ Function that generates the graph version of the ontology. It will be used by the postprocessing module
         """
+        print("Creating graph representation of the ontology.")
         self.graph = Graph()
         self.graph.add_vertices(list(self.topics.keys()))
         
@@ -127,7 +129,7 @@ class Ontology:
             self.graph.add_edges(list_of_edges)
             
         self.graph.simplify()
-        print("Creating a graph representation of the ontology (saved in a pickle object) in",self.config.get_cso_graph_path())
+        print("Saving the graph representation of the ontology (in a pickle object) in",self.config.get_cso_graph_path())
         self.graph.write_pickle(self.config.get_cso_graph_path())
     
         
