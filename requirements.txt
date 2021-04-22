@@ -1,3 +1,4 @@
+gensim==3.8.1
 hurry.filesize==0.9
 kneed==0.3.1
 nltk==3.6.2
