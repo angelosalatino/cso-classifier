@@ -8,3 +8,4 @@ python-Levenshtein==0.12.2
 requests==2.25.1
 spacy==3.0.5
 strsimpy==0.2.0
+update-checker==0.18.0
