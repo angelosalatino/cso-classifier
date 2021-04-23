@@ -16,13 +16,13 @@ class Syntactic:
             paper (Paper class): object containing the paper.
 
         """
-        # Initialise variables to store CSO data - loads into memory 
+        # Initialise variables to store CSO data - loads into memory
         self.cso = cso                  # the ontologo object
         self.min_similarity = 0.94      # Value of minimum similarity
         self.paper = paper              # the paper object
         self.explanation = dict()       # the explanation dictionary
-        
-    
+
+
     def set_paper(self, paper):
         """Function that initializes the paper variable in the class.
 
@@ -34,8 +34,8 @@ class Syntactic:
 
         self.paper = paper
         self.explanation = dict() #resets the dictionary (this is important if we work in batch mode)
-        
-    
+
+
     def set_min_similarity(self, msm):
         """Function that sets a different value for the similarity.
 
@@ -43,22 +43,22 @@ class Syntactic:
             msm (integer): similairity value.
         """
         self.min_similarity = msm
-      
-        
+
+
     def reset_explanation(self):
-        """ Resetting the explanation 
+        """ Resetting the explanation
         """
         self.explanation = dict()
-        
-        
+
+
     def get_explanation(self):
-        """ Returns the explanation 
+        """ Returns the explanation
         """
         return self.explanation
- 
+
 
     def classify_syntactic(self):
-        """Function that classifies a single paper. If you have a collection of papers, 
+        """Function that classifies a single paper. If you have a collection of papers,
             you must call this function for each paper and organise the result.
            Initially, it cleans the paper file, removing stopwords (English ones) and punctuation.
            Then it extracts n-grams (1,2,3) and with a Levenshtein it check the similarity for each of
@@ -75,32 +75,32 @@ class Syntactic:
 
         final_topics = list()
         # analysing similarity with terms in the ontology
-        extracted_topics = self.statistic_similarity()
+        extracted_topics = self.__statistic_similarity()
         # stripping explanation
-        final_topics = self.strip_explanation(extracted_topics)
+        final_topics = self.__strip_explanation(extracted_topics)
         return final_topics
-    
-    
-    def statistic_similarity(self):
+
+
+    def __statistic_similarity(self):
         """Function that finds the similarity between the previously extracted concepts and topics in the ontology
 
         Returns:
             found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
         """
-        
+
         found_topics = dict()
-                        
+
         concepts = self.paper.get_syntactic_chunks()
-        for concept in concepts: 
+        for concept in concepts:
             matched_trigrams = set()
             matched_bigrams = set()
-            for comprehensive_grams in self.get_ngrams(concept):
+            for comprehensive_grams in self.__get_ngrams(concept):
                 position = comprehensive_grams["position"]
                 size = comprehensive_grams["size"]
                 grams = comprehensive_grams["ngram"]
                 # if we already matched the current token to a topic, don't reprocess it
                 if size <= 1 and (position in matched_bigrams or position-1 in matched_bigrams):
-                    continue           
+                    continue
                 if size <= 2 and (position in matched_trigrams or position-1 in matched_trigrams or position-2 in matched_trigrams):
                     continue
                 # otherwise unsplit the ngram for matching so ('quick', 'brown') => 'quick brown'
@@ -121,34 +121,36 @@ class Syntactic:
                         except KeyError:
                             pass
                         # note the tokens that matched the topic and how closely
-                        if topic not in found_topics: 
+                        if topic not in found_topics:
                             found_topics[topic] = list()
                         found_topics[topic].append({'matched': gram, 'similarity': match_ratio})
                         # don't reprocess the current token
-                        
-                        if size == 2: matched_bigrams.add(position)
-                        elif size == 3: matched_trigrams.add(position)
-                        
+
+                        if size == 2:
+                            matched_bigrams.add(position)
+                        elif size == 3:
+                            matched_trigrams.add(position)
+
                         # explanation bit
                         if topic not in self.explanation:
                             self.explanation[topic] = set()
-                                                
+
                         self.explanation[topic].add(gram)
-                        
+
         return found_topics
-        
-    
-    def get_ngrams(self, concept):
+
+
+    def __get_ngrams(self, concept):
         """ Function that returns n-grams of concept in reverse order (3,2, and 1)
         """
-        for n in range(3, 0, -1):
+        for n_size in range(3, 0, -1):
             pos = 0
-            for ng in ngrams(word_tokenize(concept, preserve_line=True), n):
-                yield {"position": pos, "size": n, "ngram": ng}
+            for ngram in ngrams(word_tokenize(concept, preserve_line=True), n_size):
+                yield {"position": pos, "size": n_size, "ngram": ngram}
                 pos += 1
 
 
-    def strip_explanation(self, found_topics):
+    def __strip_explanation(self, found_topics):
         """Function that removes statistical values from the dictionary containing the found topics.
             It returns only the topics. It removes the same as, picking the longest string in alphabetical order.
 
