@@ -70,6 +70,29 @@ class Paper:
             pass
 
 
+    def get_text(self):
+        """Returns the text of the paper
+        """
+        return self._text
+
+
+    def get_semantic_chunks(self):
+        """Returns the chunks extracted from the paper (used by the semantic module)
+        """
+        return self.semantic_chunks
+
+
+    def get_syntactic_chunks(self):
+        """Returns the chunks extracted from the paper (used by the syntactic module)
+        """
+        return self.syntactic_chunks
+
+
+    def set_modules(self, modules):
+        """Setter for the modules variable"""
+        self.modules = modules
+
+
     def __text(self):
         """ Text aggregator
         """
@@ -166,28 +189,3 @@ class Paper:
             pos_tags = self.__part_of_speech_tagger(doc)
             ##################### Applying grammar
             self.semantic_chunks = self.__extraxt_semantic_chuncks(list(pos_tags))
-
-
-
-
-    def get_text(self):
-        """Returns the text of the paper
-        """
-        return self._text
-
-
-    def get_semantic_chunks(self):
-        """Returns the chunks extracted from the paper (used by the semantic module)
-        """
-        return self.semantic_chunks
-
-
-    def get_syntactic_chunks(self):
-        """Returns the chunks extracted from the paper (used by the syntactic module)
-        """
-        return self.syntactic_chunks
-
-
-    def set_modules(self, modules):
-        """Setter for the modules variable"""
-        self.modules = modules
