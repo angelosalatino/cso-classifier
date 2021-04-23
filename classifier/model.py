@@ -9,7 +9,7 @@ from classifier import misc
 class Model:
     """ A simple abstraction layer for using the Word Embedding Model """
 
-    def __init__(self, load_model = True):
+    def __init__(self, load_model = True, use_full_model = False):
         """ Initialising the model class
         """
         self.model = dict()
@@ -20,9 +20,24 @@ class Model:
         self.word_similarity = 0.7# similarity of words in the model
         self.top_amount_of_words = 10 # maximum number of words to select
 
+        self.use_full_model = use_full_model
+
         if load_model:
             self.load_models()
 
+        print("RUNNING FULL:", self.use_full_model)
+
+
+    def load_models(self):
+        """Function that loads both models.
+        """
+        self.__load_chached_model()
+        if self.use_full_model:
+            self.__load_word2vec_model()
+
+# =============================================================================
+#     CACHED MODEL
+# =============================================================================
 
     def check_word_in_model(self, word):
         """ It checks whether a word is available in the cached model
@@ -32,46 +47,6 @@ class Model:
 
         return False
 
-    def check_word_in_full_model(self, word):
-        """ It checks whether a word is available in the word2vec model
-        """
-        if word in self.full_model:
-            return True
-
-        return False
-
-    def get_embedding_from_full_model(self, word):
-        """ Returns the embedding vector of the word:word
-        Args:
-            word (string): word that potentially belongs to the model
-
-        Return:
-            list (of size self.embedding_size): containing all embedding values
-        """
-        try:
-            return self.full_model[word]
-        except KeyError:
-            return [0]*self.embedding_size #array full of zeros: just don't move in the embedding space
-
-
-    def get_top_similar_words_from_full_model(self, grams):
-        """Function that identifies the top similar words in the model that have similarity higher than th.
-
-        Args:
-            list_of_words (list of tuples): It contains the topics found with string similarity.
-            th (integer): threshold
-
-        Returns:
-            result (dictionary): containing the found topics with their similarity and the n-gram analysed.
-        """
-        result = list()
-        try:
-            list_of_words = self.full_model.most_similar(grams, topn=self.top_amount_of_words)
-            #result = [y for (x,y) in enumerate(list_of_words) if y[1] >= th]
-            result = [(x,y) for (x,y) in list_of_words if y >= self.word_similarity]
-        except KeyError:
-            pass
-        return result
 
 
     def get_words_from_model(self, word):
@@ -88,12 +63,6 @@ class Model:
             return {}
 
 
-    def get_embedding_size(self):
-        """Function that returns the size of the embedding model.
-        """
-        return self.embedding_size
-
-
     def __check_cached_model(self):
         """Function that checks if the cached model is available. If not, it will attempt to download it from a remote location.
         Tipically hosted on the CSO Portal.
@@ -101,21 +70,6 @@ class Model:
         if not os.path.exists(self.config.get_cached_model()):
             print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
             misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
-
-
-    def __check_word2vec_model(self):
-        """Function that checks if the model is available. If not, it will attempt to download it from a remote location.
-        Tipically hosted on the CSO Portal.
-        """
-        if not os.path.exists(self.config.get_model_pickle_path()):
-            print('[*] Beginning model download from', self.config.get_model_pickle_remote_url())
-            misc.download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())
-
-    def load_models(self):
-        """Function that loads both models.
-        """
-        self.__load_chached_model()
-        self.__load_word2vec_model()
 
 
     def __load_chached_model(self):
@@ -131,6 +85,80 @@ class Model:
         print("Model loaded.")
 
 
+
+# =============================================================================
+#     FULL MODEL
+# =============================================================================
+
+    def check_word_in_full_model(self, word):
+        """ It checks whether a word is available in the word2vec model
+        """
+        if self.use_full_model:
+            if word in self.full_model:
+                return True
+
+            return False
+
+        raise ValueError('The full word2vec model is not loaded. Make sure you set fast_classification = False')
+
+    def get_embedding_from_full_model(self, word):
+        """ Returns the embedding vector of the word:word
+        Args:
+            word (string): word that potentially belongs to the model
+
+        Return:
+            list (of size self.embedding_size): containing all embedding values
+        """
+        if self.use_full_model:
+            try:
+                return self.full_model[word]
+            except KeyError:
+                return [0]*self.embedding_size #array full of zeros: just don't move in the embedding space
+        else:
+            raise ValueError('The full word2vec model is not loaded. Make sure you set fast_classification = False')
+
+
+    def get_top_similar_words_from_full_model(self, grams):
+        """Function that identifies the top similar words in the model that have similarity higher than th.
+
+        Args:
+            list_of_words (list of tuples): It contains the topics found with string similarity.
+            th (integer): threshold
+
+        Returns:
+            result (dictionary): containing the found topics with their similarity and the n-gram analysed.
+        """
+        if self.use_full_model:
+            result = list()
+            try:
+                list_of_words = self.full_model.most_similar(grams, topn=self.top_amount_of_words)
+                #result = [y for (x,y) in enumerate(list_of_words) if y[1] >= th]
+                result = [(x,y) for (x,y) in list_of_words if y >= self.word_similarity]
+            except KeyError:
+                pass
+            return result
+
+        raise ValueError('The full word2vec model is not loaded. Make sure you set fast_classification = False')
+
+
+    def get_embedding_size(self):
+        """Function that returns the size of the embedding model.
+        """
+        if self.use_full_model:
+            return self.embedding_size
+
+        raise ValueError('The full word2vec model is not loaded. Make sure you set fast_classification = False')
+
+
+    def __check_word2vec_model(self):
+        """Function that checks if the model is available. If not, it will attempt to download it from a remote location.
+        Tipically hosted on the CSO Portal.
+        """
+        if not os.path.exists(self.config.get_model_pickle_path()):
+            print('[*] Beginning model download from', self.config.get_model_pickle_remote_url())
+            misc.download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())
+
+
     def __load_word2vec_model(self):
         """Function that loads Word2vec model.
         This file has been serialised using Pickle allowing to be loaded quickly.
@@ -139,6 +167,10 @@ class Model:
         self.full_model = pickle.load(open(self.config.get_model_pickle_path(), "rb"))
         self.embedding_size = self.full_model.vector_size
 
+
+# =============================================================================
+#     CONFIG
+# =============================================================================
 
     def setup(self):
         """Function that sets up the word2vec model
