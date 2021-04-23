@@ -77,7 +77,7 @@ class Syntactic:
         # analysing similarity with terms in the ontology
         extracted_topics = self.__statistic_similarity()
         # stripping explanation
-        final_topics = self.__strip_explanation(extracted_topics)
+        final_topics = self.__strip_service_fields(extracted_topics)
         return final_topics
 
 
@@ -150,7 +150,7 @@ class Syntactic:
                 pos += 1
 
 
-    def __strip_explanation(self, found_topics):
+    def __strip_service_fields(self, found_topics):
         """Function that removes statistical values from the dictionary containing the found topics.
             It returns only the topics. It removes the same as, picking the longest string in alphabetical order.
 
