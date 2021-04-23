@@ -25,8 +25,6 @@ class Model:
         if load_model:
             self.load_models()
 
-        print("RUNNING FULL:", self.use_full_model)
-
 
     def load_models(self):
         """Function that loads both models.
