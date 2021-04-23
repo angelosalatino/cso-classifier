@@ -1,10 +1,10 @@
 import pickle
 import os
 import csv as co
-from collections import deque
-from igraph import Graph
 import urllib.request
 import json
+from collections import deque
+from igraph import Graph
 
 from classifier.config import Config
 from classifier import misc
@@ -43,8 +43,13 @@ class Ontology:
             self.load_ontology_pickle()
 
 
+# =============================================================================
+#     CSO DICT
+# =============================================================================
+
+
     def from_single_items_to_cso(self):
-        """ Function that returns a single dictionary containing all relevant 
+        """ Function that returns a single dictionary containing all relevant
         values for the ontology.
         """
         return {attr: getattr(self, attr) for attr in self.ontology_attr}
@@ -71,7 +76,7 @@ class Ontology:
 
 
     def get_primary_label(self, topic):
-        """ Function that returns the primary (preferred) label for a topic. 
+        """ Function that returns the primary (preferred) label for a topic.
         If this topic belongs to a cluster.
 
         Args:
@@ -221,6 +226,19 @@ class Ontology:
         return all_broaders
 
 
+    def find_closest_matches(self, word):
+        """ Function that finds the closest match of a given topic (by looking at the topic stems)
+        """
+        list_of_topics = list()
+        if word[:4] in self.topic_stems:
+            list_of_topics =  self.topic_stems[word[:4]]
+
+        return list_of_topics
+
+
+# =============================================================================
+#     CSO GRAPH
+# =============================================================================
 
     def get_ontology_graph(self):
         """ Function that returns the graph representation of the CSO Ontology
@@ -244,16 +262,6 @@ class Ontology:
         return this_dist
 
 
-    def find_closest_matches(self, word):
-        """ Function that finds the closest match of a given topic (by looking at the topic stems)
-        """
-        list_of_topics = list()
-        if word[:4] in self.topic_stems:
-            list_of_topics =  self.topic_stems[word[:4]]
-
-        return list_of_topics
-
-
     def read_ontology_graph_version(self):
         """ Function that reads the graph representation of the CSO Ontology
         """
@@ -261,6 +269,12 @@ class Ontology:
             self.__create_graph_from_cso()
 
         self.graph = Graph.Read_Pickle(self.config.get_cso_graph_path())
+
+
+
+# =============================================================================
+#     CONFIG and SETUP
+# =============================================================================
 
 
     def check_ontology(self):
@@ -275,6 +289,7 @@ class Ontology:
                 self.__download_ontology()
 
             self.__load_cso_from_csv()
+
 
 
     def __load_cso_from_csv(self):
@@ -403,7 +418,7 @@ class Ontology:
         """ This funciton updates the ontology.
 
         Args:
-            force (boolean): If false, it checks if a newer version is available. 
+            force (boolean): If false, it checks if a newer version is available.
                 If false, it will delete all files and download the most recent version.
         """
         misc.print_header("ONTOLOGY")
@@ -451,7 +466,7 @@ class Ontology:
         """ Function that retireves the version number of the latest ontology.
         """
         version = self.retrieve_latest_version_available()
-        composite_url = "{}/version-{}/cso_v{}.csv".format(self.config.get_cso_remote_url(),version,version)
+        composite_url = "{0}/version-{1}/cso_v{1}.csv".format(self.config.get_cso_remote_url(),version)
         with urllib.request.urlopen(self.config.get_cso_version_logger_url()) as url:
             data = json.loads(url.read().decode())
             if "last_version" in data and "url" in data['last_version']:
