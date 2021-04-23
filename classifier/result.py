@@ -16,12 +16,6 @@ class Result:
             self.result_attr = ('syntactic', 'semantic', 'union', 'enhanced')
 
 
-    def merge(self):
-        """ Function that fills the union object
-        """
-        self.union = list(set(self.syntactic + self.semantic))
-
-
     def get_dict(self):
         """ Returns a dictionary containing all relevant objects
         """
@@ -32,7 +26,7 @@ class Result:
         """ Sets the syntactic variable
         """
         self.syntactic = syntactic
-        self.merge()
+        self.__merge()
 
 
     def get_syntactic(self):
@@ -45,7 +39,7 @@ class Result:
         """ Sets the semantic variable
         """
         self.semantic = semantic
-        self.merge()
+        self.__merge()
 
 
     def get_semantic(self):
@@ -70,13 +64,19 @@ class Result:
         """ Sets the enhanced variable
         """
         self.enhanced = [x for x in list(enhanced.keys()) if x not in self.union]
-        self.complete_explanation(enhanced)
+        self.__complete_explanation(enhanced)
 
 
     def get_enhanced(self):
         """ Gets the enhanced variable
         """
         return self.enhanced
+
+
+    def __merge(self):
+        """ Function that fills the union object
+        """
+        self.union = list(set(self.syntactic + self.semantic))
 
 
     def dump_temporary_explanation(self, temporary_explanation):
@@ -90,7 +90,7 @@ class Result:
                 self.explanation[topic] = self.explanation[topic].union(chunks)
 
 
-    def complete_explanation(self, enhanced):
+    def __complete_explanation(self, enhanced):
         """ It creates the explanation also for the enhanced topics
         """
 
