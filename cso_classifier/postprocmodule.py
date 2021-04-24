@@ -198,44 +198,44 @@ class PostProcess:
             2.1) if any of those topics is super topic of the retained
             2.2) if any of those topics has high string similarity with the retained
         """
-        if len(self.list_of_topics) > 0:
-            if self.find_outliers:
+        print(self.list_of_topics)
+        if self.find_outliers and len(self.list_of_topics) > 1:
 
-                syntactic = self.result.get_syntactic()
-                syntactic_to_keep = [topic for topic in syntactic if len(re.findall(r'\w+', topic)) > 1]
-
-
-
-                joined_matrix = self.__get_joined_matrix()
-                threshold = self.__get_good_threshold(joined_matrix, self.network_threshold)
-
-                #The following checks if a topic is connected with other topics with similarity higher than the threshold
-                selected_topics = list()
-                for i in range(len(self.list_of_topics)):
-                    t_len = len(np.where(joined_matrix[i] >= threshold)[0]) # Taking [0] as np.where returns a tuple (list,list) with positions. We don't need [1]
-                    if t_len > 1:
-                        selected_topics.append(self.list_of_topics[i]) # the topic is then appended to the selected topics
-
-                # We identify the excluded topics then.
-                excluded_topics = set(self.list_of_topics).difference(set(selected_topics))
-
-                # Now among the excluded, which one we can still promote?
-                topics_to_spare = set()
-                topics_to_spare = topics_to_spare.union(self.__promote_parent_topics(selected_topics,excluded_topics))
-                topics_to_spare = topics_to_spare.union(self.__promote_similar_topics(selected_topics,excluded_topics))
+            syntactic = self.result.get_syntactic()
+            syntactic_to_keep = [topic for topic in syntactic if len(re.findall(r'\w+', topic)) > 1]
 
 
-                # Modulating the result.
-                selected_topics_set = set(selected_topics+syntactic_to_keep).union(topics_to_spare)
-                selected_topics = list(selected_topics_set)
 
-                self.result.set_syntactic(list(set(self.result.get_syntactic()).intersection(selected_topics_set)))
-                self.result.set_semantic(list(set(self.result.get_semantic()).intersection(selected_topics_set)))
-                self.result.set_union(selected_topics)
-                self.result.set_enhanced(self.cso.climb_ontology(selected_topics, self.enhancement))
+            joined_matrix = self.__get_joined_matrix()
+            threshold = self.__get_good_threshold(joined_matrix, self.network_threshold)
 
-            else:
-                self.result.set_enhanced(self.cso.climb_ontology(self.result.get_union(), self.enhancement))
+            #The following checks if a topic is connected with other topics with similarity higher than the threshold
+            selected_topics = list()
+            for i in range(len(self.list_of_topics)):
+                t_len = len(np.where(joined_matrix[i] >= threshold)[0]) # Taking [0] as np.where returns a tuple (list,list) with positions. We don't need [1]
+                if t_len > 1:
+                    selected_topics.append(self.list_of_topics[i]) # the topic is then appended to the selected topics
+
+            # We identify the excluded topics then.
+            excluded_topics = set(self.list_of_topics).difference(set(selected_topics))
+
+            # Now among the excluded, which one we can still promote?
+            topics_to_spare = set()
+            topics_to_spare = topics_to_spare.union(self.__promote_parent_topics(selected_topics,excluded_topics))
+            topics_to_spare = topics_to_spare.union(self.__promote_similar_topics(selected_topics,excluded_topics))
+
+
+            # Modulating the result.
+            selected_topics_set = set(selected_topics+syntactic_to_keep).union(topics_to_spare)
+            selected_topics = list(selected_topics_set)
+
+            self.result.set_syntactic(list(set(self.result.get_syntactic()).intersection(selected_topics_set)))
+            self.result.set_semantic(list(set(self.result.get_semantic()).intersection(selected_topics_set)))
+            self.result.set_union(selected_topics)
+            self.result.set_enhanced(self.cso.climb_ontology(selected_topics, self.enhancement))
+
+        else:
+            self.result.set_enhanced(self.cso.climb_ontology(self.result.get_union(), self.enhancement))
 
 
         return self.result
