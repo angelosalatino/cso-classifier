@@ -1,6 +1,6 @@
 import json
 
-import classifier.classifier as classifier
+from .classifier import run_cso_classifier, run_cso_classifier_batch_mode
 
 def test_classifier_single_paper():
     """ Functionality that tests the classifier with a single paper.
@@ -31,7 +31,7 @@ def test_classifier_single_paper():
     print(paper["abstract"])
     print(paper["keywords"])
 
-    result = classifier.run_cso_classifier(paper, explanation = True)
+    result = run_cso_classifier(paper, explanation = True)
 
     print(json.dumps(result))
 
@@ -60,6 +60,6 @@ def test_classifier_batch_mode():
         print(paper["abstract"])
         print(paper["keywords"])
 
-    results = classifier.run_cso_classifier_batch_mode(papers, workers = 2)
+    results = run_cso_classifier_batch_mode(papers, workers = 2)
 
     print(results)
