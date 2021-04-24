@@ -16,22 +16,26 @@ def load_requirements(fname):
     reqs = parse_requirements(fname, session="test")
     return [str(ir.req) for ir in reqs]
 
+version = {}
+with open("cso_classifier/version.py") as fp:
+    exec(fp.read(), version)
+
 setuptools.setup(
     name="cso-classifier",
-    version="2.4",
+    version=version["__version__"],
     author="SKM3 Team",
     author_email="kmi-cso@open.ac.uk",
     description="A light-weight Python API for classifying scientific documents with the topics from the Computer Science Ontology (https://cso.kmi.open.ac.uk/home).",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/angelosalatino/cso-classifier",
-    packages=['classifier'],
+    packages=['cso_classifier'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
-    package_data = {'classifier' : ['models/*','config.ini'] },
+    package_data = {'cso_classifier' : ['assets/*','config.ini'] },
     install_requires=load_requirements("requirements.txt"),
     python_requires='>=3.6.0',
 )
