@@ -2,8 +2,8 @@ import pickle
 import os
 import json
 
-from classifier.config import Config
-from classifier import misc
+from .config import Config
+from .misc import print_header, download_file
 
 
 class Model:
@@ -67,7 +67,7 @@ class Model:
         """
         if not os.path.exists(self.config.get_cached_model()):
             print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
-            misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
+            download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
 
 
     def __load_chached_model(self):
@@ -154,7 +154,7 @@ class Model:
         """
         if not os.path.exists(self.config.get_model_pickle_path()):
             print('[*] Beginning model download from', self.config.get_model_pickle_remote_url())
-            misc.download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())
+            download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())
 
 
     def __load_word2vec_model(self):
@@ -173,11 +173,11 @@ class Model:
     def setup(self):
         """Function that sets up the word2vec model
         """
-        misc.print_header("MODELS: CACHED & WORD2VEC")
+        print_header("MODELS: CACHED & WORD2VEC")
 
         if not os.path.exists(self.config.get_cached_model()):
             print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
-            task_completed = misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
+            task_completed = download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
 
             if task_completed:
                 print("File containing the cached model has been downloaded successfully.")
@@ -188,7 +188,7 @@ class Model:
 
         if not os.path.exists(self.config.get_cached_model()):
             print('[*] Beginning download of word2vec model from', self.config.get_model_pickle_remote_url())
-            task_completed = misc.download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())
+            task_completed = download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())
 
             if task_completed:
                 print("File containing the word2vec model has been downloaded successfully.")
@@ -202,7 +202,7 @@ class Model:
         """Function that updates the models
         The variable force is for the future when we will have models versioning.
         """
-        misc.print_header("MODELS: CACHED & WORD2VEC")
+        print_header("MODELS: CACHED & WORD2VEC")
         try:
             os.remove(self.config.get_cached_model())
         except FileNotFoundError:
@@ -213,7 +213,7 @@ class Model:
         except FileNotFoundError:
             print("Couldn't delete file word2vec model: not found")
         print("Updating the models: cached and word2vec")
-        task_completed1 = misc.download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
-        task_completed2 = misc.download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())
+        task_completed1 = download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
+        task_completed2 = download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())
         if task_completed1 and task_completed2:
             print("Models downloaded successfully.")
