@@ -1,25 +1,26 @@
 import math
 from functools import partial
 from multiprocessing.pool import Pool
+from update_checker import UpdateChecker
 
-from classifier import misc
-from classifier.semanticmodule import Semantic as sema
-from classifier.syntacticmodule import Syntactic as synt
-from classifier.postprocess import PostProcess as post
-from classifier.ontology import Ontology as CSO
-from classifier.model import Model as MODEL
-from classifier.paper import Paper
-from classifier.result import Result
-from classifier.config import Config
+from .misc import chunks, download_language_model, print_header
+from .semanticmodule import Semantic as sema
+from .syntacticmodule import Syntactic as synt
+from .postprocmodule import PostProcess as post
+from .ontology import Ontology as CSO
+from .model import Model as MODEL
+from .paper import Paper
+from .result import Result
+from .config import Config
 
 
-def run_cso_classifier(paper, modules="both", enhancement="first", explanation=False):
+def run_cso_classifier(paper, **parameters):
     """Run the CSO Classifier.
 
     It takes as input the text from abstract, title, and keywords of a research paper and outputs a list of relevant
     concepts from CSO.
 
-    This function requires the paper (please note, one single paper, no batch mode) and few flags: 
+    This function requires the paper (please note, one single paper, no batch mode) and few flags:
         (i) modules, determines whether to run only the syntactic module, or the semantic module, or both;
         (ii) enhancement, controls whether the classifier should infer super-topics, i.e., their first direct
         super-topics or the whole set of topics up until root.
@@ -36,47 +37,52 @@ def run_cso_classifier(paper, modules="both", enhancement="first", explanation=F
         does not provide any enhancement.
         explanation (boolean): if true it returns the chunks of text that allowed to infer a particular topic. This feature
         of the classifier is useful as it allows users to asses the result
+        - find_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
+        - fast_classification (boolen): if True it runs the fast version of the classifier (cached model). If False the classifier uses the
+        word2vec model which has higher computational complexity
 
     Returns:
         class_res (dictionary): containing teh result of each classification
     """
 
-    if modules not in ["syntactic", "semantic", "both"]:
-        raise ValueError("Error: Field modules must be 'syntactic', 'semantic' or 'both'")
+    modules             = parameters["modules"] if "modules" in parameters else "both"
+    enhancement         = parameters["enhancement"] if "enhancement" in parameters else "first"
+    explanation         = parameters["explanation"] if "explanation" in parameters else False
+    find_outliers       = parameters["find_outliers"] if "find_outliers" in parameters else True
+    fast_classification = parameters["fast_classification"] if "fast_classification" in parameters else True
 
-    if enhancement not in ["first", "all", "no"]:
-        raise ValueError("Error: Field enhances must be 'first', 'all' or 'no'")
-    
-    if type(explanation) != bool:
-        raise ValueError("Error: Explanation must be set to either True or False")
+    check_parameters(parameters)
 
-    
+    use_full_model = find_outliers or not fast_classification
+
     # Loading ontology and model
     cso = CSO()
-    model = MODEL()
+    model = MODEL(use_full_model=use_full_model)
     t_paper = Paper(paper, modules)
     result = Result(explanation)
-    
+
 
     # Passing parameters to the two classes (synt and sema) and actioning classifiers
 
-    if modules == 'syntactic' or modules == 'both':
+    if modules in ('syntactic','both'):
         synt_module = synt(cso, t_paper)
         result.set_syntactic(synt_module.classify_syntactic())
-        if explanation: result.dump_temporary_explanation(synt_module.get_explanation())
-    if modules == 'semantic' or modules == 'both':
-        sema_module = sema(model, cso, t_paper)
+        if explanation:
+            result.dump_temporary_explanation(synt_module.get_explanation())
+    if modules in ('semantic','both'):
+        sema_module = sema(model, cso, fast_classification, t_paper)
         result.set_semantic(sema_module.classify_semantic())
-        if explanation: result.dump_temporary_explanation(sema_module.get_explanation())
-        
-        
-    postprocess = post(model, cso, enhancement, result)
+        if explanation:
+            result.dump_temporary_explanation(sema_module.get_explanation())
+
+
+    postprocess = post(model, cso, enhancement=enhancement, result=result, find_outliers=find_outliers)
     result = postprocess.filtering_outliers()
 
     return result.get_dict()
 
 
-def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhancement="first", explanation = False):
+def run_cso_classifier_batch_model_single_worker(papers, **parameters):
     """Run the CSO Classifier in *BATCH MODE*.
 
     It takes as input a set of papers, which include abstract, title, and keywords and for each one of them returns a
@@ -85,7 +91,7 @@ def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhance
     (i) modules, determines whether to run only the syntactic module, or the semantic module, or both;
     (ii) enhancement, controls whether the classifier should infer super-topics, i.e., their first direct
     super-topics or the whole set of topics up until root.
-    
+
 
     Args:
         papers (dictionary): contains the metadata of the papers, e.g., for each paper, there is title, abstract and
@@ -99,32 +105,35 @@ def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhance
         does not provide any enhancement.
         explanation (boolean): if true it returns the chunks of text that allowed to infer a particular topic. This feature
         of the classifier is useful as it allows users to asses the result
+        - find_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
+        - fast (boolen): if True it runs the fast version of the classifier (cached model). If False the classifier uses the
+        word2vec model which has higher computational complexity
 
     Returns:
         class_res (dictionary): containing teh result of each classification
     """
 
-    if modules not in ["syntactic", "semantic", "both"]:
-        raise ValueError("Error: Field modules must be 'syntactic', 'semantic' or 'both'")
+    modules             = parameters["modules"] if "modules" in parameters else "both"
+    enhancement         = parameters["enhancement"] if "enhancement" in parameters else "first"
+    explanation         = parameters["explanation"] if "explanation" in parameters else False
+    find_outliers       = parameters["find_outliers"] if "find_outliers" in parameters else True
+    fast_classification = parameters["fast_classification"] if "fast_classification" in parameters else True
 
-    if enhancement not in ["first", "all", "no"]:
-        raise ValueError("Error: Field enhances must be 'first', 'all' or 'no'")
-    
-    if type(explanation) != bool:
-        raise ValueError("Error: Explanation must be set to either True or False")
+    check_parameters(parameters)
 
+    use_full_model = find_outliers or not fast_classification
     # Loading ontology and model
     cso = CSO()
-    model = MODEL()
+    model = MODEL(use_full_model=use_full_model)
     paper = Paper(modules = modules)
-    
-    
+
+
 
     # Passing parameters to the two classes (synt and sema)
     synt_module = synt(cso)
-    sema_module = sema(model, cso)
-    postprocess = post(model, cso, enhancement)
-    
+    sema_module = sema(model, cso, fast_classification)
+    postprocess = post(model, cso, enhancement=enhancement, find_outliers=find_outliers)
+
 
     # initializing variable that will contain output
     class_res = dict()
@@ -133,19 +142,23 @@ def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhance
         print("Processing:", paper_id)
 
         paper.set_paper(paper_value)
-        result = Result()
+        result = Result(explanation)
 
-        # Passing paper and actioning the classifier    
-        if modules == 'syntactic' or modules == 'both':
+        # Passing paper and actioning the classifier
+        if modules in ('syntactic','both'):
             synt_module.set_paper(paper)
             result.set_syntactic(synt_module.classify_syntactic())
-        if modules == 'semantic' or modules == 'both':
+            if explanation:
+                result.dump_temporary_explanation(synt_module.get_explanation())
+        if modules in ('semantic','both'):
             sema_module.set_paper(paper)
             result.set_semantic(sema_module.classify_semantic())
-           
+            if explanation:
+                result.dump_temporary_explanation(sema_module.get_explanation())
+
         postprocess.set_result(result)
         result = postprocess.filtering_outliers()
-        
+
         class_res[paper_id] = result.get_dict()
 
     return class_res
@@ -153,7 +166,7 @@ def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhance
 
 
 
-def run_cso_classifier_batch_mode(papers, workers=1, modules="both", enhancement="first", explanation = False):
+def run_cso_classifier_batch_mode(papers, **parameters):
     """Run the CSO Classifier in *BATCH MODE* and with multiprocessing.
 
     It takes as input a set of papers, which include abstract, title, and keywords and for each one of them returns a
@@ -163,103 +176,121 @@ def run_cso_classifier_batch_mode(papers, workers=1, modules="both", enhancement
     i.e., their first direct super-topics or the whole set of topics up until root.
 
     Args:
-        papers (dictionary): contains the metadata of the papers, e.g., for each paper, there is title, abstract and
+        - papers (dictionary): contains the metadata of the papers, e.g., for each paper, there is title, abstract and
         keywords {"id1":{"title": "","abstract": "","keywords": ""},"id2":{"title": "","abstract": "","keywords": ""}}.
-        workers (integer): number of workers. If 1 is in single thread, otherwise multithreaded
-        modules (string): either "syntactic", "semantic" or "both" to determine which modules to use when
+        - workers (integer): number of workers. If 1 is in single thread, otherwise multithreaded
+        - modules (string): either "syntactic", "semantic" or "both" to determine which modules to use when
         classifying. "syntactic" enables only the syntactic module. "semantic" enables only the semantic module.
         Finally, with "both" the classifier takes advantage of both the syntactic and semantic modules. Default =
         "both".
-        enhancement (string): either "first", "all" or "no". With "first" the CSO classifier returns only the topics
+        - enhancement (string): either "first", "all" or "no". With "first" the CSO classifier returns only the topics
         one level above. With "all" it returns all topics above the resulting topics. With "no" the CSO Classifier
         does not provide any enhancement.
-        explanation (boolean): if true it returns the chunks of text that allowed to infer a particular topic. This feature
+        - explanation (boolean): if true it returns the chunks of text that allowed to infer a particular topic. This feature
         of the classifier is useful as it allows users to asses the result
+        - find_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
+        - fast_classification (boolen): if True it runs the fast version of the classifier (cached model). If False the classifier uses the
+        word2vec model which has higher computational complexity
 
     Returns:
         class_res (dictionary): containing teh result of each classification
     """
 
-    if modules not in ["syntactic", "semantic", "both"]:
-        raise ValueError("Error: Field modules must be 'syntactic', 'semantic' or 'both'")
+    workers = parameters["workers"] if "workers" in parameters else 1
 
-    if enhancement not in ["first", "all", "no"]:
-        raise ValueError("Error: Field enhances must be 'first', 'all' or 'no'")
-    
-    if type(workers) != int:
-        raise ValueError("Error: Number of workers must be integer")
-
-    if workers < 1:
-        raise ValueError("Error: Number of workers must be equal or greater than 1")
-    
-    if type(explanation) != bool:
-        raise ValueError("Error: Explanation must be set to either True or False")
-    
-
+    check_parameters(parameters)
 
     size_of_corpus = len(papers)
     chunk_size = math.ceil(size_of_corpus / workers)
-    papers_list = list(misc.chunks(papers, chunk_size))
-    annotate = partial(run_cso_classifier_batch_model_single_worker, modules=modules, enhancement=enhancement)
+    papers_list = list(chunks(papers, chunk_size))
+    annotate = partial(run_cso_classifier_batch_model_single_worker, **parameters)# modules=modules, enhancement=enhancement)
 
-    with Pool(workers) as p:
-        result = p.map(annotate, papers_list)
+    with Pool(workers) as p_w:
+        result = p_w.map(annotate, papers_list)
 
     class_res = {k: v for d in result for k, v in d.items()}
 
     return class_res
 
 
+def check_parameters(parameters):
+
+    if "modules" in parameters:
+        if parameters["modules"] not in ["syntactic", "semantic", "both"]:
+            raise ValueError("Error: Field modules must be 'syntactic', 'semantic' or 'both'")
+
+    if "enhancement" in parameters:
+        if parameters["enhancement"] not in ["first", "all", "no"]:
+            raise ValueError("Error: Field enhancement must be 'first', 'all' or 'no'")
+
+    if "explanation" in parameters:
+        if not isinstance(parameters["explanation"],bool):
+            raise ValueError("Error: Field explanation must be set to either True or False")
+
+    if "find_outliers" in parameters:
+        if not isinstance(parameters["find_outliers"],bool):
+            raise ValueError("Error: Field find_outliers must be set to either True or False")
+
+    if "fast_classification" in parameters:
+        if not isinstance(parameters["fast_classification"],bool):
+            raise ValueError("Error: Field fast_classification must be set to either True or False")
+
+    if "workers" in parameters:
+        if not isinstance(parameters["workers"],int):
+            raise ValueError("Error: Number of workers must be integer")
+
+        if parameters["workers"] < 1:
+            raise ValueError("Error: Number of workers must be equal or greater than 1")
+
+
 
 def setup():
     """ Setting up the classifier: language model, ontology and word2vec model
     """
-    misc.download_language_model()
-    
+    download_language_model()
+
     cso = CSO(load_ontology = False)
     cso.setup()
-    
+
     model = MODEL(load_model = False)
     model.setup()
     print("Setup completed.")
-    
+
 
 def update(force = False):
     """ Update the ontology and the word2vec model
     """
     cso = CSO(load_ontology = False)
     cso.update(force = force)
-    
-    model = MODEL(load_model = False)
-    model.update(force = force)
-    print("Update completed.")
-    
 
-def version():
+    model = MODEL(load_model = False)
+    model.update()
+    print("Update completed.")
+
+
+def this_version():
     """ Function that returns the version number of different components: classifier and ontology
     """
     config = Config()
-    misc.print_header("CLASSIFIER")
+    print_header("CLASSIFIER")
     print("CSO Classifier version {}".format(config.get_classifier_version()))
 
 
     # This section identifies the last version of the CSO Classifier on pipy.
-    import subprocess   
-    import sys
-    
-    latest_version = str(subprocess.run([sys.executable, '-m', 'pip', 'install', '{}==random'.format(config.get_package_name())], capture_output=True, text=True))
-    latest_version = latest_version[latest_version.find('(from versions:')+15:]
-    latest_version = latest_version[:latest_version.find(')')]
-    latest_version = latest_version.replace(' ','').split(',')[-1]
-    
-    if latest_version > config.get_classifier_version():
+
+    running_version = config.get_classifier_version()
+
+    checker = UpdateChecker()
+    result = checker.check('cso-classifier', '2.0')
+    latest_version = result.available_version
+
+    if latest_version > running_version:
         print("A more recent version ({}) of the CSO Classifier is available.".format(latest_version))
-        print("You can update this package by running: pip install cso-classifier -U")
+        print("You can update this package by running 'pip install cso-classifier -U' or follow the instructions on https://github.com/angelosalatino/cso-classifier")
     elif latest_version == config.get_classifier_version():
         print("The version of the CSO Classifier you are using is already up to date.")
     elif latest_version < config.get_classifier_version():
         print("The latest available package is version {} and you are using version {}. There is an error in your configuration file.".format(latest_version,config.get_classifier_version()))
-    
+
     cso = CSO(load_ontology = False)
     cso.version()
-    
