@@ -3,8 +3,6 @@ from nltk.tokenize import word_tokenize
 from Levenshtein.StringMatcher import StringMatcher
 
 
-
-
 class Syntactic:
     """ A simple abstraction layer for using the Syntactic module of the CSO classifier """
 
