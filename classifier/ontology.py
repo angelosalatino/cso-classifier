@@ -6,8 +6,8 @@ import json
 from collections import deque
 from igraph import Graph
 
-from classifier.config import Config
-from classifier import misc
+from .config import Config
+from .misc import print_header, download_file
 
 
 class Ontology:
@@ -341,8 +341,7 @@ class Ontology:
 
 
             with open(self.config.get_cso_pickle_path(), 'wb') as cso_file:
-                print("Creating ontology pickle file from a copy of the \
-                      CSO Ontology found in",self.config.get_cso_path())
+                print("Creating ontology pickle file from a copy of the CSO Ontology found in",self.config.get_cso_path())
                 pickle.dump(self.from_single_items_to_cso(), cso_file)
 
             self.__create_graph_from_cso()
@@ -388,8 +387,7 @@ class Ontology:
             self.graph.add_edges(list_of_edges)
 
         self.graph.simplify()
-        print("Saving the graph representation of the ontology \
-              (in a pickle object) in",self.config.get_cso_graph_path())
+        print("Saving the graph representation of the ontology (in a pickle object) in",self.config.get_cso_graph_path())
         self.graph.write_pickle(self.config.get_cso_graph_path())
 
 
@@ -409,7 +407,7 @@ class Ontology:
 
         ontology_remote_url, last_version = self.retrieve_url_of_latest_version_available()
         print("Downloading the Computer Science Ontology from {}".format(ontology_remote_url))
-        task_completed = misc.download_file(ontology_remote_url, self.config.get_cso_path())
+        task_completed = download_file(ontology_remote_url, self.config.get_cso_path())
         self.config.set_cso_version(last_version)
         return task_completed
 
@@ -421,7 +419,7 @@ class Ontology:
             force (boolean): If false, it checks if a newer version is available.
                 If false, it will delete all files and download the most recent version.
         """
-        misc.print_header("ONTOLOGY")
+        print_header("ONTOLOGY")
         if force:
             print("Updating the ontology file")
             self.__download_ontology()
@@ -440,7 +438,7 @@ class Ontology:
     def setup(self):
         """ Function that sets up the ontology.
         """
-        misc.print_header("ONTOLOGY")
+        print_header("ONTOLOGY")
 
         if not os.path.exists(self.config.get_cso_pickle_path()):
 
@@ -491,20 +489,17 @@ class Ontology:
         """ Function that returns the current version of the ontology available in this classifier
             It also checks whether there is a more up-to-date version.
         """
-        misc.print_header("ONTOLOGY")
+        print_header("ONTOLOGY")
         print("CSO ontology version {}".format(self.config.get_ontology_version()))
 
         last_version = self.retrieve_latest_version_available()
 
         if last_version > self.config.get_ontology_version():
-            print("A more recent version ({}) of the Computer Science Ontology \
-                  is available.".format(last_version))
+            print("A more recent version ({}) of the Computer Science Ontology is available.".format(last_version))
             print("You can update this package by running the following instructions:")
-            print("1) import classifier.classifier as classifier")
-            print("2) classifier.update()")
+            print("1) import cso_classifier as cc")
+            print("2) cc.update()")
         elif last_version == self.config.get_ontology_version():
             print("The version of the CSO Ontology you are using is already up to date.")
         elif last_version < self.config.get_ontology_version():
-            print("Something is not right. The version you are using \
-                  ({}) is ahead compared to the latest available \
-                      ({}).".format(self.config.get_ontology_version(),last_version))
+            print("Something is not right. The version you are using ({}) is ahead compared to the latest available ({}).".format(self.config.get_ontology_version(),last_version))
