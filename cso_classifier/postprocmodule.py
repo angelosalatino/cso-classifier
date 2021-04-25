@@ -198,7 +198,6 @@ class PostProcess:
             2.1) if any of those topics is super topic of the retained
             2.2) if any of those topics has high string similarity with the retained
         """
-        print(self.list_of_topics)
         if self.find_outliers and len(self.list_of_topics) > 1:
 
             syntactic = self.result.get_syntactic()
