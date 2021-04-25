@@ -23,8 +23,8 @@ with open("cso_classifier/version.py") as fp:
 setuptools.setup(
     name="cso-classifier",
     version=version["__version__"],
-    author="SKM3 Team",
-    author_email="kmi-cso@open.ac.uk",
+    author="Angelo Salatino",
+    author_email="angelo.salatino@open.ac.uk",
     description="A light-weight Python API for classifying scientific documents with the topics from the Computer Science Ontology (https://cso.kmi.open.ac.uk/home).",
     long_description=long_description,
     long_description_content_type="text/markdown",
