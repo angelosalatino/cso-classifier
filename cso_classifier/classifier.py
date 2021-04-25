@@ -40,6 +40,7 @@ def run_cso_classifier(paper, **parameters):
         - find_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
         - fast_classification (boolen): if True it runs the fast version of the classifier (cached model). If False the classifier uses the
         word2vec model which has higher computational complexity
+        - silent (boolean): determines whether to print the progress. If true goes in silent mode. Instead, if false does not print anything in standard output
 
     Returns:
         class_res (dictionary): containing teh result of each classification
@@ -50,6 +51,7 @@ def run_cso_classifier(paper, **parameters):
     explanation         = parameters["explanation"] if "explanation" in parameters else False
     find_outliers       = parameters["find_outliers"] if "find_outliers" in parameters else True
     fast_classification = parameters["fast_classification"] if "fast_classification" in parameters else True
+    silent              = parameters["silent"] if "silent" in parameters else False
 
     check_parameters(parameters)
 
@@ -108,6 +110,8 @@ def run_cso_classifier_batch_model_single_worker(papers, **parameters):
         - find_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
         - fast (boolen): if True it runs the fast version of the classifier (cached model). If False the classifier uses the
         word2vec model which has higher computational complexity
+        - silent (boolean): determines whether to print the progress. If true goes in silent mode. Instead, if false does not print anything in standard output
+
 
     Returns:
         class_res (dictionary): containing teh result of each classification
@@ -118,6 +122,7 @@ def run_cso_classifier_batch_model_single_worker(papers, **parameters):
     explanation         = parameters["explanation"] if "explanation" in parameters else False
     find_outliers       = parameters["find_outliers"] if "find_outliers" in parameters else True
     fast_classification = parameters["fast_classification"] if "fast_classification" in parameters else True
+    silent              = parameters["silent"] if "silent" in parameters else False
 
     check_parameters(parameters)
 
@@ -139,7 +144,8 @@ def run_cso_classifier_batch_model_single_worker(papers, **parameters):
     class_res = dict()
 
     for paper_id, paper_value in papers.items():
-        print("Processing:", paper_id)
+        if not silent:
+            print("Processing:", paper_id)
 
         paper.set_paper(paper_value)
         result = Result(explanation)
@@ -191,6 +197,8 @@ def run_cso_classifier_batch_mode(papers, **parameters):
         - find_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
         - fast_classification (boolen): if True it runs the fast version of the classifier (cached model). If False the classifier uses the
         word2vec model which has higher computational complexity
+        - silent (boolean): determines whether to print the progress. If true goes in silent mode. Instead, if false does not print anything in standard output
+
 
     Returns:
         class_res (dictionary): containing teh result of each classification
@@ -241,6 +249,10 @@ def check_parameters(parameters):
 
         if parameters["workers"] < 1:
             raise ValueError("Error: Number of workers must be equal or greater than 1")
+        
+    if "silent" in parameters:
+        if not isinstance(parameters["silent"],bool):
+            raise ValueError("Error: Field silent must be set to either True or False")
 
 
 
