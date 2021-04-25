@@ -58,8 +58,8 @@ def run_cso_classifier(paper, **parameters):
     use_full_model = find_outliers or not fast_classification
 
     # Loading ontology and model
-    cso = CSO()
-    model = MODEL(use_full_model=use_full_model)
+    cso = CSO(silent = silent)
+    model = MODEL(use_full_model=use_full_model, silent = silent)
     t_paper = Paper(paper, modules)
     result = Result(explanation)
 
@@ -128,8 +128,8 @@ def run_cso_classifier_batch_model_single_worker(papers, **parameters):
 
     use_full_model = find_outliers or not fast_classification
     # Loading ontology and model
-    cso = CSO()
-    model = MODEL(use_full_model=use_full_model)
+    cso = CSO(silent = silent)
+    model = MODEL(use_full_model=use_full_model, silent = silent)
     paper = Paper(modules = modules)
 
 

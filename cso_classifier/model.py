@@ -9,9 +9,10 @@ from .misc import print_header, download_file
 class Model:
     """ A simple abstraction layer for using the Word Embedding Model """
 
-    def __init__(self, load_model = True, use_full_model = False):
+    def __init__(self, load_model = True, use_full_model = False, silent = False):
         """ Initialising the model class
         """
+        self.silent = silent
         self.model = dict()
         self.full_model = None
         self.config = Config()
@@ -80,7 +81,8 @@ class Model:
         self.__check_cached_model()
         with open(self.config.get_cached_model()) as file:
             self.model = json.load(file)
-        print("Model loaded.")
+        if not self.silent:
+            print("Model loaded.")
 
 
 

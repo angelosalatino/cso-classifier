@@ -13,9 +13,10 @@ from .misc import print_header, download_file
 class Ontology:
     """ A simple abstraction layer for using the Computer Science Ontology """
 
-    def __init__(self, load_ontology = True):
+    def __init__(self, load_ontology = True, silent = False):
         """ Initialising the ontology class
         """
+        self.silent = silent
         self.topics = dict()
         self.topics_wu = dict()
         self.broaders = dict()
@@ -61,7 +62,7 @@ class Ontology:
             try:
                 setattr(self, attr, cso[attr])
             except KeyError:
-                print("Key {} not found in the ontology".format(attr))
+                ValueError("Key {} not found in the ontology".format(attr))
 
 
     def load_ontology_pickle(self):
@@ -72,7 +73,8 @@ class Ontology:
         ontology = pickle.load(open(self.config.get_cso_pickle_path(), "rb" ))
         self.from_cso_to_single_items(ontology)
         self.read_ontology_graph_version()
-        print("Computer Science Ontology loaded.")
+        if not self.silent:
+            print("Computer Science Ontology loaded.")
 
 
     def get_primary_label(self, topic):
