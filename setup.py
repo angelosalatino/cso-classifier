@@ -1,6 +1,4 @@
 import setuptools
-import sys
-import os
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -16,16 +14,17 @@ def load_requirements(fname):
     reqs = parse_requirements(fname, session="test")
     return [str(ir.req) for ir in reqs]
 
-version = {}
-with open("cso_classifier/version.py") as fp:
-    exec(fp.read(), version)
+
+# Import version number from version.py
+__version__ = None
+exec(open("cso_classifier/version.py").read())
 
 setuptools.setup(
     name="cso-classifier",
-    version=version["__version__"],
+    version=__version__,
     author="Angelo Salatino",
     author_email="angelo.salatino@open.ac.uk",
-    description="A light-weight Python API for classifying scientific documents with the topics from the Computer Science Ontology (https://cso.kmi.open.ac.uk/home).",
+    description="A light-weight Python app for classifying scientific documents with the topics from the Computer Science Ontology (https://cso.kmi.open.ac.uk/home).",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/angelosalatino/cso-classifier",

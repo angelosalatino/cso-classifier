@@ -1,1 +1,1 @@
-__version__ = "3.0"
+from cso_classifier.config import Config__version__ = Config().get_classifier_version()
