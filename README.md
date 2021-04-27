@@ -44,7 +44,7 @@ Classifying research papers according to their research topics is an important t
 
 ## About
 
-The CSO Classifier is a novel application that takes as input the text from the abstract, title, and keywords of a research paper and outputs a list of relevant concepts from CSO. It consists of two main components: (i) the syntactic module and (ii) the semantic module. Figure 1 depicts its architecture. The syntactic module parses the input documents and identifies CSO concepts that are explicitly referred to in the document. The semantic module uses part-of-speech tagging to identify promising terms and then exploits word embeddings to infer semantically related topics. Finally, the CSO Classifier combines the results of these two modules, removes outliers, and enhances them by including relevant super-areas.
+The CSO Classifier is a novel application that takes as input the text from the abstract, title, and keywords of a research paper and outputs a list of relevant concepts from CSO. It consists of three main components: (i) the syntactic module, (ii) the semantic module and (iii) the post-processing module. Figure 1 depicts its architecture. The syntactic module parses the input documents and identifies CSO concepts that are explicitly referred to in the document. The semantic module uses part-of-speech tagging to identify promising terms and then exploits word embeddings to infer semantically related topics. Finally, the post-processing module combines the results of these two modules, removes outliers, and enhances them by including relevant super-areas.
 
 ![Framework of CSO Classifier](https://github.com/angelosalatino/cso-classifier/raw/master/images/Workflow.png "Framework of CSO Classifier")
 **Figure 1**: Framework of CSO Classifier
@@ -101,7 +101,7 @@ import cso_classifier as cc
 cc.version()
 ```
 
-Instead, if you want to know the package version use:
+Instead, if you just want to know the package version use:
 ```python
 import cso_classifier as cc
 print(cc.__version__)
@@ -109,7 +109,7 @@ print(cc.__version__)
 
 ### Test
 
-This functionality allows to test whether the classifier has been properly installed.
+This functionality allows you to test whether the classifier has been properly installed.
 
 ```python
 import cso_classifier as test
@@ -353,7 +353,7 @@ Below you can find an example. The keys syntactic and semantic respectively cont
 ### Parameters
 Beside the paper(s), the function running the CSO Classifier accepts seven additional parameters: (i) **workers**, (ii) **modules**, (iii) **enhancement**, (iv) **explanation**, (v) **find_outliers**, (vi) **fast_classification**, and (vii) **silent**. There is no particular order on how to specify these paramaters. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier. The explanation, find_outliers, fast_classification, and silent parameters are booleans.
 
-(i) The parameter *workers* defines the number of thread to run for classifying the input corpus. For instance, if ```workers = 4```, there will be 4 instances of the CSO Classifier, each one receiving a chunk (equally split) of the corpus to process. Once all processes are completed, the results will be aggregated and returned. The default value for *workers* is *1*. This parameter is available only in *batch mode*.
+(i) The parameter *workers* defines the number of threads to run for classifying the input corpus. For instance, if ```workers = 4```, there will be 4 instances of the CSO Classifier, each one receiving a chunk (equally split) of the corpus to process. Once all processes are completed, the results will be aggregated and returned. The default value for *workers* is *1*. This parameter is available only in *batch mode*.
 
 (ii) The parameter *modules* can be either "syntactic", "semantic", or "both". Using the value "syntactic", the classifier will run only the syntactic module. Using the "semantic" value, instead, the classifier will use only the semantic module. Finally, using "both", the classifier will run both syntactic and semantic modules and combine their results. The default value for *modules* is *both*.
 
@@ -365,18 +365,18 @@ Beside the paper(s), the function running the CSO Classifier accepts seven addit
 
 (vi) The parameter *fast_classification* can be either *True* or *False*. This parameter determines whether the semantic module should use the full model or the cached one. Using the full model provides slightly better results than the cached one. However, using the cached model is more than 15x faster. Read [here](#word2vec-model-and-token-to-cso-combined-file-generation) for more details about these two models. The default value for *fast_classification* is *True*.
 
-(vii) The parameter *silent* can be either *True* or *False*. This determines whether the classifier prints content in the console. If set to True, the classifier will be silent and will not print any output while classifying. The default value for *silent* is *False*.
+(vii) The parameter *silent* can be either *True* or *False*. This determines whether the classifier prints its progress in console. If set to True, the classifier will be silent and will not print any output while classifying. The default value for *silent* is *False*.
 
 
-| Parameter  |  Single Paper | Batch Mode |
-|---|---|---|
-| workers  | :x:  | :white_check_mark: |
-| modules  | :white_check_mark:  | :white_check_mark: |
-| enhancement  | :white_check_mark:  | :white_check_mark: |
-| explanation  | :white_check_mark:  | :white_check_mark: |
-| find_outliers| :white_check_mark:  | :white_check_mark: |
-| fast_classification| :white_check_mark:  | :white_check_mark: |
-| silent       | :white_check_mark:  | :white_check_mark: |
+|# | Parameter  |  Single Paper | Batch Mode |
+|---|---|---|---|
+|i  | workers  | :x:  | :white_check_mark: |
+|ii | modules  | :white_check_mark:  | :white_check_mark: |
+|iii| enhancement  | :white_check_mark:  | :white_check_mark: |
+|iv | explanation  | :white_check_mark:  | :white_check_mark: |
+|v  | find_outliers| :white_check_mark:  | :white_check_mark: |
+|vi | fast_classification| :white_check_mark:  | :white_check_mark: |
+|vii| silent       | :white_check_mark:  | :white_check_mark: |
 
 **Table 1**: Parameters availability when using CSO Classifier
 
@@ -410,7 +410,7 @@ Download from:
 ### v2.3.1
 
 Bug Fix. Added some exception handles. 
-**Notice:** *Please note that during the upload of this version on Pypi (python index), we encountered some issues. We can't guarantee this version will work properly. To this end, we created a new release: v2.3.2. Use this one, please. Apologies for any inconvenience.*
+**Notice:** *Please note that during the upload of this version on Pypi (python index), we encountered some issues. We can't guarantee this version will work properly. To this end, we created a new release: v2.3.2. Use this last one, please. Apologies for any inconvenience.*
 
 ### v2.3
 This new release contains a bug fix and the latest version of the CSO ontology.
@@ -445,7 +445,7 @@ Download from:
 
 ### v2.0
 
-The second version (v2.0) implements the CSO Classifier as described in the [about section](#about). It combines the topics of both the syntactic and semantic modules and enriches them with their supertopics. Compared to [v1.0](#v10), it adds a semantic layer that allows generating a more comprehensive result, identifying research topics that are not explicitly available in the metadata. The semantic module relies on a Word2vec model trained on over 4.5M papers in _Computer Science_. [Below](#word-embedding-generation) we show more in detail how we trained such a model. In this version of the classifier, we [pickled](https://docs.python.org/3.6/library/pickle.html) the model to speed up the process of loading into memory (~4.5 times faster).
+The second version (v2.0) implements the CSO Classifier as described in the [about section](#about). It combines the topics of both the syntactic and semantic modules and enriches them with their super-topics. Compared to [v1.0](#v10), it adds a semantic layer that allows generating a more comprehensive result, identifying research topics that are not explicitly available in the metadata. The semantic module relies on a Word2vec model trained on over 4.5M papers in _Computer Science_. [Below](#word-embedding-generation) we show more in detail how we trained such a model. In this version of the classifier, we [pickled](https://docs.python.org/3.6/library/pickle.html) the model to speed up the process of loading into memory (~4.5 times faster).
 
 > Salatino, A.A., Osborne, F., Thanapalasingam, T., Motta, E.: The CSO Classifier: Ontology-Driven Detection of Research Topics in Scholarly Articles. In: TPDL 2019: 23rd International Conference on Theory and Practice of Digital Libraries. Springer. [Read More](http://oro.open.ac.uk/62026/)
 
@@ -496,7 +496,7 @@ In this section, we describe how we generated the word2vec model used within the
 
 ### Word Embedding generation
 
-We applied the word2vec approach [[2,3]](#references) to a collection of text from the Microsoft Academic Graph (MAG)  for generating word embeddings. MAG is a scientific knowledge base and a heterogeneous graph containing scientific publication records, citation relationships, authors, institutions, journals, conferences, and fields of study. It is the largest dataset of scholarly data publicly available, and, as of December 2018, it contains more than 210 million publications.
+We applied the word2vec approach [[2,3]](#references) to a collection of text from the Microsoft Academic Graph (MAG) for generating word embeddings. MAG is a scientific knowledge base and a heterogeneous graph containing scientific publication records, citation relationships, authors, institutions, journals, conferences, and fields of study. It is the largest dataset of scholarly data publicly available, and, as of April 2021, it contains more than 250 million publications.
 
 We first downloaded titles, and abstracts of 4,654,062 English papers in the field of Computer Science. Then we pre-processed the data by replacing spaces with underscores in all n-grams matching the CSO topic labels (e.g., “digital libraries” became “digital_libraries”) and for frequent bigrams and trigrams (e.g., “highest_accuracies”, “highly_cited_journals”). These frequent n-grams were identified by analysing combinations of words that co-occur together, as suggested in [[2]](#references) and using the parameters showed in Table 2. Indeed, while it is possible to obtain the vector of an n-gram by averaging the embedding vectors of all its words, the resulting representation usually is not as good as the one obtained by considering the n-gram as a single word during the training phase.
 
@@ -518,7 +518,7 @@ Finally, we trained the word2vec model using the parameters provided in Table 3.
 
 After training the model, we obtained a **gensim.models.keyedvectors.Word2VecKeyedVectors** object weighing **366MB**. You can download the model [from here](https://cso.kmi.open.ac.uk/download/model.p).
 
-The size of the model hindered the performance of the classifier in two ways. Firstly, it required several seconds to be loaded into memory. This was partially fixed by serialising the model file (using python pickle, see version v2.0 of CSO Classifier, ~4.5 times faster). Secondly, while processing a document, the classifier needs to retrieve the top 10 similar words for all tokens, and compare them with CSO topics. In performing such an operation, the model would require several seconds, becoming a bottleneck for the classification process.
+The size of the model hindered the performance of the classifier in two ways. Firstly, it required several seconds to be loaded into memory. This was partially fixed by serialising the model file (using python pickle, see version v2.0 of CSO Classifier, ~4.5x faster). Secondly, while processing a document, the classifier needs to retrieve the top 10 similar words for all tokens, and compare them with CSO topics. In performing such an operation, the model would require several seconds, becoming a bottleneck for the classification process.
 
 To this end, we decided to create a cached model (**token-to-cso-combined.json**) which is a dictionary that directly connects all token available in the vocabulary of the model with the CSO topics. This strategy allows to quickly retrieve all CSO topics that can be inferred by a particular token.
 
