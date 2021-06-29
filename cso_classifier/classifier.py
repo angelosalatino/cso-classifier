@@ -37,7 +37,7 @@ def run_cso_classifier(paper, **parameters):
         does not provide any enhancement.
         explanation (boolean): if true it returns the chunks of text that allowed to infer a particular topic. This feature
         of the classifier is useful as it allows users to asses the result
-        - find_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
+        - delete_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
         - fast_classification (boolen): if True it runs the fast version of the classifier (cached model). If False the classifier uses the
         word2vec model which has higher computational complexity
         - silent (boolean): determines whether to print the progress. If true goes in silent mode. Instead, if false does not print anything in standard output
@@ -49,13 +49,13 @@ def run_cso_classifier(paper, **parameters):
     modules             = parameters["modules"] if "modules" in parameters else "both"
     enhancement         = parameters["enhancement"] if "enhancement" in parameters else "first"
     explanation         = parameters["explanation"] if "explanation" in parameters else False
-    find_outliers       = parameters["find_outliers"] if "find_outliers" in parameters else True
+    delete_outliers     = parameters["delete_outliers"] if "delete_outliers" in parameters else True
     fast_classification = parameters["fast_classification"] if "fast_classification" in parameters else True
     silent              = parameters["silent"] if "silent" in parameters else False
 
-    check_parameters(parameters)
+    _check_parameters(parameters)
 
-    use_full_model = find_outliers or not fast_classification
+    use_full_model = delete_outliers or not fast_classification
 
     # Loading ontology and model
     cso = CSO(silent = silent)
@@ -78,7 +78,7 @@ def run_cso_classifier(paper, **parameters):
             result.dump_temporary_explanation(sema_module.get_explanation())
 
 
-    postprocess = post(model, cso, enhancement=enhancement, result=result, find_outliers=find_outliers)
+    postprocess = post(model, cso, enhancement=enhancement, result=result, delete_outliers=delete_outliers)
     result = postprocess.filtering_outliers()
 
     return result.get_dict()
@@ -107,7 +107,7 @@ def run_cso_classifier_batch_model_single_worker(papers, **parameters):
         does not provide any enhancement.
         explanation (boolean): if true it returns the chunks of text that allowed to infer a particular topic. This feature
         of the classifier is useful as it allows users to asses the result
-        - find_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
+        - delete_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
         - fast (boolen): if True it runs the fast version of the classifier (cached model). If False the classifier uses the
         word2vec model which has higher computational complexity
         - silent (boolean): determines whether to print the progress. If true goes in silent mode. Instead, if false does not print anything in standard output
@@ -120,13 +120,13 @@ def run_cso_classifier_batch_model_single_worker(papers, **parameters):
     modules             = parameters["modules"] if "modules" in parameters else "both"
     enhancement         = parameters["enhancement"] if "enhancement" in parameters else "first"
     explanation         = parameters["explanation"] if "explanation" in parameters else False
-    find_outliers       = parameters["find_outliers"] if "find_outliers" in parameters else True
+    delete_outliers     = parameters["delete_outliers"] if "delete_outliers" in parameters else True
     fast_classification = parameters["fast_classification"] if "fast_classification" in parameters else True
     silent              = parameters["silent"] if "silent" in parameters else False
 
-    check_parameters(parameters)
+    _check_parameters(parameters)
 
-    use_full_model = find_outliers or not fast_classification
+    use_full_model = delete_outliers or not fast_classification
     # Loading ontology and model
     cso = CSO(silent = silent)
     model = MODEL(use_full_model=use_full_model, silent = silent)
@@ -137,7 +137,7 @@ def run_cso_classifier_batch_model_single_worker(papers, **parameters):
     # Passing parameters to the two classes (synt and sema)
     synt_module = synt(cso)
     sema_module = sema(model, cso, fast_classification)
-    postprocess = post(model, cso, enhancement=enhancement, find_outliers=find_outliers)
+    postprocess = post(model, cso, enhancement=enhancement, delete_outliers=delete_outliers)
 
 
     # initializing variable that will contain output
@@ -194,7 +194,7 @@ def run_cso_classifier_batch_mode(papers, **parameters):
         does not provide any enhancement.
         - explanation (boolean): if true it returns the chunks of text that allowed to infer a particular topic. This feature
         of the classifier is useful as it allows users to asses the result
-        - find_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
+        - delete_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
         - fast_classification (boolen): if True it runs the fast version of the classifier (cached model). If False the classifier uses the
         word2vec model which has higher computational complexity
         - silent (boolean): determines whether to print the progress. If true goes in silent mode. Instead, if false does not print anything in standard output
@@ -206,7 +206,7 @@ def run_cso_classifier_batch_mode(papers, **parameters):
 
     workers = parameters["workers"] if "workers" in parameters else 1
 
-    check_parameters(parameters)
+    _check_parameters(parameters)
 
     size_of_corpus = len(papers)
     chunk_size = math.ceil(size_of_corpus / workers)
@@ -221,38 +221,38 @@ def run_cso_classifier_batch_mode(papers, **parameters):
     return class_res
 
 
-def check_parameters(parameters):
+def _check_parameters(parameters):
 
     if "modules" in parameters:
         if parameters["modules"] not in ["syntactic", "semantic", "both"]:
-            raise ValueError("Error: Field modules must be 'syntactic', 'semantic' or 'both'")
+            raise ValueError("Field modules must be 'syntactic', 'semantic' or 'both'")
 
     if "enhancement" in parameters:
         if parameters["enhancement"] not in ["first", "all", "no"]:
-            raise ValueError("Error: Field enhancement must be 'first', 'all' or 'no'")
+            raise ValueError("Field enhancement must be 'first', 'all' or 'no'")
 
     if "explanation" in parameters:
-        if not isinstance(parameters["explanation"],bool):
-            raise ValueError("Error: Field explanation must be set to either True or False")
+        if not isinstance(parameters["explanation"], bool):
+            raise TypeError("Field explanation must be set to either True or False. Got %s instead." % type(parameters["explanation"]).__name__)
 
-    if "find_outliers" in parameters:
-        if not isinstance(parameters["find_outliers"],bool):
-            raise ValueError("Error: Field find_outliers must be set to either True or False")
+    if "delete_outliers" in parameters:
+        if not isinstance(parameters["delete_outliers"], bool):
+            raise TypeError("Field delete_outliers must be set to either True or False. Got %s instead." % type(parameters["delete_outliers"]).__name__)
 
     if "fast_classification" in parameters:
-        if not isinstance(parameters["fast_classification"],bool):
-            raise ValueError("Error: Field fast_classification must be set to either True or False")
+        if not isinstance(parameters["fast_classification"], bool):
+            raise TypeError("Field fast_classification must be set to either True or False. Got %s instead." % type(parameters["fast_classification"]).__name__)
 
     if "workers" in parameters:
-        if not isinstance(parameters["workers"],int):
-            raise ValueError("Error: Number of workers must be integer")
+        if not isinstance(parameters["workers"], int):
+            raise TypeError("Number of workers must be integer. Got %s instead." % type(parameters["workers"]).__name__)
 
         if parameters["workers"] < 1:
-            raise ValueError("Error: Number of workers must be equal or greater than 1")
+            raise ValueError("Number of workers must be equal or greater than 1")
         
     if "silent" in parameters:
-        if not isinstance(parameters["silent"],bool):
-            raise ValueError("Error: Field silent must be set to either True or False")
+        if not isinstance(parameters["silent"], bool):
+            raise TypeError("Field silent must be set to either True or False. Got %s instead." % type(parameters["silent"]).__name__)
 
 
 

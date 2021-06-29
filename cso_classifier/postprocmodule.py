@@ -13,8 +13,9 @@ class PostProcess:
         Args:
             model (dictionary): word2vec model.
             cso (dictionary): Computer Science Ontology
-            enhancement (string): kind of enhancement
-            result (Result class): topics identified from a document
+            Among the other parameters:
+                enhancement (string): kind of enhancement
+                result (Result class): topics identified from a document
         """
         self.cso = cso                  #Stores the CSO Ontology
         self.model = model              #contains the model
@@ -23,7 +24,7 @@ class PostProcess:
 
         self.list_of_topics = list()
         self.enhancement = parameters["enhancement"] if "enhancement" in parameters else "first"  #defines the type of enhancement
-        self.find_outliers = parameters["find_outliers"] if "find_outliers" in parameters else True
+        self.delete_outliers = parameters["delete_outliers"] if "delete_outliers" in parameters else True
 
         if "result" in parameters:
             self.result = parameters["result"]            # the result object
@@ -198,7 +199,7 @@ class PostProcess:
             2.1) if any of those topics is super topic of the retained
             2.2) if any of those topics has high string similarity with the retained
         """
-        if self.find_outliers and len(self.list_of_topics) > 1:
+        if self.delete_outliers and len(self.list_of_topics) > 1:
 
             syntactic = self.result.get_syntactic()
             syntactic_to_keep = [topic for topic in syntactic if len(re.findall(r'\w+', topic)) > 1]
