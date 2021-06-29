@@ -351,7 +351,7 @@ Below you can find an example. The keys syntactic and semantic respectively cont
 ```
 
 ### Parameters
-Beside the paper(s), the function running the CSO Classifier accepts seven additional parameters: (i) **workers**, (ii) **modules**, (iii) **enhancement**, (iv) **explanation**, (v) **find_outliers**, (vi) **fast_classification**, and (vii) **silent**. There is no particular order on how to specify these paramaters. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier. The explanation, find_outliers, fast_classification, and silent parameters are booleans.
+Beside the paper(s), the function running the CSO Classifier accepts seven additional parameters: (i) **workers**, (ii) **modules**, (iii) **enhancement**, (iv) **explanation**, (v) **delete_outliers**, (vi) **fast_classification**, and (vii) **silent**. There is no particular order on how to specify these paramaters. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier. The explanation, delete_outliers, fast_classification, and silent parameters are booleans.
 
 (i) The parameter *workers* defines the number of threads to run for classifying the input corpus. For instance, if ```workers = 4```, there will be 4 instances of the CSO Classifier, each one receiving a chunk (equally split) of the corpus to process. Once all processes are completed, the results will be aggregated and returned. The default value for *workers* is *1*. This parameter is available only in *batch mode*.
 
@@ -361,7 +361,7 @@ Beside the paper(s), the function running the CSO Classifier accepts seven addit
 
 (iv) The parameter *explanation* can be either *True* or *False*. This parameter defines whether the classifier should return an explanation. This explanation consists of chunks of text, coming from the input paper, that allowed the classifier to return a given topic. This supports the user in better understanding why a certain topic has been inferred. The classifier will return an explanation for all topics, even for the enhanced ones. In this case, it will join all the text chunk of all its sub-topics. The default value for *explanation* is *False*.
 
-(v) The parameter *find_outliers* can be either *True* or *False*. This parameter controls whether to run the find outlier component within the post-processing module. The find outliers component improves the results by removing erroneous topics that were conceptually distant from the others. Due to their computation, users might experience slowdowns. For this reason, users can decide between good results and low computational time or improved results and slower computation. The default value for *find_outliers* is *True*.
+(v) The parameter *delete_outliers* can be either *True* or *False*. This parameter controls whether to run the outlier detection component within the post-processing module. This component improves the results by removing erroneous topics that were conceptually distant from the others. Due to their computation, users might experience slowdowns. For this reason, users can decide between good results and low computational time or improved results and slower computation. The default value for *delete_outliers* is *True*.
 
 (vi) The parameter *fast_classification* can be either *True* or *False*. This parameter determines whether the semantic module should use the full model or the cached one. Using the full model provides slightly better results than the cached one. However, using the cached model is more than 15x faster. Read [here](#word2vec-model-and-token-to-cso-combined-file-generation) for more details about these two models. The default value for *fast_classification* is *True*.
 
@@ -374,7 +374,7 @@ Beside the paper(s), the function running the CSO Classifier accepts seven addit
 |ii | modules  | :white_check_mark:  | :white_check_mark: |
 |iii| enhancement  | :white_check_mark:  | :white_check_mark: |
 |iv | explanation  | :white_check_mark:  | :white_check_mark: |
-|v  | find_outliers| :white_check_mark:  | :white_check_mark: |
+|v  |delete_outliers| :white_check_mark:  | :white_check_mark: |
 |vi | fast_classification| :white_check_mark:  | :white_check_mark: |
 |vii| silent       | :white_check_mark:  | :white_check_mark: |
 
@@ -394,7 +394,7 @@ This release welcomes some improvements under the hood. In particular:
 * the syntactic module takes now advantage of Spacy POS tagger (as previously done only by semantic module)
 * the grammar for the chunk parser is now more robust: ```{<JJ.*>*<HYPH>*<JJ.*>*<HYPH>*<NN.*>*<HYPH>*<NN.*>+}```
 
-In addition, in the post-processing module, we added the *find outliers* component. This component, improves the accuracy of the result set, by removing erroneous topics that were conceptually distant from the others. This component is enabled by default and can be disabled by setting ```find_outliers = False``` when calling the CSO Classifier (see [Parameters](#parameters)).
+In addition, in the post-processing module, we added the *outlier detection* component. This component improves the accuracy of the result set, by removing erroneous topics that were conceptually distant from the others. This component is enabled by default and can be disabled by setting ```delete_outliers = False``` when calling the CSO Classifier (see [Parameters](#parameters)).
 
 We would like to thank James Dunham @jamesdunham from CSET (Georgetown University) for suggesting to us how to improve the code.
 
