@@ -293,7 +293,7 @@ def this_version():
     running_version = config.get_classifier_version()
 
     checker = UpdateChecker()
-    result = checker.check('cso-classifier', '2.0')
+    result = checker.check('cso-classifier', '2.0') #checking if there are versions of the package above 2.0
     latest_version = result.available_version
 
     if latest_version > running_version:
