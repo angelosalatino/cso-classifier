@@ -172,14 +172,15 @@ class Model:
 #     CONFIG
 # =============================================================================
 
-    def setup(self):
+    @staticmethod
+    def setup():
         """Function that sets up the word2vec model
         """
+        config = Config()
         print_header("MODELS: CACHED & WORD2VEC")
-
-        if not os.path.exists(self.config.get_cached_model()):
-            print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
-            task_completed = download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
+        if not os.path.exists(config.get_cached_model()):
+            print('[*] Beginning download of cached model from', config.get_cahed_model_remote_url())
+            task_completed = download_file(config.get_cahed_model_remote_url(), config.get_cached_model())
 
             if task_completed:
                 print("File containing the cached model has been downloaded successfully.")
@@ -188,9 +189,9 @@ class Model:
         else:
             print("Nothing to do. The cached model is already available.")
 
-        if not os.path.exists(self.config.get_cached_model()):
-            print('[*] Beginning download of word2vec model from', self.config.get_model_pickle_remote_url())
-            task_completed = download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())
+        if not os.path.exists(config.get_model_pickle_path()):
+            print('[*] Beginning download of word2vec model from', config.get_model_pickle_remote_url())
+            task_completed = download_file(config.get_model_pickle_remote_url(), config.get_model_pickle_path())
 
             if task_completed:
                 print("File containing the word2vec model has been downloaded successfully.")
@@ -200,22 +201,24 @@ class Model:
             print("Nothing to do. The word2vec model is already available.")
 
 
-    def update(self):
+    @staticmethod
+    def update():
         """Function that updates the models
         The variable force is for the future when we will have models versioning.
         """
+        config = Config()
         print_header("MODELS: CACHED & WORD2VEC")
         try:
-            os.remove(self.config.get_cached_model())
+            os.remove(config.get_cached_model())
         except FileNotFoundError:
             print("Couldn't delete file cached model: not found")
 
         try:
-            os.remove(self.config.get_model_pickle_path())
+            os.remove(config.get_model_pickle_path())
         except FileNotFoundError:
             print("Couldn't delete file word2vec model: not found")
         print("Updating the models: cached and word2vec")
-        task_completed1 = download_file(self.config.get_cahed_model_remote_url(), self.config.get_cached_model())
-        task_completed2 = download_file(self.config.get_model_pickle_remote_url(), self.config.get_model_pickle_path())
+        task_completed1 = download_file(config.get_cahed_model_remote_url(), config.get_cached_model())
+        task_completed2 = download_file(config.get_model_pickle_remote_url(), config.get_model_pickle_path())
         if task_completed1 and task_completed2:
             print("Models downloaded successfully.")

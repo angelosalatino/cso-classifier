@@ -241,8 +241,7 @@ class CSOClassifier:
         cso = CSO(load_ontology = False)
         cso.setup()
 
-        model = MODEL(load_model = False)
-        model.setup()
+        MODEL.setup()
         print("Setup completed.")
 
 
@@ -253,8 +252,7 @@ class CSOClassifier:
         cso = CSO(load_ontology = False)
         cso.update(force = force)
 
-        model = MODEL(load_model = False)
-        model.update()
+        MODEL.update()
         print("Update completed.")
 
 
