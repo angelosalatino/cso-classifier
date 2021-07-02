@@ -1,6 +1,8 @@
 # CSO-Classifier
 
 [![PyPI version](https://badge.fury.io/py/cso-classifier.svg)](https://badge.fury.io/py/cso-classifier) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2660819.svg)](https://doi.org/10.5281/zenodo.2660819)
+[![Python 3.6+](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Abstract
 
@@ -494,7 +496,7 @@ Download from:
 * **requirements.txt**: :page_facing_up: File containing the necessary libraries to run the classifier
 * **images**: :file_folder: folder containing some pictures, e.g., the workflow showed above
 * **cso_classifier**: :file_folder: Folder containing the main functionalities of the classifier
-  * **classifier.py**: :page_facing_up: contains the function for running the CSO Classifier
+  * **classifier.py**: :page_facing_up: class that implements the CSO Classifier
   * **syntacticmodule.py**: :page_facing_up: class that implements the syntactic module
   * **semanticmodule.py**: :page_facing_up: class that implements the semantic module
   * **postprocmodule.py**: :page_facing_up:
