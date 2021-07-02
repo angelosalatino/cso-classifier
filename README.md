@@ -56,20 +56,20 @@ The CSO Classifier is a novel application that takes as input the text from the 
 
 ### Installation using PIP
 
-1. Ensure you have **Python 3.6** or above installed. Download [latest version](https://www.python.org/downloads/).
+1. Ensure you have **Python 3.6** or above installed. Download [latest version](https://www.python.org/downloads/). Perhaps, you may want to use a virtual environment. Here is how to [create and activate](https://docs.python.org/3/tutorial/venv.html) a virtual environment.
 2. Use pip to install the classifier: ```pip install cso-classifier```
 3. Setting up the classifier. Go to [Setup](#setup) for finalising the installation.
 
 ### Installation using Github
 
-1. Ensure you have [**Python 3.6**](https://www.python.org/downloads/) or above installed. Download [latest version](https://www.python.org/downloads/).
+1. Ensure you have [**Python 3.6**](https://www.python.org/downloads/) or above installed. Download [latest version](https://www.python.org/downloads/). Perhaps, you may want to use a virtual environment. Here is how to [create and activate](https://docs.python.org/3/tutorial/venv.html) a virtual environment.
 2. Download this repository using: ```git clone https://github.com/angelosalatino/cso-classifier.git```
 3. Install the package by running the following command: ```pip install ./cso-classifier```
 4. Setting up the classifier. Go to [Setup](#setup) for finalising the installation.
 
 ### Troubleshooting
 
-Although, we have worked hard to fix many issues occurring at testing phase, some of them could still arise for reasons that go beyond our control. Here is a list of the common ones we have encountered.
+Although, we have worked hard to fix many issues occurring at testing phase, some of them could still arise for reasons that go beyond our control. Here is the list of the common issues we have encountered.
 
 #### Unable to install requirements
 
@@ -83,7 +83,7 @@ Many users found difficulties in installing the python-Levenshtein library on so
 
 #### "python setup.py egg_info" failed
 
-More specifically: ```Command "python setup.py egg_info" failed with error code 1```. This error is due to the *setup.py* file. The occurrence of such an issue is rare. If you are experiencing it, please do get in touch with us. We will work with you to fix it.
+More specifically: ```Command "python setup.py egg_info" failed with error code 1```. This error is due to the *setup.py* file. The occurrence of this issue is rare. If you are experiencing it, please do get in touch with us. We will work with you to fix it.
 
 ### Setup
 
@@ -138,7 +138,7 @@ test.test_classifier_single_paper() # to test it with one paper
 test.test_classifier_batch_mode() # to test it with multiple papers
 ```
 
-To ensure that the classifier has been installed successfully, these two functions ```test_classifier_single_paper()``` and ```test_classifier_batch_mode()``` print on the console the paper(s) and then the result of the classification. 
+To ensure that the classifier has been installed successfully, these two functions ```test_classifier_single_paper()``` and ```test_classifier_batch_mode()``` print out both paper(s) info and the result of their classification.
 
 ## Usage examples
 
@@ -188,6 +188,19 @@ print(result)
 ```
 
 To observe the available settings please refer to the [Parameters](#parameters) section.
+
+If you have more than one paper to classify, you can use the following example:
+
+```python
+from cso_classifier import CSOClassifier
+cc = CSOClassifier(modules = "both", enhancement = "first", explanation = True)
+results = list()
+for paper in papers:
+  results.append(cc.run(paper))
+print(results)
+```
+
+Even if you are running multiple classifications, the current implementation of the CSO Classifier will load the CSO and the model only once, saving computational time.
 
 #### Sample Output (SP)
 
@@ -325,7 +338,7 @@ To observe the available settings please refer to the [Parameters](#parameters) 
 
 As output the classifier returns a dictionary of dictionaries. For each classified paper (identified by their id), it returns a dictionary containing five components: (i) syntactic, (ii) semantic, (iii) union, (iv) enhanced, and (v) explanation. The latter field is available only if the explanation flag is set to True.
 
-Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. In explanation, you can find all chunks of text that allowed the classifier to infer a given topic. *Please be aware that the results may change according to the version of Computer Science Ontology.*
+Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntactic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. In explanation, you can find all chunks of text that allowed the classifier to infer a given topic. *Please be aware that the results may change according to the version of Computer Science Ontology.*
 
 ```json
 {
@@ -376,19 +389,19 @@ Below you can find an example. The keys syntactic and semantic respectively cont
 ### Parameters
 Beside the paper(s), the function running the CSO Classifier accepts seven additional parameters: (i) **workers**, (ii) **modules**, (iii) **enhancement**, (iv) **explanation**, (v) **delete_outliers**, (vi) **fast_classification**, and (vii) **silent**. There is no particular order on how to specify these paramaters. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier. The explanation, delete_outliers, fast_classification, and silent parameters are booleans.
 
-(i) The parameter *workers* defines the number of threads to run for classifying the input corpus. For instance, if ```workers = 4```, there will be 4 instances of the CSO Classifier, each one receiving a chunk (equally split) of the corpus to process. Once all processes are completed, the results will be aggregated and returned. The default value for *workers* is *1*. This parameter is available only in *batch mode*.
+(i) The parameter *workers* defines the number of threads to run for classifying the input corpus. For instance, if ```workers = 4```, there will be 4 instances of the CSO Classifier, each one receiving a chunk (equally split) of the corpus to process. Once all processes are completed, the results will be aggregated and returned. The default value for *workers* is *1*. This parameter is available only when running the classifier in *batch mode*.
 
 (ii) The parameter *modules* can be either "syntactic", "semantic", or "both". Using the value "syntactic", the classifier will run only the syntactic module. Using the "semantic" value, instead, the classifier will use only the semantic module. Finally, using "both", the classifier will run both syntactic and semantic modules and combine their results. The default value for *modules* is *both*.
 
 (iii) The parameter *enhancement* can be either "first", "all", or "no". This parameter controls whether the classifier will try to infer, given a topic (e.g., Linked Data), only the direct super-topics (e.g., Semantic Web) or all its super-topics (e.g., Semantic Web, WWW, Computer Science). Using "first" as a value will infer only the direct super topics. Instead, if using "all", the classifier will infer all its super-topics. Using "no" the classifier will not perform any enhancement. The default value for *enhancement* is *first*.
 
-(iv) The parameter *explanation* can be either *True* or *False*. This parameter defines whether the classifier should return an explanation. This explanation consists of chunks of text, coming from the input paper, that allowed the classifier to return a given topic. This supports the user in better understanding why a certain topic has been inferred. The classifier will return an explanation for all topics, even for the enhanced ones. In this case, it will join all the text chunk of all its sub-topics. The default value for *explanation* is *False*.
+(iv) The parameter *explanation* can be either *True* or *False*. This parameter defines whether the classifier should return an explanation. This explanation consists of chunks of text, coming from the input paper, that allowed the classifier to return a given topic. This supports the user in better understanding why a certain topic has been inferred. The classifier will return an explanation for all topics, even for the enhanced ones. In this case, it will join all the text chunks of all its sub-topics. The default value for *explanation* is *False*.
 
 (v) The parameter *delete_outliers* can be either *True* or *False*. This parameter controls whether to run the outlier detection component within the post-processing module. This component improves the results by removing erroneous topics that were conceptually distant from the others. Due to their computation, users might experience slowdowns. For this reason, users can decide between good results and low computational time or improved results and slower computation. The default value for *delete_outliers* is *True*.
 
 (vi) The parameter *fast_classification* can be either *True* or *False*. This parameter determines whether the semantic module should use the full model or the cached one. Using the full model provides slightly better results than the cached one. However, using the cached model is more than 15x faster. Read [here](#word2vec-model-and-token-to-cso-combined-file-generation) for more details about these two models. The default value for *fast_classification* is *True*.
 
-(vii) The parameter *silent* can be either *True* or *False*. This determines whether the classifier prints its progress in console. If set to True, the classifier will be silent and will not print any output while classifying. The default value for *silent* is *False*.
+(vii) The parameter *silent* can be either *True* or *False*. This determines whether the classifier prints its progress in the console. If set to True, the classifier will be silent and will not print any output while classifying. The default value for *silent* is *False*.
 
 
 |# | Parameter  |  Single Paper | Batch Mode |
@@ -419,7 +432,7 @@ This release welcomes some improvements under the hood. In particular:
 
 In addition, in the post-processing module, we added the *outlier detection* component. This component improves the accuracy of the result set, by removing erroneous topics that were conceptually distant from the others. This component is enabled by default and can be disabled by setting ```delete_outliers = False``` when calling the CSO Classifier (see [Parameters](#parameters)).
 
-Please, be aware that having substantially restructured the code into classes, the way of running the classifier has changed too. If you are using a previous version of the classifier, we encourage you to update it (```pip install -U cso-classifier```) and modify your calls to the classifier. Read our [usage examples](#usage-examples).
+Please, be aware that having substantially restructured the code into classes, the way of running the classifier has changed too. Thus, if you are using a previous version of the classifier, we encourage you to update it (```pip install -U cso-classifier```) and modify your calls to the classifier, accordingly. Read our [usage examples](#usage-examples).
 
 We would like to thank James Dunham @jamesdunham from CSET (Georgetown University) for suggesting to us how to improve the code.
 
