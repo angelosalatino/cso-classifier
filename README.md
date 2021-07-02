@@ -15,6 +15,7 @@ Classifying research papers according to their research topics is an important t
 * [Getting started](#getting-started)
   * [Installation using PIP](#installation-using-pip)
   * [Installation using Github](#installation-using-github)
+  * [Troubleshooting](#troubleshooting)
   * [Setup](#setup)
   * [Update](#update)
   * [Version](#version)
