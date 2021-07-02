@@ -159,10 +159,6 @@ class CSOClassifier:
             class_res (dictionary): containing teh result of each classification
         """
 
-        import time
-        print("3.0 Total Internal Time")
-        start_time = time.time()
-
         cso = CSO(silent = self.silent)
         model = MODEL(use_full_model=self.use_full_model, silent = self.silent)
         paper = Paper(modules = self.modules)
@@ -199,9 +195,6 @@ class CSOClassifier:
             result = postprocess.filtering_outliers()
 
             class_res[paper_id] = result.get_dict()
-            print(len(class_res[paper_id]["syntactic"]))
-            print("--- %s seconds ---" % (time.time() - start_time))
-            print("Now External")
         return class_res
 
 
