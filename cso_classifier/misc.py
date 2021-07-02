@@ -53,14 +53,20 @@ def download_language_model(notification = True):
     """
     if notification:
         print_header("LANGUAGE MODEL")
+        print("Downloading and setting up spaCy language model ")
 
     os.system("python -m spacy download en_core_web_sm")
+    
+    if notification:
+        print("Downloading and setting up NLTK stopwords")
+    import nltk
+    nltk.download('stopwords')
 
 
 def print_header(header):
     """ Printing header. Used when setting up, updating, versioning and so on.
     """
     print()
-    print("# ==============================")
+    print("# ======================================================")
     print("#     {}".format(header))
-    print("# ==============================")
+    print("# ======================================================")
