@@ -17,8 +17,8 @@ Classifying research papers according to their research topics is an important t
 * [Getting started](#getting-started)
   * [Installation using PIP](#installation-using-pip)
   * [Installation using Github](#installation-using-github)
-  * [Setup](#setup)
   * [Troubleshooting](#troubleshooting)
+  * [Setup](#setup)
   * [Update](#update)
   * [Version](#version)
   * [Test](#test)
@@ -568,7 +568,7 @@ To generate this file, we collected all the set of words available within the vo
 
 In order to use the CSO Classifier in other domains of Science, it is necessary to replace the two external sources mentioned in the previous section. In particular, there is a need for a comprehensive ontology or taxonomy of research areas, within the new domain, which will work as a controlled list of research topics. In addition, it is important to train a new word2vec model that fits the language model and the semantic of the terms, in this particular domain. We wrote a blog article on how to integrate knowledge from other fields of Science within the CSO Classifier.
 
-Please read here for more info: [How to use the CSO Classifier in other domains](https://salatino.org/wp/how-to-use-the-cso-classifier-in-other-domains/)
+Please read here for more info: [How to use the CSO Classifier in other domains](https://salatino.org/wp/how-to-use-the-cso-classifier-in-other-domains/)
 
 ## How to Cite CSO Classifier
 
