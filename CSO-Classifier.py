@@ -11,7 +11,7 @@ Created on Thu Feb 14 14:43:42 2019
 # In[Loading Libraries]:
 
 
-import cso_classifier as cc
+from cso_classifier import CSOClassifier
 
 
 import json
@@ -45,7 +45,10 @@ print(paper["keywords"])
 
 # In[Run Classifier]
 
-result = cc.run_cso_classifier(paper, explanation = True)
+
+cc = CSOClassifier(explanation=True)
+
+result = cc.run(paper)
 
 
 
