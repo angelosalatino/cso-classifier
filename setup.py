@@ -1,4 +1,5 @@
 import setuptools
+import configparser
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -11,13 +12,21 @@ except ImportError:
     from pip.req import parse_requirements
 
 def load_requirements(fname):
-    reqs = parse_requirements(fname, session="test")
-    return [str(ir.req) for ir in reqs]
+    install_reqs = parse_requirements(fname, session=False)
+    # Generator must be converted to list, or we will only have one chance to read each element, meaning that the first requirement will be skipped.
+    install_reqs = list(install_reqs) 
+    try:
+        requirements = [str(ir.req) for ir in install_reqs]
+    except:
+        requirements = [str(ir.requirement) for ir in install_reqs]
+    return requirements
 
 
 # Import version number from version.py
-__version__ = None
-exec(open("cso_classifier/version.py").read())
+config = configparser.ConfigParser()
+config.read("cso_classifier/config.ini")
+__version__ = config['classifier']['classifier_version']
+
 
 setuptools.setup(
     name="cso-classifier",
