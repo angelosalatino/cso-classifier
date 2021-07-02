@@ -257,7 +257,7 @@ class CSOClassifier:
 
 
     @staticmethod
-    def this_version():
+    def version():
         """ Function that returns the version number of different components: classifier and ontology
         """
         config = Config()
