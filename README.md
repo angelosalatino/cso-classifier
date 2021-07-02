@@ -64,12 +64,30 @@ The CSO Classifier is a novel application that takes as input the text from the 
 3. Install the package by running the following command: ```pip install ./cso-classifier```
 4. Setting up the classifier. Go to [Setup](#setup) for finalising the installation.
 
+### Troubleshooting
+
+Although, we have worked hard to fix many issues occurring at testing phase, some of them could still arise for reasons that go beyond our control. Here is a list of the common ones we have encountered.
+
+#### Unable to install requirements
+
+Most likely this issue is due to the version of ```pip``` you are currently using. Make sure to update to the latest version of pip: ```pip install --upgrade pip```.
+
+#### Unable to install python-Levenshtein
+
+Many users found difficulties in installing the python-Levenshtein library on some Linux servers. One way to get around this issue is to install the ```python3-devel``` package. You might need sudo rights on the hosting machine.
+
+-- Special thanks to Panagiotis Mavridis for suggesting the solution.
+
+#### "python setup.py egg_info" failed
+
+More specifically: ```Command "python setup.py egg_info" failed with error code 1```. This error is due to the *setup.py* file. The occurrence of such an issue is rare. If you are experiencing it, please do get in touch with us. We will work with you to fix it.
+
 ### Setup
 
 After installing the CSO Classifier, it is important to set it up with the right dependencies. To set up the classifier, please run the following code:
 
 ```python
-import cso_classifier as cc
+from cso_classifier import CSOClassifier as cc
 cc.setup()
 exit() # it is important to close the current console, to make those changes effective
 ```
@@ -82,7 +100,7 @@ Then, it downloads the latest version of Computer Science Ontology and the lates
 This functionality allows to update both ontology and word2vec model.
 
 ```python
-import cso_classifier as cc
+from cso_classifier import CSOClassifier as cc
 cc.update()
 
 #or
@@ -97,14 +115,14 @@ Instead with ```update(force = True)``` the system will force the update by dele
 This functionality returns the version of the CSO Classifier and CSO ontology you are currently using. It will also check online if there is a newer version, for both of them, and suggest how to update.
 
 ```python
-import cso_classifier as cc
+from cso_classifier import CSOClassifier as cc
 cc.version()
 ```
 
 Instead, if you just want to know the package version use:
 ```python
-import cso_classifier as cc
-print(cc.__version__)
+import cso_classifier
+print(cso_classifier.__version__)
 ```
 
 ### Test
@@ -160,8 +178,9 @@ In case the input variable is a *dictionary*, the classifier checks only the fie
 Just import the classifier and run it:
 
 ```python
-import cso_classifier as cc
-result = cc.run_cso_classifier(paper, modules = "both", enhancement = "first", explanation = True)
+from cso_classifier import CSOClassifier
+cc = CSOClassifier(modules = "both", enhancement = "first", explanation = True)
+result = cc.run(paper)
 print(result)
 ```
 
@@ -291,8 +310,9 @@ papers = {
 Import the python script and run the classifier:
 
 ```python
-import cso_classifier as cc
-result = cc.run_cso_classifier_batch_mode(papers, workers = 1, modules = "both", enhancement = "first", explanation = True)
+from cso_classifier import CSOClassifier
+cc = CSOClassifier(workers = 1, modules = "both", enhancement = "first", explanation = True)
+result = cc.batch_run(papers)
 print(result)
 ```
 
@@ -395,6 +415,8 @@ This release welcomes some improvements under the hood. In particular:
 * the grammar for the chunk parser is now more robust: ```{<JJ.*>*<HYPH>*<JJ.*>*<HYPH>*<NN.*>*<HYPH>*<NN.*>+}```
 
 In addition, in the post-processing module, we added the *outlier detection* component. This component improves the accuracy of the result set, by removing erroneous topics that were conceptually distant from the others. This component is enabled by default and can be disabled by setting ```delete_outliers = False``` when calling the CSO Classifier (see [Parameters](#parameters)).
+
+Please, be aware that having substantially restructured the code into classes, the way of running the classifier has changed too. If you are using a previous version of the classifier, we encourage you to update it (```pip install -U cso-classifier```) and modify your calls to the classifier. Read our [usage examples](#usage-examples).
 
 We would like to thank James Dunham @jamesdunham from CSET (Georgetown University) for suggesting to us how to improve the code.
 
