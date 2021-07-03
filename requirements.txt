@@ -3,7 +3,6 @@ catalogue==2.0.4
 certifi==2021.5.30
 chardet==4.0.0
 click==7.1.2
-cso-classifier==3.0
 cycler==0.10.0
 cymem==2.0.5
 gensim==3.8.1
