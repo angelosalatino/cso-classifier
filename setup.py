@@ -4,22 +4,21 @@ import configparser
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-try:
-    # for pip >= 10
-    from pip._internal.req import parse_requirements
-except ImportError:
-    # for pip <= 9.0.3
-    from pip.req import parse_requirements
 
-def load_requirements(fname):
-    install_reqs = parse_requirements(fname, session=False)
-    # Generator must be converted to list, or we will only have one chance to read each element, meaning that the first requirement will be skipped.
-    install_reqs = list(install_reqs) 
-    try:
-        requirements = [str(ir.req) for ir in install_reqs]
-    except:
-        requirements = [str(ir.requirement) for ir in install_reqs]
-    return requirements
+requirements_to_install = [
+    'click==7.1.2',
+    'gensim==3.8.1',
+    'hurry.filesize==0.9',
+    'kneed==0.3.1',
+    'nltk==3.6.2',
+    'python-igraph==0.9.1',
+    'python-Levenshtein==0.12.2',
+    'numpy>=1.19.5',
+    'requests==2.25.1',
+    'spacy==3.0.5',
+    'strsimpy==0.2.0',
+    'update-checker==0.18.0'
+]
 
 
 # Import version number from version.py
@@ -44,6 +43,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     package_data = {'cso_classifier' : ['assets/*','config.ini'] },
-    install_requires=load_requirements("requirements.txt"),
+    install_requires=requirements_to_install,
     python_requires='>=3.6.0',
 )
