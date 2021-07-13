@@ -436,6 +436,10 @@ Please, be aware that having substantially restructured the code into classes, t
 
 We would like to thank James Dunham @jamesdunham from CSET (Georgetown University) for suggesting to us how to improve the code.
 
+Download from:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5095422.svg)](https://doi.org/10.5281/zenodo.5095422)
+
 ### v2.3.2
 
 Version alignement with Pypi. Similar to version 2.3.1.
