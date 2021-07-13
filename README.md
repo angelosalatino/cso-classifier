@@ -506,7 +506,6 @@ Download from:
 
 * **CSO-Classifier.ipynb**: :page_facing_up: Python notebook for executing the classifier
 * **CSO-Classifier.py**: :page_facing_up: Python script for executing the classifier
-* **requirements.txt**: :page_facing_up: File containing the necessary libraries to run the classifier
 * **images**: :file_folder: folder containing some pictures, e.g., the workflow showed above
 * **cso_classifier**: :file_folder: Folder containing the main functionalities of the classifier
   * **classifier.py**: :page_facing_up: class that implements the CSO Classifier
