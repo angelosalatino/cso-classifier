@@ -206,7 +206,7 @@ Even if you are running multiple classifications, the current implementation of 
 
 As output, the classifier returns a dictionary with five components: (i) syntactic, (ii) semantic, (iii) union, (iv) enhanced, and (v) explanation. The latter field is available only if the **explanation** flag is set to True.
 
-Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. *Please be aware that the results may change according to the version of Computer Science Ontology.*
+Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntactic and semantic module. Union contains the unique topics found by the previous two modules. In enhanced you can find the relevant super-areas. *Please be aware that the results may change according to the version of Computer Science Ontology.*
 
 ```json
 {
