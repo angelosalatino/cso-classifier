@@ -1,6 +1,6 @@
 from nltk import ngrams
 from nltk.tokenize import word_tokenize
-from Levenshtein.StringMatcher import StringMatcher
+from rapidfuzz.distance import Levenshtein
 
 
 class Syntactic:
@@ -16,7 +16,7 @@ class Syntactic:
         """
         # Initialise variables to store CSO data - loads into memory
         self.cso = cso                  # the ontologo object
-        self.min_similarity = 0.94      # Value of minimum similarity
+        self.min_similarity = 0.90      # Value of minimum similarity
         self.paper = paper              # the paper object
         self.explanation = dict()       # the explanation dictionary
 
@@ -111,7 +111,7 @@ class Syntactic:
                     continue
                 for topic in topic_block:
                     # otherwise look for an inexact match
-                    match_ratio = StringMatcher(None, topic, gram).ratio()
+                    match_ratio = Levenshtein.normalized_similarity(topic, gram)
                     if match_ratio >= self.min_similarity:
                         try:
                             # if a 'primary label' exists for the current topic, use it instead of the matched topic

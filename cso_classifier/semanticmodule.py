@@ -1,6 +1,6 @@
 import warnings
 from kneed import KneeLocator
-import Levenshtein.StringMatcher as ls
+from rapidfuzz.distance import Levenshtein
 from nltk import everygrams
 
 class Semantic:
@@ -17,7 +17,7 @@ class Semantic:
         self.cso = cso                  #Stores the CSO Ontology
         self.paper = paper              #Paper to analyse
         self.model = model              #contains the cached model
-        self.min_similarity = 0.94      #Initialises the min_similarity
+        self.min_similarity = 0.90      #Initialises the min_similarity
         self.fast_classification = fast_classification # if will use the full model or not
         self.explanation = dict()
 
@@ -245,7 +245,7 @@ class Semantic:
         for word, sim in similar_words:
             topics = self.cso.find_closest_matches(word)
             for topic in topics:
-                str_sim = ls.StringMatcher(None, topic, word).ratio() #topic is from cso, wet is from word embedding
+                str_sim = Levenshtein.normalized_similarity(topic, word) #topic is from cso, wet is from word embedding
                 if str_sim >= self.min_similarity:
                     identified_topics.append({"topic":topic,"sim_t":str_sim,"wet":word,"sim_w":sim})
         return identified_topics
