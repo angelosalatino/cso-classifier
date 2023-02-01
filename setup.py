@@ -12,7 +12,7 @@ requirements_to_install = [
     'kneed==0.3.1',
     'nltk==3.6.2',
     'python-igraph==0.9.1',
-    'rapidfuzz==2.13.7',
+    'rapidfuzz==2.11.1',
     'numpy>=1.19.5',
     'requests==2.25.1',
     'spacy==3.0.5',
