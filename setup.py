@@ -6,8 +6,8 @@ with open("README.md", "r") as fh:
 
 
 requirements_to_install = [
+    'gensim==3.8.3',
     'click==7.1.2',
-    'gensim==3.8.1',
     'hurry.filesize==0.9',
     'kneed==0.3.1',
     'nltk==3.6.2',
