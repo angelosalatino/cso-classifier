@@ -1,6 +1,5 @@
 import setuptools
 import configparser
-import platform
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -46,5 +45,5 @@ setuptools.setup(
     ],
     package_data = {'cso_classifier' : ['assets/*','config.ini'] },
     install_requires=requirements_to_install,
-    python_requires='>=3.6.0',
+    python_requires='>=3.7.0',
 )
