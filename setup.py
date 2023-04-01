@@ -1,17 +1,23 @@
 import setuptools
 import configparser
+import platform
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 
+if platform.python_version() >= '3.7':
+    IGRAPH = 'igraph==0.10.4'
+else:
+    IGRAPH = 'python-igraph==0.9.1'
+
 requirements_to_install = [
+    IGRAPH,
     'gensim==3.8.3',
     'click==7.1.2',
     'hurry.filesize==0.9',
     'kneed==0.3.1',
     'nltk==3.6.2',
-    'igraph==0.10.4',
     'rapidfuzz==2.11.1',
     'numpy>=1.19.5',
     'requests==2.25.1',
