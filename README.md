@@ -13,38 +13,49 @@ Read more: [https://skm.kmi.open.ac.uk/cso-classifier/](https://skm.kmi.open.ac.
 ## Table of contents
 
 <!--ts-->
-* [Abstract](#abstract)
-* [Table of contents](#table-of-contents)
-* [About](#about)
-* [Getting started](#getting-started)
-  * [Installation using PIP](#installation-using-pip)
-  * [Installation using Github](#installation-using-github)
-  * [Troubleshooting](#troubleshooting)
-  * [Setup](#setup)
-  * [Update](#update)
-  * [Version](#version)
-  * [Test](#test)
-* [Usage examples](#usage-examples)
-  * [Classifying a single paper (SP)](#classifying-a-single-paper-sp)
-  * [Classifying in batch mode (BM)](#classifying-in-batch-mode-bm)
-  * [Parameters](#parameters)
-* [Releases](#releases)
-  * [v3.0](#v30)
-  * [v2.3.2](#v232)
-  * [v2.3.1](#v231)
-  * [v2.3](#v23)
-  * [v2.2](#v22)
-  * [v2.1](#v21)
-  * [v2.0](#v20)
-  * [v1.0](#v10)
-* [List of Files](#list-of-files)
-* [Word2vec model and token-to-cso-combined file generation](#word2vec-model-and-token-to-cso-combined-file-generation)
-  * [Word Embedding generation](#word-embedding-generation)
-  * [token-to-cso-combined file](#token-to-cso-combined-file)
-* [Use the CSO Classifier in other domains of Science](#use-the-cso-classifier-in-other-domains-of-science)
-* [How to Cite CSO Classifier](#how-to-cite-cso-classifier)
-* [License](#license)
-* [References](#references)
+- [CSO-Classifier](#cso-classifier)
+  - [Abstract](#abstract)
+  - [Table of contents](#table-of-contents)
+  - [About](#about)
+  - [Getting started](#getting-started)
+    - [Installation using PIP](#installation-using-pip)
+    - [Installation using Github](#installation-using-github)
+    - [Troubleshooting](#troubleshooting)
+      - [Unable to install requirements](#unable-to-install-requirements)
+      - [Unable to install python-Levenshtein](#unable-to-install-python-levenshtein)
+      - ["python setup.py egg\_info" failed](#python-setuppy-egg_info-failed)
+    - [Setup](#setup)
+    - [Update](#update)
+    - [Version](#version)
+    - [Test](#test)
+  - [Usage examples](#usage-examples)
+    - [Classifying a single paper (SP)](#classifying-a-single-paper-sp)
+      - [Sample Input (SP)](#sample-input-sp)
+      - [Run (SP)](#run-sp)
+      - [Sample Output (SP)](#sample-output-sp)
+    - [Classifying in batch mode (BM)](#classifying-in-batch-mode-bm)
+      - [Sample Input (BM)](#sample-input-bm)
+      - [Run (BM)](#run-bm)
+      - [Sample Output (BM)](#sample-output-bm)
+    - [Parameters](#parameters)
+  - [Releases](#releases)
+    - [v3.1](#v31)
+    - [v3.0](#v30)
+    - [v2.3.2](#v232)
+    - [v2.3.1](#v231)
+    - [v2.3](#v23)
+    - [v2.2](#v22)
+    - [v2.1](#v21)
+    - [v2.0](#v20)
+    - [v1.0](#v10)
+  - [List of Files](#list-of-files)
+  - [Word2vec model and token-to-cso-combined file generation](#word2vec-model-and-token-to-cso-combined-file-generation)
+    - [Word Embedding generation](#word-embedding-generation)
+    - [token-to-cso-combined file](#token-to-cso-combined-file)
+  - [Use the CSO Classifier in other domains of Science](#use-the-cso-classifier-in-other-domains-of-science)
+  - [How to Cite CSO Classifier](#how-to-cite-cso-classifier)
+  - [License](#license)
+  - [References](#references)
 <!--te-->
 
 ## About
@@ -422,6 +433,11 @@ Beside the paper(s), the function running the CSO Classifier accepts seven addit
 ## Releases
 
 Here we list the available releases for the CSO Classifier. These releases are available for download both from [Github](https://github.com/angelosalatino/cso-classifier/releases) and [Zenodo](10.5281/zenodo.2660819).
+
+### v3.1
+
+This release brings in two main changes. The first change is related to the library (and the code) to perform the Levenshtein similarity. Before we relied on ```python-Levenshtein``` which required ```python3-devel```. This new version uses ```rapidfuzz``` which as fast as the previous library and it is much easier to install on the various systems.
+The second change is related to an updated list of dependencies. We updated some libraries including ```igraph```.
 
 ### v3.0
 
