@@ -5,13 +5,9 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 
-if platform.python_version() >= '3.7':
-    IGRAPH = 'igraph==0.10.4'
-else:
-    IGRAPH = 'python-igraph==0.9.1'
-
 requirements_to_install = [
-    IGRAPH,
+    'igraph==0.10.4;python_version>="3.7"',
+    'python-igraph==0.9.1;python_version<"3.7"',
     'gensim==3.8.3',
     'click==7.1.2',
     'hurry.filesize==0.9',
@@ -49,5 +45,5 @@ setuptools.setup(
     ],
     package_data = {'cso_classifier' : ['assets/*','config.ini'] },
     install_requires=requirements_to_install,
-    python_requires='>=3.7.0',
+    python_requires='>=3.6.0',
 )
