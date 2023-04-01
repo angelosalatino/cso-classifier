@@ -5,9 +5,13 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 
+if platform.python_version() >= '3.7':
+    IGRAPH = 'igraph==0.10.4'
+else:
+    IGRAPH = 'python-igraph==0.9.1'
+
 requirements_to_install = [
-    'igraph==0.10.4;python_version>="3.7"',
-    'python-igraph==0.9.1;python_version<"3.7"',
+    IGRAPH,
     'gensim==3.8.3',
     'click==7.1.2',
     'hurry.filesize==0.9',
