@@ -11,7 +11,7 @@ requirements_to_install = [
     'hurry.filesize==0.9',
     'kneed==0.3.1',
     'nltk==3.6.2',
-    'python-igraph==0.9.1',
+    'igraph==0.10.4',
     'rapidfuzz==2.11.1',
     'numpy>=1.19.5',
     'requests==2.25.1',
