@@ -439,6 +439,10 @@ Here we list the available releases for the CSO Classifier. These releases are a
 This release brings in two main changes. The first change is related to the library (and the code) to perform the Levenshtein similarity. Before we relied on ```python-Levenshtein``` which required ```python3-devel```. This new version uses ```rapidfuzz``` which as fast as the previous library and it is much easier to install on the various systems.
 The second change is related to an updated list of dependencies. We updated some libraries including ```igraph```.
 
+Download from:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7940877.svg)](https://doi.org/10.5281/zenodo.7940877)
+
 ### v3.0
 
 This release welcomes some improvements under the hood. In particular:
