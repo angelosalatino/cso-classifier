@@ -1,19 +1,23 @@
 class Result:
     """ A simple abstraction layer for retrieving the results """
 
-    def __init__(self, explanation = False):
+    def __init__(self, explanation = False, statistics=False):
         """ Initialising the ontology class
         """
         self.syntactic = list()
         self.semantic = list()
         self.union = list()
         self.enhanced = list()
+        self.result_attr = ('syntactic', 'semantic', 'union', 'enhanced')
+        
         self.explanation_flag = explanation
         if self.explanation_flag:
             self.explanation = dict()
-            self.result_attr = ('syntactic', 'semantic', 'union', 'enhanced', 'explanation')
-        else:
-            self.result_attr = ('syntactic', 'semantic', 'union', 'enhanced')
+            self.result_attr += ('explanation',)
+
+        self.statistics = statistics
+        if self.statistics:
+            self.result_attr += ('syntactic_statistics','semantic_statistics',)
 
 
     def get_dict(self):
@@ -77,6 +81,30 @@ class Result:
         """ Function that fills the union object
         """
         self.union = list(set(self.syntactic + self.semantic))
+        
+        
+    def set_syntactic_statistic(self, syntactic_statistic):
+        """ Sets the syntactic_statistic variable
+        """
+        self.syntactic_statistic = syntactic_statistic
+
+
+    def get_syntactic_statistic(self):
+        """ Gets the syntactic_statistic variable
+        """
+        return self.syntactic_statistic
+
+
+    def set_semantic(self, semantic_statistic):
+        """ Sets the semantic_statistic variable
+        """
+        self.semantic_statistic = semantic_statistic
+
+
+    def get_semantic_statistic(self):
+        """ Gets the semantic_statistic variable
+        """
+        return self.semantic_statistic
 
 
     def dump_temporary_explanation(self, temporary_explanation):
