@@ -45,6 +45,7 @@ class CSOClassifier:
         self.delete_outliers     = parameters["delete_outliers"] if "delete_outliers" in parameters else True
         self.fast_classification = parameters["fast_classification"] if "fast_classification" in parameters else True
         self.silent              = parameters["silent"] if "silent" in parameters else False
+        self.statistics          = parameters["statistics"] if "statistics" in parameters else False
 
         self.__check_parameters(parameters)
 
@@ -81,7 +82,7 @@ class CSOClassifier:
             self.models_loaded = True
 
         t_paper = Paper(paper, self.modules)
-        result = Result(self.explanation)
+        result = Result(self.explanation, self.statistics)
 
 
         # Passing parameters to the two classes (synt and sema) and actioning classifiers
@@ -89,11 +90,16 @@ class CSOClassifier:
         if self.modules in ('syntactic','both'):
             synt_module = synt(self.cso, t_paper)
             result.set_syntactic(synt_module.classify_syntactic())
+            if self.statistics:
+                result.set_syntactic_statistics(synt_module.get_syntactic_statistics())
             if self.explanation:
                 result.dump_temporary_explanation(synt_module.get_explanation())
+                
         if self.modules in ('semantic','both'):
             sema_module = sema(self.model, self.cso, self.fast_classification, t_paper)
             result.set_semantic(sema_module.classify_semantic())
+            if self.statistics:
+                result.set_semantic_statistics(sema_module.get_semantic_statistics())
             if self.explanation:
                 result.dump_temporary_explanation(sema_module.get_explanation())
 
