@@ -95,7 +95,7 @@ class Result:
         return self.syntactic_statistics
 
 
-    def set_semantic(self, semantic_statistics):
+    def set_semantic_statistics(self, semantic_statistics):
         """ Sets the semantic_statistics variable
         """
         self.semantic_statistics = semantic_statistics
