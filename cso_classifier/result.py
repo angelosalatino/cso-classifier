@@ -17,6 +17,8 @@ class Result:
 
         self.statistics = statistics
         if self.statistics:
+            self.syntactic_statistics = dict()
+            self.semantic_statistics = dict()
             self.result_attr += ('syntactic_statistics','semantic_statistics',)
 
 
