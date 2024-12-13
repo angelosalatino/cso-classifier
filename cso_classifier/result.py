@@ -83,28 +83,28 @@ class Result:
         self.union = list(set(self.syntactic + self.semantic))
         
         
-    def set_syntactic_statistic(self, syntactic_statistic):
-        """ Sets the syntactic_statistic variable
+    def set_syntactic_statistics(self, syntactic_statistics):
+        """ Sets the syntactic_statistics variable
         """
-        self.syntactic_statistic = syntactic_statistic
+        self.syntactic_statistics = syntactic_statistics
 
 
-    def get_syntactic_statistic(self):
-        """ Gets the syntactic_statistic variable
+    def get_syntactic_statistics(self):
+        """ Gets the syntactic_statistics variable
         """
-        return self.syntactic_statistic
+        return self.syntactic_statistics
 
 
-    def set_semantic(self, semantic_statistic):
-        """ Sets the semantic_statistic variable
+    def set_semantic(self, semantic_statistics):
+        """ Sets the semantic_statistics variable
         """
-        self.semantic_statistic = semantic_statistic
+        self.semantic_statistics = semantic_statistics
 
 
-    def get_semantic_statistic(self):
-        """ Gets the semantic_statistic variable
+    def get_semantic_statistics(self):
+        """ Gets the semantic_statistics variable
         """
-        return self.semantic_statistic
+        return self.semantic_statistics
 
 
     def dump_temporary_explanation(self, temporary_explanation):
