@@ -81,7 +81,7 @@ class Semantic:
 
         return final_topics
 
-    def get_semantic_statistics(self):
+    def get_semantic_topics_weights(self):
         """Function that returns the full set of topics with the similarity measure
 
         Args:
@@ -90,7 +90,7 @@ class Semantic:
         Returns:
             extracted_topics (dictionary): containing the found topics with their metric.
         """
-        return self.extracted_topics
+        return self.extracted_topics #they are already in the correct format.
 
 
     def __find_topics(self, concepts):

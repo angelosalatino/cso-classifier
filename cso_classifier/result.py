@@ -1,7 +1,7 @@
 class Result:
     """ A simple abstraction layer for retrieving the results """
 
-    def __init__(self, explanation = False, statistics=False):
+    def __init__(self, explanation = False, get_weights=False):
         """ Initialising the ontology class
         """
         self.syntactic = list()
@@ -15,11 +15,11 @@ class Result:
             self.explanation = dict()
             self.result_attr += ('explanation',)
 
-        self.statistics = statistics
-        if self.statistics:
-            self.syntactic_statistics = dict()
-            self.semantic_statistics = dict()
-            self.result_attr += ('syntactic_statistics','semantic_statistics',)
+        self.get_weights = get_weights
+        if self.get_weights:
+            self.syntactic_weights = dict()
+            self.semantic_weights = dict()
+            self.result_attr += ('syntactic_weights','semantic_weights',)
 
 
     def get_dict(self):
@@ -85,28 +85,28 @@ class Result:
         self.union = list(set(self.syntactic + self.semantic))
         
         
-    def set_syntactic_statistics(self, syntactic_statistics):
-        """ Sets the syntactic_statistics variable
+    def set_syntactic_topics_weights(self, syntactic_weights):
+        """ Sets the syntactic_weights variable
         """
-        self.syntactic_statistics = syntactic_statistics
+        self.syntactic_weights = syntactic_weights
 
 
-    def get_syntactic_statistics(self):
-        """ Gets the syntactic_statistics variable
+    def get_syntactic_topics_weights(self):
+        """ Gets the syntactic_weights variable
         """
-        return self.syntactic_statistics
+        return self.syntactic_weights
 
 
-    def set_semantic_statistics(self, semantic_statistics):
-        """ Sets the semantic_statistics variable
+    def set_semantic_topics_weights(self, semantic_weights):
+        """ Sets the semantic_weights variable
         """
-        self.semantic_statistics = semantic_statistics
+        self.semantic_weights = semantic_weights
 
 
-    def get_semantic_statistics(self):
-        """ Gets the semantic_statistics variable
+    def get_semantic_topics_weights(self):
+        """ Gets the semantic_weights variable
         """
-        return self.semantic_statistics
+        return self.semantic_weights
 
 
     def dump_temporary_explanation(self, temporary_explanation):

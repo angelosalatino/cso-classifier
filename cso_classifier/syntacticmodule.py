@@ -81,23 +81,23 @@ class Syntactic:
         return final_topics
 
 
-    def get_syntactic_statistics(self):
-        """Function that returns the full set of topics with the similarity measure
+    def get_syntactic_topics_weights(self):
+        """Function that returns the full set of topics with the similarity measure (weights)
 
         Args:
 
 
         Returns:
-            statistics (dictionary): containing the found topics with their similarity and the n-gram analysed.
+            weights (dictionary): containing the found topics with their similarity and the n-gram analysed.
         """
-        statistics = dict()
+        weights = dict()
         for topic, sim_values in self.extracted_topics.items():
             if len(sim_values) == 1:
-                statistics[topic] = sim_values[0]["similarity"]
+                weights[topic] = sim_values[0]["similarity"]
             else:
-                statistics[topic] = max([sim_value["similarity"] for sim_value in sim_values])
+                weights[topic] = max([sim_value["similarity"] for sim_value in sim_values])
 
-        return statistics
+        return weights
 
 
     def __statistic_similarity(self):
