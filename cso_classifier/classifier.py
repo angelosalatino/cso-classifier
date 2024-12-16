@@ -94,7 +94,7 @@ class CSOClassifier:
                 result.set_syntactic_statistics(synt_module.get_syntactic_statistics())
             if self.explanation:
                 result.dump_temporary_explanation(synt_module.get_explanation())
-                
+
         if self.modules in ('semantic','both'):
             sema_module = sema(self.model, self.cso, self.fast_classification, t_paper)
             result.set_semantic(sema_module.classify_semantic())
@@ -104,7 +104,7 @@ class CSOClassifier:
                 result.dump_temporary_explanation(sema_module.get_explanation())
 
 
-        postprocess = post(self.model, self.cso, enhancement=self.enhancement, result=result, delete_outliers=self.delete_outliers)
+        postprocess = post(self.model, self.cso, enhancement=self.enhancement, result=result, delete_outliers=self.delete_outliers, statistics=self.statistics)
         result = postprocess.filtering_outliers()
 
         return result.get_dict()
@@ -173,7 +173,7 @@ class CSOClassifier:
         # Passing parameters to the two classes (synt and sema)
         synt_module = synt(cso)
         sema_module = sema(model, cso, self.fast_classification)
-        postprocess = post(model, cso, enhancement=self.enhancement, delete_outliers=self.delete_outliers)
+        postprocess = post(model, cso, enhancement=self.enhancement, delete_outliers=self.delete_outliers, statistics=self.statistics)
 
 
         # initializing variable that will contain output
@@ -201,6 +201,7 @@ class CSOClassifier:
                     result.set_semantic_statistics(sema_module.get_semantic_statistics())
                 if self.explanation:
                     result.dump_temporary_explanation(sema_module.get_explanation())
+
             postprocess.set_result(result)
             result = postprocess.filtering_outliers()
 

@@ -237,7 +237,7 @@ class PostProcess:
             if self.statistics:
                 self.result.set_syntactic_statistics({topic:val for topic, val in self.result.get_syntactic_statistics().items() if topic in selected_topics_set})
                 self.result.set_semantic_statistics({topic:val for topic, val in self.result.get_semantic_statistics().items() if topic in selected_topics_set})
-            
+
 
         else:
             self.result.set_enhanced(self.cso.climb_ontology(self.result.get_union(), self.enhancement))

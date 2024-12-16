@@ -76,11 +76,11 @@ class Semantic:
 
         ##################### Ranking
         self.extracted_topics = self.__rank_topics(found_topics, explanation)
-        
+
         final_topics = list(self.extracted_topics.keys())
 
         return final_topics
-    
+
     def get_semantic_statistics(self):
         """Function that returns the full set of topics with the similarity measure
 
@@ -349,7 +349,7 @@ class Semantic:
             except IndexError:
                 knee = len(sort_t)
 
-        
+
         final_topics = {self.cso.get_topic_wu(sort_t[i][0]):(sort_t[i][1]/max_value) for i in range(0,knee)}
         self.reset_explanation()
         self.explanation = {self.cso.topics_wu[sort_t[i][0]]: explanation[sort_t[i][0]] for i in range(0,knee)}

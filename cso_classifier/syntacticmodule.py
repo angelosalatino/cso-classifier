@@ -20,7 +20,7 @@ class Syntactic:
         self.paper = paper              # the paper object
         self.explanation = dict()       # the explanation dictionary
         self.extracted_topics = dict()  # dictionary with the extract topics (including similarity measures)
-        
+
 
 
     def set_paper(self, paper):
@@ -79,8 +79,8 @@ class Syntactic:
         # stripping explanation
         final_topics = self.__strip_service_fields(self.extracted_topics)
         return final_topics
-    
-    
+
+
     def get_syntactic_statistics(self):
         """Function that returns the full set of topics with the similarity measure
 
@@ -96,7 +96,7 @@ class Syntactic:
                 statistics[topic] = sim_values[0]["similarity"]
             else:
                 statistics[topic] = max([sim_value["similarity"] for sim_value in sim_values])
-        
+
         return statistics
 
 
