@@ -88,9 +88,16 @@ class Syntactic:
 
 
         Returns:
-            extracted_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
+            statistics (dictionary): containing the found topics with their similarity and the n-gram analysed.
         """
-        return self.extracted_topics
+        statistics = dict()
+        for topic, sim_values in self.extracted_topics.items():
+            if len(sim_values) == 1:
+                statistics[topic] = sim_values[0]["similarity"]
+            else:
+                statistics[topic] = max([sim_value["similarity"] for sim_value in sim_values])
+        
+        return statistics
 
 
     def __statistic_similarity(self):
