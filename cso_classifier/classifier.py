@@ -184,17 +184,21 @@ class CSOClassifier:
                 print("Processing:", paper_id)
 
             paper.set_paper(paper_value)
-            result = Result(self.explanation)
+            result = Result(self.explanation, self.statistics)
 
             # Passing paper and actioning the classifier
             if self.modules in ('syntactic','both'):
                 synt_module.set_paper(paper)
                 result.set_syntactic(synt_module.classify_syntactic())
+                if self.statistics:
+                    result.set_syntactic_statistics(synt_module.get_syntactic_statistics())
                 if self.explanation:
                     result.dump_temporary_explanation(synt_module.get_explanation())
             if self.modules in ('semantic','both'):
                 sema_module.set_paper(paper)
                 result.set_semantic(sema_module.classify_semantic())
+                if self.statistics:
+                    result.set_semantic_statistics(sema_module.get_semantic_statistics())
                 if self.explanation:
                     result.dump_temporary_explanation(sema_module.get_explanation())
             postprocess.set_result(result)
