@@ -25,6 +25,7 @@ class PostProcess:
         self.list_of_topics = list()
         self.enhancement = parameters["enhancement"] if "enhancement" in parameters else "first"  #defines the type of enhancement
         self.delete_outliers = parameters["delete_outliers"] if "delete_outliers" in parameters else True
+        self.statistics = parameters["statistics"] if "statistics" in parameters else False
 
         if "result" in parameters:
             self.result = parameters["result"]            # the result object
@@ -226,13 +227,17 @@ class PostProcess:
 
 
             # Modulating the result.
-            selected_topics_set = set(selected_topics+syntactic_to_keep).union(topics_to_spare)
+            selected_topics_set = set()#set(selected_topics+syntactic_to_keep).union(topics_to_spare)
             selected_topics = list(selected_topics_set)
 
             self.result.set_syntactic(list(set(self.result.get_syntactic()).intersection(selected_topics_set)))
             self.result.set_semantic(list(set(self.result.get_semantic()).intersection(selected_topics_set)))
             self.result.set_union(selected_topics)
             self.result.set_enhanced(self.cso.climb_ontology(selected_topics, self.enhancement))
+            if self.statistics:
+                self.result.set_syntactic_statistics({topic:val for topic, val in self.result.get_syntactic_statistics().items() if topic in selected_topics_set})
+                self.result.set_semantic_statistics({topic:val for topic, val in self.result.get_semantic_statistics().items() if topic in selected_topics_set})
+            
 
         else:
             self.result.set_enhanced(self.cso.climb_ontology(self.result.get_union(), self.enhancement))
