@@ -46,8 +46,10 @@ class CSOClassifier:
         self.explanation         = parameters["explanation"] if "explanation" in parameters else False
         self.delete_outliers     = parameters["delete_outliers"] if "delete_outliers" in parameters else True
         self.fast_classification = parameters["fast_classification"] if "fast_classification" in parameters else True
-        self.silent              = parameters["silent"] if "silent" in parameters else False
         self.get_weights         = parameters["get_weights"] if "get_weights" in parameters else False
+        self.silent              = parameters["silent"] if "silent" in parameters else False
+
+        
 
         self.__check_parameters(parameters)
 
@@ -232,7 +234,11 @@ class CSOClassifier:
         if "fast_classification" in parameters:
             if not isinstance(parameters["fast_classification"], bool):
                 raise TypeError("Field fast_classification must be set to either True or False. Got %s instead." % type(parameters["fast_classification"]).__name__)
-
+        
+        if "get_weights" in parameters:
+            if not isinstance(parameters["get_weights"], bool):
+                raise TypeError("Field get_weights must be set to either True or False. Got %s instead." % type(parameters["get_weights"]).__name__)
+        
         if "silent" in parameters:
             if not isinstance(parameters["silent"], bool):
                 raise TypeError("Field silent must be set to either True or False. Got %s instead." % type(parameters["silent"]).__name__)
