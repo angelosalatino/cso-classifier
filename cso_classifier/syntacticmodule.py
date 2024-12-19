@@ -19,6 +19,8 @@ class Syntactic:
         self.min_similarity = 0.90      # Value of minimum similarity
         self.paper = paper              # the paper object
         self.explanation = dict()       # the explanation dictionary
+        self.extracted_topics = dict()  # dictionary with the extract topics (including similarity measures)
+
 
 
     def set_paper(self, paper):
@@ -68,15 +70,34 @@ class Syntactic:
 
 
         Returns:
-            found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
+            final_topics (list): containing the list of final topics.
         """
 
         final_topics = list()
         # analysing similarity with terms in the ontology
-        extracted_topics = self.__statistic_similarity()
+        self.extracted_topics = self.__statistic_similarity()
         # stripping explanation
-        final_topics = self.__strip_service_fields(extracted_topics)
+        final_topics = self.__strip_service_fields(self.extracted_topics)
         return final_topics
+
+
+    def get_syntactic_topics_weights(self):
+        """Function that returns the full set of topics with the similarity measure (weights)
+
+        Args:
+
+
+        Returns:
+            weights (dictionary): containing the found topics with their similarity and the n-gram analysed.
+        """
+        weights = dict()
+        for topic, sim_values in self.extracted_topics.items():
+            if len(sim_values) == 1:
+                weights[topic] = sim_values[0]["similarity"]
+            else:
+                weights[topic] = max([sim_value["similarity"] for sim_value in sim_values])
+
+        return weights
 
 
     def __statistic_similarity(self):

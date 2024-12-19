@@ -1,76 +1,73 @@
 {
     "syntactic": [
-        "data mining",
-        "micro-blog",
-        "social networks",
-        "data privacy",
-        "sensitive informations",
-        "anonymity",
+        "real-world networks",
         "anonymization",
         "network topology",
+        "data privacy",
+        "social networks",
+        "privacy",
         "twitter",
-        "real-world networks",
         "graph theory",
         "online social networks",
-        "privacy"
+        "anonymity",
+        "data mining",
+        "micro-blog",
+        "sensitive informations"
     ],
     "semantic": [
-        "data mining",
-        "micro-blog",
-        "privacy",
-        "social networks",
-        "data privacy",
-        "anonymity",
         "anonymization",
         "network topology",
+        "topology",
+        "data privacy",
+        "social networks",
+        "privacy",
         "twitter",
         "graph theory",
         "online social networks",
-        "topology"
+        "anonymity",
+        "data mining",
+        "micro-blog"
     ],
     "union": [
-        "data mining",
-        "micro-blog",
-        "privacy",
-        "social networks",
-        "data privacy",
-        "sensitive informations",
-        "anonymity",
+        "real-world networks",
         "anonymization",
         "network topology",
+        "topology",
+        "data privacy",
+        "social networks",
+        "privacy",
         "twitter",
-        "real-world networks",
         "graph theory",
         "online social networks",
-        "topology"
+        "anonymity",
+        "data mining",
+        "micro-blog",
+        "sensitive informations"
     ],
     "enhanced": [
-        "computer science",
-        "computer security",
-        "world wide web",
-        "access control",
-        "network security",
-        "authentication",
+        "complex networks",
         "privacy preserving",
         "computer networks",
+        "world wide web",
+        "computer security",
         "social media",
-        "complex networks",
         "theoretical computer science",
-        "online systems"
+        "online systems",
+        "authentication",
+        "network security",
+        "computer science",
+        "access control"
     ],
     "explanation": {
         "social networks": [
-            "social-network",
-            "social networks",
-            "social networking",
-            "microblogging service",
-            "twitter",
             "real-world networks",
+            "social networks",
+            "twitter",
+            "social-network",
             "online social networks",
-            "microblogging",
             "social network",
-            "twitter graph",
-            "anonymous twitter"
+            "microblogging",
+            "social networking"
         ],
         "online social networks": [
             "online social networks",
@@ -87,95 +84,80 @@
         ],
         "privacy": [
             "anonymous",
-            "data privacy",
             "anonymity",
-            "privacy",
-            "sensitive information"
+            "sensitive information",
+            "data privacy",
+            "privacy"
         ],
         "anonymization": [
             "anonymization"
         ],
         "anonymity": [
-            "anonymity",
-            "anonymous"
+            "anonymous",
+            "anonymity"
         ],
         "real-world networks": [
             "real-world networks"
         ],
         "twitter": [
-            "microblogging service",
-            "microblogging",
             "twitter graph",
             "anonymous twitter",
+            "microblogging",
+            "microblogging service",
             "twitter"
         ],
         "micro-blog": [
-            "microblogging service",
-            "microblogging",
             "twitter graph",
             "anonymous twitter",
+            "microblogging",
+            "microblogging service",
             "twitter"
         ],
         "network topology": [
-            "topology",
-            "network topology"
+            "network topology",
+            "topology"
         ],
         "data privacy": [
-            "privacy",
-            "data privacy"
+            "data privacy",
+            "privacy"
         ],
         "graph theory": [
             "graph theory"
         ],
         "topology": [
-            "topology",
-            "network topology"
+            "network topology",
+            "topology"
         ],
-        "computer science": [
-            "data mining",
-            "mining",
-            "data-mining"
-        ],
-        "computer security": [
-            "anonymity",
-            "privacy",
-            "data privacy"
-        ],
-        "world wide web": [
-            "social-network",
-            "online social networks",
-            "social networks",
-            "social network",
-            "social networking"
-        ],
-        "access control": [
-            "sensitive information"
-        ],
-        "network security": [
-            "anonymity",
-            "sensitive information",
-            "anonymous"
-        ],
-        "authentication": [
-            "anonymity",
-            "anonymous"
+        "complex networks": [
+            "real-world networks"
         ],
         "privacy preserving": [
             "anonymization"
         ],
         "computer networks": [
-            "topology",
-            "network topology"
+            "network topology",
+            "topology"
+        ],
+        "world wide web": [
+            "real-world networks",
+            "social networks",
+            "twitter",
+            "social-network",
+            "online social networks",
+            "social network",
+            "microblogging",
+            "social networking"
+        ],
+        "computer security": [
+            "anonymous",
+            "anonymity",
+            "sensitive information",
+            "data privacy",
+            "privacy"
         ],
         "social media": [
-            "twitter",
-            "microblogging service",
             "microblogging",
-            "twitter graph",
-            "anonymous twitter"
-        ],
-        "complex networks": [
-            "real-world networks"
+            "twitter"
         ],
         "theoretical computer science": [
             "graph theory"
@@ -184,6 +166,52 @@
             "online social networks",
             "social networks",
             "social network"
+        ],
+        "authentication": [
+            "anonymous",
+            "anonymity"
+        ],
+        "network security": [
+            "anonymous",
+            "anonymity",
+            "sensitive information"
+        ],
+        "computer science": [
+            "data mining",
+            "mining",
+            "data-mining"
+        ],
+        "access control": [
+            "sensitive information"
         ]
+    },
+    "syntactic_weights": {
+        "social networks": 1.0,
+        "online social networks": 1.0,
+        "sensitive informations": 0.9545454545454546,
+        "data mining": 1.0,
+        "privacy": 1.0,
+        "anonymization": 1.0,
+        "anonymity": 1.0,
+        "real-world networks": 1.0,
+        "twitter": 1.0,
+        "micro-blog": 1.0,
+        "network topology": 1.0,
+        "data privacy": 1.0,
+        "graph theory": 1.0
+    },
+    "semantic_weights": {
+        "social networks": 1.0,
+        "online social networks": 1.0,
+        "data mining": 1.0,
+        "privacy": 1.0,
+        "data privacy": 1.0,
+        "anonymization": 1.0,
+        "anonymity": 1.0,
+        "twitter": 1.0,
+        "micro-blog": 1.0,
+        "topology": 1.0,
+        "network topology": 1.0,
+        "graph theory": 1.0
     }
 }

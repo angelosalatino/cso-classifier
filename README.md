@@ -39,6 +39,7 @@ Read more: [https://skm.kmi.open.ac.uk/cso-classifier/](https://skm.kmi.open.ac.
       - [Sample Output (BM)](#sample-output-bm)
     - [Parameters](#parameters)
   - [Releases](#releases)
+    - [v3.2](#v32)
     - [v3.1](#v31)
     - [v3.0](#v30)
     - [v2.3.2](#v232)
@@ -217,99 +218,130 @@ Even if you are running multiple classifications, the current implementation of 
 
 #### Sample Output (SP)
 
-As output, the classifier returns a dictionary with five components: (i) syntactic, (ii) semantic, (iii) union, (iv) enhanced, and (v) explanation. The latter field is available only if the **explanation** flag is set to True.
+As output, the classifier returns a dictionary with seven components: (i) syntactic, (ii) semantic, (iii) union, (iv) enhanced, (v) explanation, (vi) syntactic_weights and (vii) semantic_weights. The explanation field is available only if the **explanation** flag is set to True. The last two fields are available only if the **get_weights** is set to True.
 
-Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntactic and semantic module. Union contains the unique topics found by the previous two modules. In enhanced you can find the relevant super-areas. *Please be aware that the results may change according to the version of Computer Science Ontology.*
+Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntactic and semantic module. Union contains the unique topics found by the previous two modules. In enhanced you can find the relevant super-areas. For the sake of clarity, we run the example with all the flag on, and hence it contains the enhanced field and both syntactic_weights and semantic_weights.
+
+*Please be aware that the results may change according to the version of Computer Science Ontology.*
 
 ```json
 {
-   "syntactic":[
-      "network topology",
-      "online social networks",
-      "real-world networks",
-      "anonymization",
-      "privacy",
-      "social networks",
-      "data privacy",
-      "graph theory",
-      "data mining",
-      "sensitive informations",
-      "anonymity",
-      "micro-blog",
-      "twitter"
-   ],
-   "semantic":[
-      "network topology",
-      "online social networks",
-      "topology",
-      "data privacy",
-      "social networks",
-      "privacy",
-      "anonymization",
-      "graph theory",
-      "data mining",
-      "anonymity",
-      "micro-blog",
-      "twitter"
-   ],
-   "union":[
-      "network topology",
-      "online social networks",
-      "topology",
-      "real-world networks",
-      "anonymization",
-      "privacy",
-      "social networks",
-      "data privacy",
-      "graph theory",
-      "data mining",
-      "sensitive informations",
-      "anonymity",
-      "micro-blog",
-      "twitter"
-   ],
-   "enhanced":[
-      "computer networks",
-      "online systems",
-      "complex networks",
-      "privacy preserving",
-      "computer security",
-      "world wide web",
-      "theoretical computer science",
-      "computer science",
-      "access control",
-      "network security",
-      "authentication",
-      "social media"
-   ],
-   "explanation":{
-		"social networks": ["social network", "online social networks", "microblogging service", "real-world networks", "social networks", "microblogging", "social networking", "twitter graph", "anonymous twitter", "twitter"],
-		"online social networks": ["online social networks", "social network", "social networks"],
-		"sensitive informations": ["sensitive information"],
-		"privacy": ["sensitive information", "anonymity", "anonymous", "data privacy", "privacy"],
-		"anonymization": ["anonymization"],
-		"anonymity": ["anonymity", "anonymous"],
-		"real-world networks": ["real-world networks"],
-		"twitter": ["twitter graph", "twitter", "microblogging service", "anonymous twitter", "microblogging"],
-		"micro-blog": ["twitter graph", "twitter", "microblogging service", "anonymous twitter", "microblogging"],
-		"network topology": ["topology", "network topology"],
-		"data mining": ["data mining", "mining"],
-		"data privacy": ["data privacy", "privacy"],
-		"graph theory": ["graph theory"],
-		"topology": ["topology", "network topology"],
-		"computer networks": ["topology", "network topology"],
-		"online systems": ["online social networks", "social network", "social networks"],
-		"complex networks": ["real-world networks"],
-		"privacy preserving": ["anonymization"],
-		"computer security": ["anonymity", "data privacy", "privacy"],
-		"world wide web": ["social network", "online social networks", "microblogging service", "real-world networks", "social networks", "microblogging", "social networking", "twitter graph", "anonymous twitter", "twitter"],
-		"theoretical computer science": ["graph theory"],
-		"computer science": ["data mining", "mining"],
-		"access control": ["sensitive information"],
-		"network security": ["anonymity", "sensitive information", "anonymous"],
-		"authentication": ["anonymity", "anonymous"],
-		"social media": ["microblogging service", "microblogging", "twitter graph", "anonymous twitter", "twitter"]
-	}
+    "syntactic": [
+        "graph theory",
+        "anonymization",
+        "anonymity",
+        "online social networks",
+        "real-world networks",
+        "data privacy",
+        "privacy",
+        "twitter",
+        "sensitive informations",
+        "network topology",
+        "social networks",
+        "data mining",
+        "micro-blog"
+    ],
+    "semantic": [
+        "graph theory",
+        "anonymization",
+        "anonymity",
+        "online social networks",
+        "data privacy",
+        "topology",
+        "data mining",
+        "privacy",
+        "twitter",
+        "social networks",
+        "network topology",
+        "micro-blog"
+    ],
+    "union": [
+        "graph theory",
+        "anonymization",
+        "anonymity",
+        "online social networks",
+        "real-world networks",
+        "data privacy",
+        "topology",
+        "privacy",
+        "twitter",
+        "sensitive informations",
+        "network topology",
+        "social networks",
+        "data mining",
+        "micro-blog"
+    ],
+    "enhanced": [
+        "theoretical computer science",
+        "privacy preserving",
+        "authentication",
+        "network security",
+        "online systems",
+        "complex networks",
+        "computer security",
+        "social media",
+        "access control",
+        "computer networks",
+        "world wide web",
+        "computer science"
+    ],
+    "explanation": {
+        "social networks": ["online social networks","microblogging","social-network","social network","real-world networks","social networking","twitter","social networks"],
+        "online social networks": ["social networks","social network","online social networks"],
+        "sensitive informations": ["sensitive information"],
+        "data mining": ["data mining","mining","data-mining"],
+        "privacy": ["sensitive information","privacy","anonymity","anonymous","data privacy"],
+        "anonymization": ["anonymization"],
+        "anonymity": ["anonymity","anonymous"],
+        "real-world networks": ["real-world networks"],
+        "twitter": ["twitter","twitter graph","microblogging","anonymous twitter","microblogging service"],
+        "micro-blog": ["twitter graph","twitter","microblogging","anonymous twitter","microblogging service"],
+        "network topology": ["network topology","topology"],
+        "data privacy": ["privacy","data privacy"],
+        "graph theory": ["graph theory"],
+        "topology": ["network topology","topology"],
+        "theoretical computer science": ["graph theory"],
+        "privacy preserving": ["anonymization"],
+        "authentication": ["anonymity","anonymous"],
+        "network security": ["sensitive information","anonymity","anonymous"],
+        "online systems": ["social networks","social network","online social networks"],
+        "complex networks": ["real-world networks"],
+        "computer security": ["sensitive information","privacy","anonymity","anonymous","data privacy"],
+        "social media": ["twitter","microblogging"],
+        "access control": ["sensitive information"],
+        "computer networks": ["network topology","topology"],
+        "world wide web": ["online social networks","microblogging","social-network","social network","real-world networks","social networking","twitter","social networks"],
+        "computer science": ["data mining","mining","data-mining"]
+    },
+    "syntactic_weights": {
+        "social networks": 1.0,
+        "online social networks": 1.0,
+        "sensitive informations": 0.9545454545454546,
+        "data mining": 1.0,
+        "privacy": 1.0,
+        "anonymization": 1.0,
+        "anonymity": 1.0,
+        "real-world networks": 1.0,
+        "twitter": 1.0,
+        "micro-blog": 1.0,
+        "network topology": 1.0,
+        "data privacy": 1.0,
+        "graph theory": 1.0
+    },
+    "semantic_weights": {
+        "social networks": 1.0,
+        "online social networks": 1.0,
+        "data mining": 1.0,
+        "privacy": 1.0,
+        "data privacy": 1.0,
+        "anonymization": 1.0,
+        "anonymity": 1.0,
+        "twitter": 1.0,
+        "micro-blog": 1.0,
+        "topology": 1.0,
+        "network topology": 1.0,
+        "graph theory": 1.0
+    }
 }
 ```
 
@@ -414,7 +446,10 @@ Beside the paper(s), the function running the CSO Classifier accepts seven addit
 
 (vi) The parameter *fast_classification* can be either *True* or *False*. This parameter determines whether the semantic module should use the full model or the cached one. Using the full model provides slightly better results than the cached one. However, using the cached model is more than 15x faster. Read [here](#word2vec-model-and-token-to-cso-combined-file-generation) for more details about these two models. The default value for *fast_classification* is *True*.
 
-(vii) The parameter *silent* can be either *True* or *False*. This determines whether the classifier prints its progress in the console. If set to True, the classifier will be silent and will not print any output while classifying. The default value for *silent* is *False*.
+(vii) The parameter *get_weights* can be either *True* or *False*. This determines whether the classifier returns the weights associated to the identified topics. For the syntactic topics these represent the value of string similarity (Levenshtein) of topics compared the chunks of text identified in the input text. Whereas, the weights for the semantic topics correspond to the normalised values from the topic distribution obtained from running the semantic module.
+
+(viii) The parameter *silent* can be either *True* or *False*. This determines whether the classifier prints its progress in the console. If set to True, the classifier will be silent and will not print any output while classifying. The default value for *silent* is *False*.
+
 
 
 |# | Parameter  |  Single Paper | Batch Mode |
@@ -425,7 +460,9 @@ Beside the paper(s), the function running the CSO Classifier accepts seven addit
 |iv | explanation  | :white_check_mark:  | :white_check_mark: |
 |v  |delete_outliers| :white_check_mark:  | :white_check_mark: |
 |vi | fast_classification| :white_check_mark:  | :white_check_mark: |
-|vii| silent       | :white_check_mark:  | :white_check_mark: |
+|vii| get_weights       | :white_check_mark:  | :white_check_mark: |
+|viii| silent       | :white_check_mark:  | :white_check_mark: |
+
 
 **Table 1**: Parameters availability when using CSO Classifier
 
@@ -433,6 +470,11 @@ Beside the paper(s), the function running the CSO Classifier accepts seven addit
 ## Releases
 
 Here we list the available releases for the CSO Classifier. These releases are available for download both from [Github](https://github.com/angelosalatino/cso-classifier/releases) and [Zenodo](10.5281/zenodo.2660819).
+
+### v3.2
+
+This release extends version 3.1 by supporting users in exporting the weights associated to the identified topics. If enabled, within the result of the classification, the classifier include two new keys ```syntactic_weights``` and ```semantic_weights``` which respectively contain the identified syntactic and semantic topics as keys, and their weights as values. 
+This component is disabled by default and can be enabled by setting ```get_weights = True``` when calling the CSO Classifier (see [Parameters](#parameters)).
 
 ### v3.1
 
@@ -457,6 +499,10 @@ In addition, in the post-processing module, we added the *outlier detection* com
 Please, be aware that having substantially restructured the code into classes, the way of running the classifier has changed too. Thus, if you are using a previous version of the classifier, we encourage you to update it (```pip install -U cso-classifier```) and modify your calls to the classifier, accordingly. Read our [usage examples](#usage-examples).
 
 We would like to thank James Dunham @jamesdunham from CSET (Georgetown University) for suggesting to us how to improve the code.
+
+More details about this version of the classifier can be found within: 
+> Salatino, A., Osborne, F., & Motta, E. (2022). CSO Classifier 3.0: a Scalable Unsupervised Method for Classifying Documents in terms of Research Topics. International Journal on Digital Libraries, 1-20. [Read more](https://doi.org/10.1007/s00799-021-00305-y)
+
 
 Download from:
 

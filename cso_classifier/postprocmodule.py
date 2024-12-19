@@ -25,6 +25,7 @@ class PostProcess:
         self.list_of_topics = list()
         self.enhancement = parameters["enhancement"] if "enhancement" in parameters else "first"  #defines the type of enhancement
         self.delete_outliers = parameters["delete_outliers"] if "delete_outliers" in parameters else True
+        self.get_weights = parameters["get_weights"] if "get_weights" in parameters else False
 
         if "result" in parameters:
             self.result = parameters["result"]            # the result object
@@ -233,6 +234,10 @@ class PostProcess:
             self.result.set_semantic(list(set(self.result.get_semantic()).intersection(selected_topics_set)))
             self.result.set_union(selected_topics)
             self.result.set_enhanced(self.cso.climb_ontology(selected_topics, self.enhancement))
+            if self.get_weights:
+                self.result.set_syntactic_topics_weights({topic:val for topic, val in self.result.get_syntactic_topics_weights().items() if topic in selected_topics_set})
+                self.result.set_semantic_topics_weights({topic:val for topic, val in self.result.get_semantic_topics_weights().items() if topic in selected_topics_set})
+
 
         else:
             self.result.set_enhanced(self.cso.climb_ontology(self.result.get_union(), self.enhancement))

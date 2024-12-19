@@ -20,6 +20,7 @@ class Semantic:
         self.min_similarity = 0.90      #Initialises the min_similarity
         self.fast_classification = fast_classification # if will use the full model or not
         self.explanation = dict()
+        self.extracted_topics = dict()  # dictionary with the extract topics (including similarity measures)
 
 
     def set_paper(self, paper):
@@ -74,9 +75,22 @@ class Semantic:
         found_topics, explanation = self.__find_topics(self.paper.get_semantic_chunks())
 
         ##################### Ranking
-        final_topics = self.__rank_topics(found_topics, explanation)
+        self.extracted_topics = self.__rank_topics(found_topics, explanation)
+
+        final_topics = list(self.extracted_topics.keys())
 
         return final_topics
+
+    def get_semantic_topics_weights(self):
+        """Function that returns the full set of topics with the similarity measure
+
+        Args:
+
+
+        Returns:
+            extracted_topics (dictionary): containing the found topics with their metric.
+        """
+        return self.extracted_topics #they are already in the correct format.
 
 
     def __find_topics(self, concepts):
@@ -259,7 +273,7 @@ class Semantic:
             explanation (dictionary): contains information about the explanation of topics
 
         Returns:
-            final_topics (list): list of final topics
+            final_topics (dictionary): dictionary of final topics
         """
         max_value = 0
         scores = []
@@ -335,8 +349,8 @@ class Semantic:
             except IndexError:
                 knee = len(sort_t)
 
-        final_topics = []
-        final_topics = [self.cso.get_topic_wu(sort_t[i][0]) for i in range(0,knee)]
+
+        final_topics = {self.cso.get_topic_wu(sort_t[i][0]):(sort_t[i][1]/max_value) for i in range(0,knee)}
         self.reset_explanation()
         self.explanation = {self.cso.topics_wu[sort_t[i][0]]: explanation[sort_t[i][0]] for i in range(0,knee)}
 

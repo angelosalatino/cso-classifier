@@ -35,6 +35,8 @@ class CSOClassifier:
             - delete_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
             - fast_classification (boolen): if True it runs the fast version of the classifier (cached model).
                     If False the classifier uses the word2vec model which has higher computational complexity
+            - get_weights (boolean): determines whether to return the weights associated to the syntactic and semantic topics.
+                    True to return weights. Default value is False
             - silent (boolean): determines whether to print the progress. If true goes in silent mode.
                     Instead, if false does not print anything in standard output.
 
@@ -45,6 +47,7 @@ class CSOClassifier:
         self.delete_outliers     = parameters["delete_outliers"] if "delete_outliers" in parameters else True
         self.fast_classification = parameters["fast_classification"] if "fast_classification" in parameters else True
         self.silent              = parameters["silent"] if "silent" in parameters else False
+        self.get_weights         = parameters["get_weights"] if "get_weights" in parameters else False
 
         self.__check_parameters(parameters)
 
@@ -81,7 +84,7 @@ class CSOClassifier:
             self.models_loaded = True
 
         t_paper = Paper(paper, self.modules)
-        result = Result(self.explanation)
+        result = Result(self.explanation, self.get_weights)
 
 
         # Passing parameters to the two classes (synt and sema) and actioning classifiers
@@ -89,16 +92,21 @@ class CSOClassifier:
         if self.modules in ('syntactic','both'):
             synt_module = synt(self.cso, t_paper)
             result.set_syntactic(synt_module.classify_syntactic())
+            if self.get_weights:
+                result.set_syntactic_topics_weights(synt_module.get_syntactic_topics_weights())
             if self.explanation:
                 result.dump_temporary_explanation(synt_module.get_explanation())
+
         if self.modules in ('semantic','both'):
             sema_module = sema(self.model, self.cso, self.fast_classification, t_paper)
             result.set_semantic(sema_module.classify_semantic())
+            if self.get_weights:
+                result.set_semantic_topics_weights(sema_module.get_semantic_topics_weights())
             if self.explanation:
                 result.dump_temporary_explanation(sema_module.get_explanation())
 
 
-        postprocess = post(self.model, self.cso, enhancement=self.enhancement, result=result, delete_outliers=self.delete_outliers)
+        postprocess = post(self.model, self.cso, enhancement=self.enhancement, result=result, delete_outliers=self.delete_outliers, get_weights=self.get_weights)
         result = postprocess.filtering_outliers()
 
         return result.get_dict()
@@ -167,7 +175,7 @@ class CSOClassifier:
         # Passing parameters to the two classes (synt and sema)
         synt_module = synt(cso)
         sema_module = sema(model, cso, self.fast_classification)
-        postprocess = post(model, cso, enhancement=self.enhancement, delete_outliers=self.delete_outliers)
+        postprocess = post(model, cso, enhancement=self.enhancement, delete_outliers=self.delete_outliers, get_weights=self.get_weights)
 
 
         # initializing variable that will contain output
@@ -178,19 +186,24 @@ class CSOClassifier:
                 print("Processing:", paper_id)
 
             paper.set_paper(paper_value)
-            result = Result(self.explanation)
+            result = Result(self.explanation, self.get_weights)
 
             # Passing paper and actioning the classifier
             if self.modules in ('syntactic','both'):
                 synt_module.set_paper(paper)
                 result.set_syntactic(synt_module.classify_syntactic())
+                if self.get_weights:
+                    result.set_syntactic_topics_weights(synt_module.get_syntactic_topics_weights())
                 if self.explanation:
                     result.dump_temporary_explanation(synt_module.get_explanation())
             if self.modules in ('semantic','both'):
                 sema_module.set_paper(paper)
                 result.set_semantic(sema_module.classify_semantic())
+                if self.get_weights:
+                    result.set_semantic_topics_weights(sema_module.get_semantic_topics_weights())
                 if self.explanation:
                     result.dump_temporary_explanation(sema_module.get_explanation())
+
             postprocess.set_result(result)
             result = postprocess.filtering_outliers()
 

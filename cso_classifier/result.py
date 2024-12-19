@@ -1,19 +1,25 @@
 class Result:
     """ A simple abstraction layer for retrieving the results """
 
-    def __init__(self, explanation = False):
+    def __init__(self, explanation = False, get_weights=False):
         """ Initialising the ontology class
         """
         self.syntactic = list()
         self.semantic = list()
         self.union = list()
         self.enhanced = list()
+        self.result_attr = ('syntactic', 'semantic', 'union', 'enhanced')
+        
         self.explanation_flag = explanation
         if self.explanation_flag:
             self.explanation = dict()
-            self.result_attr = ('syntactic', 'semantic', 'union', 'enhanced', 'explanation')
-        else:
-            self.result_attr = ('syntactic', 'semantic', 'union', 'enhanced')
+            self.result_attr += ('explanation',)
+
+        self.get_weights = get_weights
+        if self.get_weights:
+            self.syntactic_weights = dict()
+            self.semantic_weights = dict()
+            self.result_attr += ('syntactic_weights','semantic_weights',)
 
 
     def get_dict(self):
@@ -77,6 +83,30 @@ class Result:
         """ Function that fills the union object
         """
         self.union = list(set(self.syntactic + self.semantic))
+        
+        
+    def set_syntactic_topics_weights(self, syntactic_weights):
+        """ Sets the syntactic_weights variable
+        """
+        self.syntactic_weights = syntactic_weights
+
+
+    def get_syntactic_topics_weights(self):
+        """ Gets the syntactic_weights variable
+        """
+        return self.syntactic_weights
+
+
+    def set_semantic_topics_weights(self, semantic_weights):
+        """ Sets the semantic_weights variable
+        """
+        self.semantic_weights = semantic_weights
+
+
+    def get_semantic_topics_weights(self):
+        """ Gets the semantic_weights variable
+        """
+        return self.semantic_weights
 
 
     def dump_temporary_explanation(self, temporary_explanation):
