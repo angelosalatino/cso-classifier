@@ -243,7 +243,7 @@ class Ontology:
 
         Returns
         -------
-        list
+        set
             The unique list of all descendants of the input topics.
 
         """
@@ -251,10 +251,10 @@ class Ontology:
         if type(topics) == str:
             return self.get_all_descendants_of_topic(topics)
         elif type(topics) == list or type(topics) == set:
-            descendants = []
+            descendants = set()
             for topic in topics:
-                descendants.extend(self.get_all_descendants_of_topic(topic))
-            return list(set(descendants))
+                descendants.update(self.get_all_descendants_of_topic(topic))
+            return descendants
         else:
             raise TypeError("Error: The type of 'topics' must be either list or set.")
     
@@ -275,7 +275,7 @@ class Ontology:
 
         Returns
         -------
-        list
+        set
             the list of descendant topics of 'topic'.
 
         """
@@ -298,8 +298,8 @@ class Ontology:
                 narrower_concepts = self.narrowers[dequeued]
                 for narrower_concept in narrower_concepts:
                     queue.append(narrower_concept)
-
-        return list(set_of_descendants)
+        
+        return set_of_descendants
 
 
     def find_closest_matches(self, word):
