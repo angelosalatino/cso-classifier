@@ -26,13 +26,18 @@ class PostProcess:
         self.enhancement = parameters["enhancement"] if "enhancement" in parameters else "first"  #defines the type of enhancement
         self.delete_outliers = parameters["delete_outliers"] if "delete_outliers" in parameters else True
         self.get_weights = parameters["get_weights"] if "get_weights" in parameters else False
+        
+        self.filter_output       = True if "filter_by" in parameters else False
+        self.filter_by           = parameters["filter_by"] if "filter_by" in parameters else []
 
         if "result" in parameters:
             self.result = parameters["result"]            # the result object
             self.list_of_topics = self.result.get_union()
         else:
             self.result = None
-
+            
+        if self.filter_output:
+            self.descendants_to_keep = self.cso.get_all_descendants_of_topics(self.filter_by)
 
     def set_result(self, result):
         """Function that initializes the result variable in the class.
@@ -243,4 +248,25 @@ class PostProcess:
             self.result.set_enhanced(self.cso.climb_ontology(self.result.get_union(), self.enhancement))
 
 
+        return self.result
+    
+    def filtering_by_user_defined_topics(self):
+        """ Identifies the topics that are descendants of user defined ancestors. 
+        Saves this into a new key of the result.
+        """
+        
+        self.result.set_filtered_syntactic(list(filter(lambda topic: topic in self.descendants_to_keep, self.result.get_syntactic())))
+        self.result.set_filtered_semantic(list(filter(lambda topic: topic in self.descendants_to_keep, self.result.get_semantic())))
+        self.result.set_filtered_union(list(filter(lambda topic: topic in self.descendants_to_keep, self.result.get_union())))
+        self.result.set_filtered_enhanced(list(filter(lambda topic: topic in self.descendants_to_keep, self.result.get_enhanced())))
+        
+    
+    
+    def process(self):
+        """ Runs the postprocessing module (changed from version 3.3)
+        """
+        result = self.filtering_outliers()
+        if self.filter_output:
+            self.filtering_by_user_defined_topics()
+        
         return self.result
