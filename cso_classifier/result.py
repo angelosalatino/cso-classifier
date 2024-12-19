@@ -119,47 +119,47 @@ class Result:
     
     
     def set_filtered_syntactic(self, filtered_syntactic):
-        """ Set the filtered syntactic
+        """ Set the filtered syntactic topics
         """
         self.filtered_syntactic = filtered_syntactic
         
         
     def get_filtered_syntactic(self):
-         """ Get the filtered syntactic
+         """ Get the filtered syntactic topics
          """
          return self.filtered_syntactic
      
     def set_filtered_semantic(self, filtered_semantic):
-        """ Set the filtered semantic
+        """ Set the filtered semantic topics
         """
         self.filtered_semantic = filtered_semantic
         
         
     def get_filtered_semantic(self):
-         """ Get the filtered semantic
+         """ Get the filtered semantic topics
          """
          return self.filtered_semantic
      
      
     def set_filtered_union(self, filtered_union):
-        """ Set the filtered union
+        """ Set the filtered union topics
         """
         self.filtered_union = filtered_union
         
         
     def get_filtered_union(self):
-         """ Get the filtered union
+         """ Get the filtered union topics
          """
          return self.filtered_union
      
     def set_filtered_enhanced(self, filtered_enhanced):
-        """ Set the filtered enhanced
+        """ Set the filtered enhanced topics
         """
         self.filtered_enhanced = filtered_enhanced
         
         
     def get_filtered_enhanced(self):
-         """ Get the filtered enhanced
+         """ Get the filtered enhanced topics
          """
          return self.filtered_enhanced
         
