@@ -226,6 +226,80 @@ class Ontology:
             pass
 
         return all_broaders
+    
+    def get_all_descendants_of_topics(self, topics):
+        """
+        Finds all the descendants of a given list (or set) of topics. 
+
+        Parameters
+        ----------
+        topics : list (or set)
+            List of topics of which identifying the descendants.
+
+        Raises
+        ------
+        ValueError
+            Error is raised when a different type of datase.
+
+        Returns
+        -------
+        list
+            The unique list of all descendants of the input topics.
+
+        """
+        
+        if type(topics) == str:
+            return self.get_all_descendants_of_topic(topics)
+        elif type(topics) == list or type(topics) == set:
+            descendants = []
+            for topic in topics:
+                descendants.extend(self.get_all_descendants_of_topic(topic))
+            return list(set(descendants))
+        else:
+            raise TypeError("Error: The type of 'topics' must be either list or set.")
+    
+    
+    def get_all_descendants_of_topic(self, topic):
+        """
+        Identifies all the descendants of a given topic of CSO
+
+        Parameters
+        ----------
+        topic : str
+            the topic.
+
+        Raises
+        ------
+        TypeError
+            raises the error if the topic is not a string.
+
+        Returns
+        -------
+        list
+            the list of descendant topics of 'topic'.
+
+        """
+        
+        
+        if type(topic) != str: 
+            raise TypeError("Error: The type of 'topic' must be str.")
+        
+        if topic not in self.topics:
+            raise ValueError(f"Error: The topic '{topic}' is not available in this version of the Ontology.")
+        
+        set_of_descendants = set()
+        queue = deque() 
+        queue.append(topic)
+        
+        while len(queue) > 0:
+            dequeued = queue.popleft()
+            set_of_descendants.add(dequeued)
+            if dequeued in self.narrowers:
+                narrower_concepts = self.narrowers[dequeued]
+                for narrower_concept in narrower_concepts:
+                    queue.append(narrower_concept)
+
+        return list(set_of_descendants)
 
 
     def find_closest_matches(self, word):
