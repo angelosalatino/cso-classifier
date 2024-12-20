@@ -190,7 +190,12 @@ class CSOClassifier:
         # Passing parameters to the two classes (synt and sema)
         synt_module = synt(cso)
         sema_module = sema(model, cso, self.fast_classification)
-        postprocess = post(model, cso, enhancement=self.enhancement, delete_outliers=self.delete_outliers, get_weights=self.get_weights)
+        postprocess = post(model, 
+                           cso, 
+                           enhancement=self.enhancement, 
+                           delete_outliers=self.delete_outliers, 
+                           get_weights=self.get_weights, 
+                           filter_by=self.filter_by)
 
 
         # initializing variable that will contain output
@@ -201,7 +206,7 @@ class CSOClassifier:
                 print("Processing:", paper_id)
 
             paper.set_paper(paper_value)
-            result = Result(self.explanation, self.get_weights)
+            result = Result(self.explanation, self.get_weights, self.filter_output)
 
             # Passing paper and actioning the classifier
             if self.modules in ('syntactic','both'):
@@ -220,7 +225,7 @@ class CSOClassifier:
                     result.dump_temporary_explanation(sema_module.get_explanation())
 
             postprocess.set_result(result)
-            result = postprocess.filtering_outliers()
+            result = postprocess.process()
 
             class_res[paper_id] = result.get_dict()
         return class_res
