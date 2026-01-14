@@ -1,8 +1,16 @@
+from typing import Any, Dict, List, Set
+
+
 class Result:
     """ A simple abstraction layer for retrieving the results """
 
-    def __init__(self, explanation = False, get_weights=False, filter_output=False):
-        """ Initialising the ontology class
+    def __init__(self, explanation: bool = False, get_weights: bool = False, filter_output: bool = False):
+        """ Initialising the Result class.
+
+        Args:
+            explanation (bool, optional): If True, enables explanation generation. Defaults to False.
+            get_weights (bool, optional): If True, enables weight retrieval. Defaults to False.
+            filter_output (bool, optional): If True, enables output filtering. Defaults to False.
         """
         self.syntactic = list()
         self.semantic = list()
@@ -31,142 +39,208 @@ class Result:
             self.result_attr += ('filtered_syntactic', 'filtered_semantic', 'filtered_union', 'filtered_enhanced',)
 
 
-    def get_dict(self):
+    def get_dict(self) -> Dict[str, Any]:
         """ Returns a dictionary containing all relevant objects
+
+        Returns:
+            Dict[str, Any]: Dictionary representation of the result.
         """
         return {attr: getattr(self, attr) for attr in self.result_attr}
 
 
-    def set_syntactic(self, syntactic):
+    def set_syntactic(self, syntactic: List[str]) -> None:
         """ Sets the syntactic variable
+
+        Args:
+            syntactic (List[str]): List of syntactic topics.
         """
         self.syntactic = syntactic
         self.__merge()
 
 
-    def get_syntactic(self):
+    def get_syntactic(self) -> List[str]:
         """ Gets the syntactic variable
+
+        Returns:
+            List[str]: List of syntactic topics.
         """
         return self.syntactic
 
 
-    def set_semantic(self, semantic):
+    def set_semantic(self, semantic: List[str]) -> None:
         """ Sets the semantic variable
+
+        Args:
+            semantic (List[str]): List of semantic topics.
         """
         self.semantic = semantic
         self.__merge()
 
 
-    def get_semantic(self):
+    def get_semantic(self) -> List[str]:
         """ Gets the semantic variable
+
+        Returns:
+            List[str]: List of semantic topics.
         """
         return self.semantic
 
 
-    def set_union(self, union):
+    def set_union(self, union: List[str]) -> None:
         """ Sets the union variable
+
+        Args:
+            union (List[str]): List of union topics.
         """
         self.union = union
 
 
-    def get_union(self):
-        """ Gets the syntactic variable
+    def get_union(self) -> List[str]:
+        """ Gets the union variable
+
+        Returns:
+            List[str]: List of union topics.
         """
         return self.union
 
 
-    def set_enhanced(self, enhanced):
+    def set_enhanced(self, enhanced: Dict[str, Any]) -> None:
         """ Sets the enhanced variable
+
+        Args:
+            enhanced (Dict[str, Any]): Dictionary of enhanced topics.
         """
         self.enhanced = [x for x in list(enhanced.keys()) if x not in self.union]
         self.__complete_explanation(enhanced)
 
 
-    def get_enhanced(self):
+    def get_enhanced(self) -> List[str]:
         """ Gets the enhanced variable
+
+        Returns:
+            List[str]: List of enhanced topics.
         """
         return self.enhanced
 
 
-    def __merge(self):
+    def __merge(self) -> None:
         """ Function that fills the union object
         """
         self.union = list(set(self.syntactic + self.semantic))
         
         
-    def set_syntactic_topics_weights(self, syntactic_weights):
+    def set_syntactic_topics_weights(self, syntactic_weights: Dict[str, float]) -> None:
         """ Sets the syntactic_weights variable
+
+        Args:
+            syntactic_weights (Dict[str, float]): Dictionary of syntactic topic weights.
         """
         self.syntactic_weights = syntactic_weights
 
 
-    def get_syntactic_topics_weights(self):
+    def get_syntactic_topics_weights(self) -> Dict[str, float]:
         """ Gets the syntactic_weights variable
+
+        Returns:
+            Dict[str, float]: Dictionary of syntactic topic weights.
         """
         return self.syntactic_weights
 
 
-    def set_semantic_topics_weights(self, semantic_weights):
+    def set_semantic_topics_weights(self, semantic_weights: Dict[str, float]) -> None:
         """ Sets the semantic_weights variable
+
+        Args:
+            semantic_weights (Dict[str, float]): Dictionary of semantic topic weights.
         """
         self.semantic_weights = semantic_weights
 
 
-    def get_semantic_topics_weights(self):
+    def get_semantic_topics_weights(self) -> Dict[str, float]:
         """ Gets the semantic_weights variable
+
+        Returns:
+            Dict[str, float]: Dictionary of semantic topic weights.
         """
         return self.semantic_weights
     
     
-    def set_filtered_syntactic(self, filtered_syntactic):
+    def set_filtered_syntactic(self, filtered_syntactic: List[str]) -> None:
         """ Set the filtered syntactic topics
+
+        Args:
+            filtered_syntactic (List[str]): List of filtered syntactic topics.
         """
         self.filtered_syntactic = filtered_syntactic
         
         
-    def get_filtered_syntactic(self):
-         """ Get the filtered syntactic topics
-         """
-         return self.filtered_syntactic
+    def get_filtered_syntactic(self) -> List[str]:
+        """ Get the filtered syntactic topics
+
+        Returns:
+            List[str]: List of filtered syntactic topics.
+        """
+        return self.filtered_syntactic
      
-    def set_filtered_semantic(self, filtered_semantic):
+    def set_filtered_semantic(self, filtered_semantic: List[str]) -> None:
         """ Set the filtered semantic topics
+
+        Args:
+            filtered_semantic (List[str]): List of filtered semantic topics.
         """
         self.filtered_semantic = filtered_semantic
         
         
-    def get_filtered_semantic(self):
-         """ Get the filtered semantic topics
-         """
-         return self.filtered_semantic
+    def get_filtered_semantic(self) -> List[str]:
+        """ Get the filtered semantic topics
+
+        Returns:
+            List[str]: List of filtered semantic topics.
+        """
+        return self.filtered_semantic
      
      
-    def set_filtered_union(self, filtered_union):
+    def set_filtered_union(self, filtered_union: List[str]) -> None:
         """ Set the filtered union topics
+
+        Args:
+            filtered_union (List[str]): List of filtered union topics.
         """
         self.filtered_union = filtered_union
         
         
-    def get_filtered_union(self):
-         """ Get the filtered union topics
-         """
-         return self.filtered_union
+    def get_filtered_union(self) -> List[str]:
+        """ Get the filtered union topics
+
+        Returns:
+            List[str]: List of filtered union topics.
+        """
+        return self.filtered_union
      
-    def set_filtered_enhanced(self, filtered_enhanced):
+    def set_filtered_enhanced(self, filtered_enhanced: List[str]) -> None:
         """ Set the filtered enhanced topics
+
+        Args:
+            filtered_enhanced (List[str]): List of filtered enhanced topics.
         """
         self.filtered_enhanced = filtered_enhanced
         
         
-    def get_filtered_enhanced(self):
-         """ Get the filtered enhanced topics
-         """
-         return self.filtered_enhanced
+    def get_filtered_enhanced(self) -> List[str]:
+        """ Get the filtered enhanced topics
+
+        Returns:
+            List[str]: List of filtered enhanced topics.
+        """
+        return self.filtered_enhanced
         
 
-    def dump_temporary_explanation(self, temporary_explanation):
+    def dump_temporary_explanation(self, temporary_explanation: Dict[str, Set[str]]) -> None:
         """ It dumps the temporary explanation. After it will be reorganised
         better for all topics (including the enhanced ones)
+
+        Args:
+            temporary_explanation (Dict[str, Set[str]]): Temporary explanation dictionary.
         """
         if self.explanation_flag:
             for topic, chunks in temporary_explanation.items():
@@ -175,8 +249,11 @@ class Result:
                 self.explanation[topic] = self.explanation[topic].union(chunks)
 
 
-    def __complete_explanation(self, enhanced):
+    def __complete_explanation(self, enhanced: Dict[str, Any]) -> None:
         """ It creates the explanation also for the enhanced topics
+
+        Args:
+            enhanced (Dict[str, Any]): Dictionary of enhanced topics with lineage.
         """
 
         if self.explanation_flag:
