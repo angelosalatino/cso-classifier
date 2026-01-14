@@ -46,7 +46,7 @@ print(paper["keywords"])
 # In[Run Classifier]
 
 
-cc = CSOClassifier(explanation=True, get_weights=True, filter_by=["computer security"])
+cc = CSOClassifier(explanation=True, get_weights=True)
 
 result = cc.run(paper)
 

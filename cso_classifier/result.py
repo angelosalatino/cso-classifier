@@ -1,7 +1,7 @@
 class Result:
     """ A simple abstraction layer for retrieving the results """
 
-    def __init__(self, explanation = False, get_weights=False, filter_output=False):
+    def __init__(self, explanation = False, get_weights=False):
         """ Initialising the ontology class
         """
         self.syntactic = list()
@@ -20,15 +20,6 @@ class Result:
             self.syntactic_weights = dict()
             self.semantic_weights = dict()
             self.result_attr += ('syntactic_weights','semantic_weights',)
-        
-        self.filter_output = False
-        if filter_output:
-            self.filter_output = True
-            self.filtered_syntactic = list()
-            self.filtered_semantic = list()
-            self.filtered_union = list()
-            self.filtered_enhanced = list()
-            self.result_attr += ('filtered_syntactic', 'filtered_semantic', 'filtered_union', 'filtered_enhanced',)
 
 
     def get_dict(self):
@@ -116,53 +107,7 @@ class Result:
         """ Gets the semantic_weights variable
         """
         return self.semantic_weights
-    
-    
-    def set_filtered_syntactic(self, filtered_syntactic):
-        """ Set the filtered syntactic topics
-        """
-        self.filtered_syntactic = filtered_syntactic
-        
-        
-    def get_filtered_syntactic(self):
-         """ Get the filtered syntactic topics
-         """
-         return self.filtered_syntactic
-     
-    def set_filtered_semantic(self, filtered_semantic):
-        """ Set the filtered semantic topics
-        """
-        self.filtered_semantic = filtered_semantic
-        
-        
-    def get_filtered_semantic(self):
-         """ Get the filtered semantic topics
-         """
-         return self.filtered_semantic
-     
-     
-    def set_filtered_union(self, filtered_union):
-        """ Set the filtered union topics
-        """
-        self.filtered_union = filtered_union
-        
-        
-    def get_filtered_union(self):
-         """ Get the filtered union topics
-         """
-         return self.filtered_union
-     
-    def set_filtered_enhanced(self, filtered_enhanced):
-        """ Set the filtered enhanced topics
-        """
-        self.filtered_enhanced = filtered_enhanced
-        
-        
-    def get_filtered_enhanced(self):
-         """ Get the filtered enhanced topics
-         """
-         return self.filtered_enhanced
-        
+
 
     def dump_temporary_explanation(self, temporary_explanation):
         """ It dumps the temporary explanation. After it will be reorganised
