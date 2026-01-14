@@ -138,6 +138,19 @@ class Config:
         return self.config['model']['cached_model_remote_url']
 
 # =============================================================================
+#     CROISSANT
+# =============================================================================
+
+    def get_croissant_base_definition_path(self) -> str:
+        """ Returns the local path of the Croissant base definition file.
+
+        Returns:
+            str: The file path to the local Croissant base definition file.
+        """
+        return os.path.join(self.dir, self.config['croissant']['croissant_base_defintion_path'])
+    
+
+# =============================================================================
 #     READ AND WRITE CONFIG FILE
 # =============================================================================
     def read_config_file(self) -> None:
