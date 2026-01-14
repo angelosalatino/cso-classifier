@@ -1,7 +1,7 @@
 # CSO-Classifier
 
 [![PyPI version](https://badge.fury.io/py/cso-classifier.svg)](https://badge.fury.io/py/cso-classifier) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2660819.svg)](https://doi.org/10.5281/zenodo.2660819)
-[![Python 3.6+](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Abstract
@@ -41,6 +41,7 @@ Read more: [https://skm.kmi.open.ac.uk/cso-classifier/](https://skm.kmi.open.ac.
       - [Sample Output (BM)](#sample-output-bm)
     - [Parameters](#parameters)
   - [Releases](#releases)
+    - [v4.0.0](#v400)
     - [v3.3](#v33)
     - [v3.2](#v32)
     - [v3.1](#v31)
@@ -73,13 +74,13 @@ The CSO Classifier is a novel application that takes as input the text from the 
 
 ### Installation using PIP
 
-1. Ensure you have **Python 3.6**, **3.7**, or **3.8**. Download them [from here](https://www.python.org/downloads/). Perhaps, you may want to use a virtual environment. Here is how to [create and activate](https://docs.python.org/3/tutorial/venv.html) a virtual environment.
+1. Ensure you have **Python 3.11**, or **3.12**. Download them [from here](https://www.python.org/downloads/). Perhaps, you may want to use a virtual environment. Here is how to [create and activate](https://docs.python.org/3/tutorial/venv.html) a virtual environment.
 2. Use pip to install the classifier: ```pip install cso-classifier```
 3. Setting up the classifier. Go to [Setup](#setup) for finalising the installation.
 
 ### Installation using Github
 
-1. Ensure you have **Python 3.6**, **3.7**, or **3.8**. Download them [from here](https://www.python.org/downloads/). Perhaps, you may want to use a virtual environment. Here is how to [create and activate](https://docs.python.org/3/tutorial/venv.html) a virtual environment.
+1. Ensure you have **Python 3.11**, or **3.12**. Download them [from here](https://www.python.org/downloads/). Perhaps, you may want to use a virtual environment. Here is how to [create and activate](https://docs.python.org/3/tutorial/venv.html) a virtual environment.
 2. Download this repository using: ```git clone https://github.com/angelosalatino/cso-classifier.git```
 3. Install the package by running the following command: ```pip install ./cso-classifier```
 4. Setting up the classifier. Go to [Setup](#setup) for finalising the installation.
@@ -112,8 +113,14 @@ cc.setup()
 exit() # it is important to close the current console, to make those changes effective
 ```
 
-This function downloads the English package of spaCy, which is equivalent to run ```python -m spacy download en_core_web_sm```.
-Then, it downloads the latest version of Computer Science Ontology and the latest version of the word2vec model, which will be used across all modules.
+This function downloads the latest version of Computer Science Ontology and the latest version of the word2vec model, which will be used across all modules.
+Then, in the background, it will also downloads the English package of *spaCy*, which is equivalent to run ```python -m spacy download en_core_web_sm```, and the stopwords from *nltk*, which is equivalent to run: 
+```
+>>> import nltk
+>>> nltk.download()
+```
+
+
 
 ### Update
 
@@ -611,9 +618,25 @@ Beside the paper(s), the function running the CSO Classifier accepts seven addit
 
 Here we list the available releases for the CSO Classifier. These releases are available for download both from [Github](https://github.com/angelosalatino/cso-classifier/releases) and [Zenodo](http://doi.org/10.5281/zenodo.2660819).
 
+### v4.0.0
+
+This major release marks a significant milestone for the CSO Classifier, bringing it up to speed with the latest Python standards and enhancing its core capabilities. Key updates include:
+* **Python 3.11 and 3.12 support**: The classifier now officially supports Python versions 3.11 and 3.12.
+* **Updated Word2vec Model**: The underlying Word2vec model has been updated with papers up to 2025, enhancing its semantic understanding.
+* **Extended Documentation**: The documentation has been expanded to provide more comprehensive guidance and examples.
+* **Improved Codebase**: General code improvements have been implemented for better performance and maintainability.
+
+For the development of this version, we would like to thank Faisal Ramzan, PhD Student at the University of Cagliari for supporting the development of this new version and the deployment of the recent word2vec model.
+
 ### v3.3
 
 This release extends version 3.2 with a new feature that lets you refine the classification process by focusing on specific areas within the Computer Science Ontology. Specifically, providing one or more topics within the parameter *filter_by* (type list), the classifier will extract the sub-branches of such CSO topics, and when classifying will narrow down the output to the only sub-topics available in those areas. This is especially helpful when you are interested in exploring specific branches of the CSO, such as identifying only the concepts related to **artificial intelligence** and **semantic web** within a given paper, and can be achieved by setting ```filter_by = ["artificial intelligence", "semantic web"]``` (see [Parameters](#parameters)). If this parameter is set, the classifier will return the standard classification results, with four extra sets of results (*syntactic_filtered*, *semantic_filtered*, *union_filtered*, *enhanced_filtered*) containing only the filtered topics. This gives users the full picture and a focused view within the chosen areas.
+
+Download from:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14547947.svg)](https://doi.org/10.5281/zenodo.14547947)
+
+We would like to express our gratitude to Stanford University, specifically Dr. Loredana Fattorini and Dr. Nestor Maslej, for their financial support in developing this version. Their application of the CSO Classifier in the [2025 AI Index report](https://hai.stanford.edu/ai-index/2025-ai-index-report) was instrumental to this project. Additional details can be found: [https://www.salatino.org/wp/artificial-intelligence-index-report-2025/](https://www.salatino.org/wp/artificial-intelligence-index-report-2025/).
 
 
 ### v3.2
