@@ -1,21 +1,30 @@
 import math
 import re
+from typing import Any, Dict, List, Optional, Set, Union
+
 import numpy as np
 from scipy.spatial import distance
 from strsimpy.metric_lcs import MetricLCS
 
+from .model import Model
+from .ontology import Ontology
+from .result import Result
+
 class PostProcess:
     """ A simple abstraction layer for using the Post-Processing module of the CSO classifier """
 
-    def __init__(self, model = None, cso = None, **parameters):
+    def __init__(self, model: Optional[Model] = None, cso: Optional[Ontology] = None, **parameters: Any):
         """Function that initialises an object of class PostProcess and all its members.
 
         Args:
-            model (dictionary): word2vec model.
-            cso (dictionary): Computer Science Ontology
-            Among the other parameters:
-                enhancement (string): kind of enhancement
-                result (Result class): topics identified from a document
+            model (Optional[Model], optional): word2vec model. Defaults to None.
+            cso (Optional[Ontology], optional): Computer Science Ontology. Defaults to None.
+            **parameters (Any): Additional parameters including:
+                enhancement (str): kind of enhancement ("first", "all", "no").
+                result (Result): Result object containing identified topics.
+                delete_outliers (bool): Whether to remove outliers.
+                get_weights (bool): Whether to return weights.
+                filter_by (List[str]): List of topics to filter by.
         """
         self.cso = cso                  #Stores the CSO Ontology
         self.model = model              #contains the model
@@ -36,28 +45,36 @@ class PostProcess:
         else:
             self.result = None
             
-        if self.filter_output:
+        if self.filter_output and self.cso:
             self.descendants_to_keep = self.cso.get_all_descendants_of_topics(self.filter_by)
+        else:
+            self.descendants_to_keep = set()
 
-    def set_result(self, result):
+    def set_result(self, result: Result) -> None:
         """Function that initializes the result variable in the class.
 
         Args:
-            result (Result object): The resutls to analyse.
+            result (Result): The results to analyse.
         """
         self.list_of_topics = list()
         self.result = result            # the result object
         self.list_of_topics = self.result.get_union()
 
 
-    def get_result(self):
+    def get_result(self) -> Optional[Result]:
         """Function that returns the results.
+
+        Returns:
+            Optional[Result]: The result object.
         """
         return self.result
 
 
-    def __create_matrix_distance_from_ontology(self):
+    def __create_matrix_distance_from_ontology(self) -> np.ndarray:
         """Function that computes the matrix distance according to the ontology.
+
+        Returns:
+            np.ndarray: A matrix representing distances between topics based on ontology graph.
         """
         len_mat = len(self.list_of_topics)
         matrix = np.zeros((len_mat, len_mat), int)
@@ -82,8 +99,11 @@ class PostProcess:
         return new_matrix
 
 
-    def __create_matrix_distance_from_embeddings(self):
+    def __create_matrix_distance_from_embeddings(self) -> np.ndarray:
         """Function that computes the matrix distance according to the model.
+
+        Returns:
+            np.ndarray: A matrix representing distances between topics based on word embeddings.
         """
         len_mat = len(self.list_of_topics)
         matrix = np.zeros((len_mat, len_mat), float)
@@ -131,14 +151,28 @@ class PostProcess:
         return matrix
 
 
-    def __cosine_similarity(self, data_set_i, data_set_ii):
-        """ Function that computes the cosine similarity as opposite of the cosine disrtance
+    def __cosine_similarity(self, data_set_i: np.ndarray, data_set_ii: np.ndarray) -> float:
+        """ Function that computes the cosine similarity as opposite of the cosine distance
+
+        Args:
+            data_set_i (np.ndarray): First vector.
+            data_set_ii (np.ndarray): Second vector.
+
+        Returns:
+            float: Cosine similarity.
         """
         return 1 - distance.cosine(data_set_i, data_set_ii) #becuase this computes the distance and not the similarity
 
 
-    def __get_good_threshold(self, matrix, multiplicative = 1):
+    def __get_good_threshold(self, matrix: np.ndarray, multiplicative: float = 1.0) -> float:
         """Function that identifies a good threshold for selecting the top edges in the network.
+
+        Args:
+            matrix (np.ndarray): The distance matrix.
+            multiplicative (float, optional): Multiplier for edge selection. Defaults to 1.0.
+
+        Returns:
+            float: The calculated threshold.
         """
         number_of_nodes = len(matrix)
         minimum_number_of_edges = math.ceil(multiplicative*number_of_nodes)
@@ -154,8 +188,11 @@ class PostProcess:
         return threshold
 
 
-    def __get_joined_matrix(self):
+    def __get_joined_matrix(self) -> np.ndarray:
         """ Function that extracts the joined matrix (model + ontology)
+
+        Returns:
+            np.ndarray: The combined matrix (maximum of embedding and ontology matrices).
         """
         embed_matrix = self.__create_matrix_distance_from_embeddings()
         ontol_matrix = self.__create_matrix_distance_from_ontology()
@@ -163,9 +200,16 @@ class PostProcess:
         return np.maximum(embed_matrix, ontol_matrix)
 
 
-    def __promote_parent_topics(self,selected_topics,excluded_topics):
+    def __promote_parent_topics(self, selected_topics: List[str], excluded_topics: Set[str]) -> Set[str]:
         """Function that identifies and remove outliers.
             among the isolated nodes it checks if any of those topics is super topic of the retained
+
+        Args:
+            selected_topics (List[str]): Topics selected so far.
+            excluded_topics (Set[str]): Topics currently excluded.
+
+        Returns:
+            Set[str]: Topics to rescue (promote) back into selection.
         """
         topics_to_spare = set()
         # At this stage we check if among the excluded topics there are some which happen to be parents of the selected topics
@@ -181,9 +225,16 @@ class PostProcess:
         return topics_to_spare
 
 
-    def __promote_similar_topics(self,selected_topics,excluded_topics):
+    def __promote_similar_topics(self, selected_topics: List[str], excluded_topics: Set[str]) -> Set[str]:
         """Function that identifies and remove outliers.
             among the isolated nodes it checks if any of those topics has high string similarity with the retained
+
+        Args:
+            selected_topics (List[str]): Topics selected so far.
+            excluded_topics (Set[str]): Topics currently excluded.
+
+        Returns:
+            Set[str]: Topics to rescue (promote) back into selection.
         """
         topics_to_spare = set()
         # At this stage we check if among the excluded topics there are some which have string similarity higher than the threshold.
@@ -198,12 +249,15 @@ class PostProcess:
         return topics_to_spare
 
 
-    def filtering_outliers(self):
+    def filtering_outliers(self) -> Result:
         """Function that identifies and remove outliers.
         1) creates distance matrix, merging ontology and model distance (then remove the isolated nodes)
         2) among the isolated nodes it checks:
             2.1) if any of those topics is super topic of the retained
             2.2) if any of those topics has high string similarity with the retained
+
+        Returns:
+            Result: The updated result object with outliers removed.
         """
         if self.delete_outliers and len(self.list_of_topics) > 1:
 
@@ -250,7 +304,7 @@ class PostProcess:
 
         return self.result
     
-    def filtering_by_user_defined_topics(self):
+    def filtering_by_user_defined_topics(self) -> None:
         """ Identifies the topics that are descendants of user defined ancestors. 
         Saves this into a new key of the result.
         """
@@ -262,8 +316,11 @@ class PostProcess:
         
     
     
-    def process(self):
+    def process(self) -> Result:
         """ Runs the postprocessing module (changed from version 3.3)
+
+        Returns:
+            Result: The processed result object.
         """
         result = self.filtering_outliers()
         if self.filter_output:
