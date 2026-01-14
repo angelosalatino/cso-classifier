@@ -141,21 +141,21 @@ class Config:
 #     CROISSANT
 # =============================================================================
 
-    def get_croissant_base_definition_path(self) -> str:
-        """ Returns the local path of the Croissant base definition file.
+    def get_croissant_base_specification_path(self) -> str:
+        """ Returns the local path of the Croissant base specification file.
 
         Returns:
-            str: The file path to the local Croissant base definition file.
+            str: The file path to the local Croissant base specification file.
         """
-        return os.path.join(self.dir, self.config['croissant']['croissant_base_defintion_path'])
+        return os.path.join(self.dir, self.config['croissant']['croissant_base_specification_path'])
     
-    def get_croissant_base_definition_remote_path(self) -> str:
-        """ Returns the remote path of the Croissant base definition file.
+    def get_croissant_base_specification_remote_path(self) -> str:
+        """ Returns the remote path of the Croissant base specification file.
 
         Returns:
-            str: The remote URL for the Croissant base definition file.
+            str: The remote URL for the Croissant base specification file.
         """
-        return self.config['croissant']['croissant_base_defintion_remote_path']
+        return self.config['croissant']['croissant_base_specification_remote_path']
 
 # =============================================================================
 #     READ AND WRITE CONFIG FILE

@@ -276,6 +276,24 @@ class CSOClassifier:
                 raise TypeError("Field filter_by must be a list of strings. Got %s instead." % type(parameters["filter_by"]).__name__)
 
 
+    def get_croissant_specification(self, filename: str = "metadata.json", print_output: bool = False) -> None:
+        """Generates a Croissant JSON-LD specification for the classification results.
+
+        This method creates a Croissant specification based on the attributes of the
+        Result object, which reflects the classifier's output configuration (e.g.,
+        whether explanations or weights are included). The specification can be saved
+        to a file and optionally printed to the console.
+
+        Args:
+            filename (str, optional): The name of the file to save the Croissant specification.
+                                      Defaults to "metadata.json".
+            print_output (bool, optional): If True, prints the Croissant specification to stdout.
+                                           Defaults to False.
+        """
+        result = Result(self.explanation, self.get_weights, self.filter_output)
+        result.get_croissant_specification(filename,print_output)
+
+
     @staticmethod
     def setup() -> None:
         """ Setting up the classifier: language model, ontology and word2vec model
