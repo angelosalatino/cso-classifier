@@ -50,7 +50,9 @@ cc = CSOClassifier(explanation=True, get_weights=True, filter_by=["computer secu
 
 result = cc.run(paper)
 
+# In[Metadata Specification]
 
+cc.get_croissant_specification("metadata.json", print_output=True)
 
 # In[Printing and Saving]:
 
