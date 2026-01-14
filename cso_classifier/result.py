@@ -1,5 +1,7 @@
 from typing import Any, Dict, List, Set
+import json
 
+from .config import Config
 
 class Result:
     """ A simple abstraction layer for retrieving the results """
@@ -264,3 +266,52 @@ class Result:
             
             all_topics = set(self.enhanced+self.union)
             self.explanation = {topic: list(value) for topic, value in self.explanation.items() if topic in all_topics}
+
+    
+    def get_croissant_specification(self, filename: Optional[str] = None, print_output: bool = False) -> None:
+        """Generates a Croissant JSON-LD specification for the classification results.
+
+        This method creates a Croissant specification based on the attributes of the
+        Result object, which reflects the classifier's output configuration (e.g.,
+        whether explanations or weights are included). The specification can be saved
+        to a file and optionally printed to the console.
+
+        Args:
+            filename (Optional[str], optional): The name of the file to save the Croissant specification.
+                                                If None or an empty string, the specification is not saved to a file.
+                                                Defaults to None.
+            print_output (bool, optional): If True, prints the Croissant specification to stdout.
+                                           Defaults to False.
+
+        Raises:
+            RuntimeError: If the Croissant base specification file cannot be loaded.
+            ValueError: If `filename` is provided but is an empty string.
+        """
+        config = Config()
+        
+        try:
+            # Load the base Croissant specification
+            with open(config.get_croissant_base_specification_path(), 'r') as croissant_base_file:
+                croissant_base = json.load(croissant_base_file)
+            
+            fields = list()
+            for attribute in croissant_base["recordSet"][0]["field"]:
+                if attribute["name"] in self.result_attr:
+                    fields.append(attribute)
+            croissant_base["recordSet"][0]["field"] = fields
+
+            # Handle saving to file and printing output
+            if filename is not None and filename != "":
+                with open(filename, 'w') as output_file:
+                    json.dump(croissant_base, output_file, indent=4)
+                
+                if print_output:
+                    print(json.dumps(croissant_base, indent=4))
+            else:
+                raise ValueError(f"ERROR: Please provide a correct filename. Currently provided '{filename}'.")
+         
+        except Exception:
+            raise RuntimeError(
+                f"Failed to load the Croissant base file from '{config.get_croissant_base_specification_path()}'.\n"
+                f"You can find a copy of this file on {config.get_croissant_base_specification_remote_path()}"
+            )
