@@ -123,11 +123,23 @@ class Model:
         self.__ensure_word2vec_model()
         path = self.config.get_model_pickle_path()
 
-        model_kv = KeyedVectors.load_word2vec_format(path, binary=True)
-        self.full_model = model_kv
-        self.embedding_size = int(self.full_model.vector_size)
-        if not self.silent:
-            print("Full word2vec model loaded.")
+
+        try:
+            with open(path, "rb") as fh:
+                model_kv = pickle.load(fh)
+            if hasattr(model_kv, "key_to_index"):  # KeyedVectors in Gensim 4
+                self.full_model = model_kv
+                self.embedding_size = int(self.full_model.vector_size)
+            else:
+                raise TypeError("Unsupported pickle contents for word2vec model.")
+            if not self.silent:
+                print("Word2Vec model loaded.")
+        except Exception as e_pk:
+            raise RuntimeError(
+                f"Failed to load word2vec model from '{path}'.\n"
+                f"- Pickle fallback error: {e_pk}"
+            )
+
 
 
 
