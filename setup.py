@@ -1,3 +1,36 @@
+"""
+Setup Script for CSO Classifier
+===============================
+
+This script handles the packaging, distribution, and installation of the 
+CSO Classifier, a Python application for classifying scientific documents 
+using the Computer Science Ontology (CSO).
+
+Key Functionalities:
+--------------------
+1.  **Metadata Retrieval**: Reads the project's `README.md` to provide a 
+    detailed long description for PyPI and other package managers.
+2.  **Dependency Management**: Specifies a list of required Python packages 
+    (e.g., `gensim`, `spacy`, `nltk`) ensuring all necessary libraries are 
+    installed automatically.
+3.  **Version Control**: Extracts the current version number dynamically from 
+    `cso_classifier/config.ini` to maintain consistency between the code 
+    and the package metadata.
+4.  **Package Configuration**: Uses `setuptools.setup()` to define package 
+    attributes such as name, author, license, and included data files 
+    (assets and config).
+
+Usage:
+------
+To install the package locally in editable mode:
+    $ pip install -e .
+
+To build a source distribution:
+    $ python setup.py sdist
+
+To build a wheel:
+    $ python setup.py bdist_wheel
+"""
 import io
 import os
 import setuptools
@@ -15,6 +48,7 @@ else:
 
 
 requirements_to_install = [
+    # Note: Versions are pinned to ensure stability and reproducibility.
     'igraph==0.10.4',
     'gensim==4.3.3',
     'click==7.1.2',
@@ -30,7 +64,7 @@ requirements_to_install = [
 ]
 
 
-# --- Version from config.ini (UTF-8 read) ---
+# --- Read version from config.ini (UTF-8 encoded) ---
 config = configparser.ConfigParser()
 config.read(os.path.join("cso_classifier", "config.ini"), encoding="utf-8")
 __version__ = config["classifier"]["classifier_version"]
