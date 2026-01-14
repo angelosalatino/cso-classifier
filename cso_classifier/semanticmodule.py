@@ -1,18 +1,24 @@
 import warnings
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from kneed import KneeLocator
 from rapidfuzz.distance import Levenshtein
 from nltk import everygrams
 
+from .model import Model
+from .ontology import Ontology
+from .paper import Paper
+
 class Semantic:
     """ A simple abstraction layer for using the Semantic module of the CSO classifier """
 
-    def __init__(self, model = None, cso = None, fast_classification = True, paper = None):
+    def __init__(self, model: Optional[Model] = None, cso: Optional[Ontology] = None, fast_classification: bool = True, paper: Optional[Paper] = None):
         """Function that initialises an object of class CSOClassifierSemantic and all its members.
 
         Args:
-            model (dictionary): word2vec model.
-            cso (dictionary): Computer Science Ontology
-            paper (dictionary): paper{"title":"...","abstract":"...","keywords":"..."} the paper.
+            model (Optional[Model], optional): word2vec model. Defaults to None.
+            cso (Optional[Ontology], optional): Computer Science Ontology. Defaults to None.
+            fast_classification (bool, optional): Determines if the cached model should be used. Defaults to True.
+            paper (Optional[Paper], optional): The paper object. Defaults to None.
         """
         self.cso = cso                  #Stores the CSO Ontology
         self.paper = paper              #Paper to analyse
@@ -23,52 +29,49 @@ class Semantic:
         self.extracted_topics = dict()  # dictionary with the extract topics (including similarity measures)
 
 
-    def set_paper(self, paper):
+    def set_paper(self, paper: Paper) -> None:
         """Function that initializes the paper variable in the class.
 
         Args:
-            paper (either string or dictionary): The paper to analyse. It can be a full string in which the content
-            is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
-
+            paper (Paper): The paper to analyse.
         """
         self.paper = paper
         self.reset_explanation()
 
 
-    def set_min_similarity(self, min_similarity):
+    def set_min_similarity(self, min_similarity: float) -> None:
         """Function that initializes the minimum similarity variable.
 
         Args:
             min_similarity (float): value of min_similarity between 0 and 1.
-
         """
         self.min_similarity = min_similarity
 
 
-    def reset_explanation(self):
+    def reset_explanation(self) -> None:
         """ Resetting the explanation
         """
         self.explanation = dict()
 
 
-    def get_explanation(self):
+    def get_explanation(self) -> Dict[str, Set[str]]:
         """ Returns the explanation
+
+        Returns:
+            Dict[str, Set[str]]: The explanation dictionary.
         """
         return self.explanation
 
 
-    def classify_semantic(self):
+    def classify_semantic(self) -> List[str]:
         """Function that classifies the paper on a semantic level. This semantic module follows four steps:
             (i) entity extraction,
             (ii) CSO concept identification,
             (iii) concept ranking, and
             (iv) concept selection.
 
-        Args:
-            processed_embeddings (dictionary): This dictionary saves the matches between word embeddings and terms in CSO. It is useful when processing in batch mode.
-
         Returns:
-            final_topics (list): list of identified topics.
+            List[str]: list of identified topics.
         """
 
         ##################### Core analysis
@@ -81,26 +84,23 @@ class Semantic:
 
         return final_topics
 
-    def get_semantic_topics_weights(self):
+    def get_semantic_topics_weights(self) -> Dict[str, float]:
         """Function that returns the full set of topics with the similarity measure
 
-        Args:
-
-
         Returns:
-            extracted_topics (dictionary): containing the found topics with their metric.
+            Dict[str, float]: containing the found topics with their metric.
         """
         return self.extracted_topics #they are already in the correct format.
 
 
-    def __find_topics(self, concepts):
+    def __find_topics(self, concepts: List[str]) -> Tuple[Dict[str, Any], Dict[str, Set[str]]]:
         """Function that identifies topics starting from the ngram forund in the paper
 
         Args:
-            concepts (list): Chuncks of text to analyse.
+            concepts (List[str]): Chunks of text to analyse.
 
         Returns:
-            found_topics (dict): cdictionary containing the identified topics.
+            Tuple[Dict[str, Any], Dict[str, Set[str]]]: A tuple containing the identified topics and the explanation.
         """
 
         # Set up
@@ -176,14 +176,14 @@ class Semantic:
         return found_topics, explanation
 
 
-    def __get_similar_words_from_cached_model(self, gram, grams):
+    def __get_similar_words_from_cached_model(self, gram: str, grams: List[str]) -> List[Dict[str, Any]]:
         """ Getting similar words from the cached model
         Args:
-            gram (string): the n-gram found (joined)
-            grams (list): list of tokens to be analysed and founf in the model
+            gram (str): the n-gram found (joined)
+            grams (List[str]): list of tokens to be analysed and found in the model
 
         Returns:
-            list_of_matched_topics (list): containing of all found topics
+            List[Dict[str, Any]]: containing of all found topics
         """
         if self.model.check_word_in_model(gram):
             list_of_matched_topics = self.model.get_words_from_model(gram)
@@ -192,14 +192,14 @@ class Semantic:
         return list_of_matched_topics
 
 
-    def __match_ngram(self, grams, merge=True):
+    def __match_ngram(self, grams: List[str], merge: bool = True) -> List[Dict[str, Any]]:
         """
         Args:
-            grams (list): list of tokens to be analysed and founf in the model
-            merge (boolean): #Allows to combine the topics of mutiple tokens, when analysing 2-grams or 3-grams
+            grams (List[str]): list of tokens to be analysed and found in the model
+            merge (bool): Allows to combine the topics of multiple tokens, when analysing 2-grams or 3-grams. Defaults to True.
 
         Returns:
-            list_of_matched_topics (list): containing of all found topics
+            List[Dict[str, Any]]: containing of all found topics
         """
 
         list_of_matched_topics = list()
@@ -226,14 +226,14 @@ class Semantic:
         return list_of_matched_topics
 
 
-    def __get_similar_words_from_full_model(self, gram, grams):
+    def __get_similar_words_from_full_model(self, gram: str, grams: List[str]) -> List[Dict[str, Any]]:
         """ Getting similar words from the full model
         Args:
-            gram (string): the n-gram found (joined)
-            grams (list): list of tokens to be analysed and founf in the model
+            gram (str): the n-gram found (joined)
+            grams (List[str]): list of tokens to be analysed and found in the model
 
         Returns:
-            list_of_matched_topics (list): containing of all found topics
+            List[Dict[str, Any]]: containing of all found topics
         """
         if self.model.check_word_in_full_model(gram):
             similar_words = self.model.get_top_similar_words_from_full_model(gram)
@@ -246,14 +246,13 @@ class Semantic:
 
         return list_of_matched_topics
 
-    def __refine_found_words(self,similar_words):
+    def __refine_found_words(self, similar_words: List[Tuple[str, float]]) -> List[Dict[str, Any]]:
         """
         Args:
-            gram (string): the n-gram found (joined)
-            grams (list): list of tokens to be analysed and founf in the model
+            similar_words (List[Tuple[str, float]]): list of tuples (word, similarity)
 
         Returns:
-            list_of_matched_topics (list): containing of all found topics
+            List[Dict[str, Any]]: containing of all found topics
         """
         identified_topics = list()
         for word, sim in similar_words:
@@ -265,15 +264,15 @@ class Semantic:
         return identified_topics
 
 
-    def __rank_topics(self, found_topics, explanation):
+    def __rank_topics(self, found_topics: Dict[str, Any], explanation: Dict[str, Set[str]]) -> Dict[str, float]:
         """ Function that ranks the list of found topics. It also cleans the explanation accordingly
 
         Args:
-            found_topics (dictionary): contains all information about the found topics
-            explanation (dictionary): contains information about the explanation of topics
+            found_topics (Dict[str, Any]): contains all information about the found topics
+            explanation (Dict[str, Set[str]]): contains information about the explanation of topics
 
         Returns:
-            final_topics (dictionary): dictionary of final topics
+            Dict[str, float]: dictionary of final topics with their scores
         """
         max_value = 0
         scores = []
