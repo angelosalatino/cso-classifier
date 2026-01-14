@@ -149,6 +149,13 @@ class Config:
         """
         return os.path.join(self.dir, self.config['croissant']['croissant_base_defintion_path'])
     
+    def get_croissant_base_definition_remote_path(self) -> str:
+        """ Returns the remote path of the Croissant base definition file.
+
+        Returns:
+            str: The remote URL for the Croissant base definition file.
+        """
+        return self.config['croissant']['croissant_base_defintion_remote_path']
 
 # =============================================================================
 #     READ AND WRITE CONFIG FILE
