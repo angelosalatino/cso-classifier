@@ -4,6 +4,7 @@ import csv as co
 import urllib.request
 import json
 from collections import deque
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from igraph import Graph
 
 from .config import Config
@@ -13,8 +14,12 @@ from .misc import print_header, download_file
 class Ontology:
     """ A simple abstraction layer for using the Computer Science Ontology """
 
-    def __init__(self, load_ontology = True, silent = False):
+    def __init__(self, load_ontology: bool = True, silent: bool = False) -> None:
         """ Initialising the ontology class
+
+        Args:
+            load_ontology (bool, optional): If True, loads the ontology. Defaults to True.
+            silent (bool, optional): If True, suppresses print statements. Defaults to False.
         """
         self.silent = silent
         self.topics = dict()
@@ -49,14 +54,20 @@ class Ontology:
 # =============================================================================
 
 
-    def from_single_items_to_cso(self):
+    def from_single_items_to_cso(self) -> Dict[str, Any]:
         """ Function that returns a single dictionary containing all relevant
         values for the ontology.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing ontology attributes.
         """
         return {attr: getattr(self, attr) for attr in self.ontology_attr}
 
-    def from_cso_to_single_items(self, cso):
+    def from_cso_to_single_items(self, cso: Dict[str, Any]) -> None:
         """ Function that fills all the single relevant variables in this class.
+
+        Args:
+            cso (Dict[str, Any]): Dictionary containing ontology attributes.
         """
         for attr in self.ontology_attr:
             try:
@@ -65,7 +76,7 @@ class Ontology:
                 ValueError("Key {} not found in the ontology".format(attr))
 
 
-    def load_ontology_pickle(self):
+    def load_ontology_pickle(self) -> None:
         """ Function that loads CSO.
         This file has been serialised using Pickle allowing to be loaded quickly.
         """
@@ -77,15 +88,15 @@ class Ontology:
             print("Computer Science Ontology loaded.")
 
 
-    def get_primary_label(self, topic):
+    def get_primary_label(self, topic: str) -> str:
         """ Function that returns the primary (preferred) label for a topic.
         If this topic belongs to a cluster.
 
         Args:
-            topic (string): Topic to analyse.
+            topic (str): Topic to analyse.
 
         Returns:
-            topic (string): primary label of the analysed topic.
+            str: primary label of the analysed topic.
         """
 
         try:
@@ -96,15 +107,15 @@ class Ontology:
         return topic
 
 
-    def get_primary_label_wu(self, topic):
+    def get_primary_label_wu(self, topic: str) -> str:
         """ Function that returns the primary (preferred) label for a topic *with underscore*. If this
         topic belongs to a cluster.
 
         Args:
-            topic (string): Topic to analyse.
+            topic (str): Topic to analyse.
 
         Returns:
-            topic (string): primary label of the analysed topic with underscore.
+            str: primary label of the analysed topic with underscore.
         """
 
         try:
@@ -115,14 +126,14 @@ class Ontology:
         return topic
 
 
-    def get_topic_wu(self, topic):
+    def get_topic_wu(self, topic: str) -> str:
         """ Function that returns the topic label (without underscore) from its underscored version.
 
         Args:
-            topic (string): Topic to analyse.
+            topic (str): Topic to analyse.
 
         Returns:
-            topic (string): primary label of the analysed topic with underscore.
+            str: primary label of the analysed topic with underscore.
         """
 
         try:
@@ -133,16 +144,15 @@ class Ontology:
         return topic
 
 
-    def climb_ontology(self, found_topics, climb_ont):
+    def climb_ontology(self, found_topics: List[str], climb_ont: str) -> Dict[str, Any]:
         """ Function that climbs the ontology. This function might retrieve
             just the first broader topic or the whole branch up until root
         Args:
-            found_topics (list): It contains the topics found with string similarity.
-            climb_ont (string): either "first" or "all" for selecting "just the first broader topic"
+            found_topics (List[str]): It contains the topics found with string similarity.
+            climb_ont (str): either "first" or "all" for selecting "just the first broader topic"
             or climbing the "whole tree".
         Returns:
-            found_topics (dictionary): containing the found topics with their similarity and the
-            n-gram analysed.
+            Dict[str, Any]: containing the inferred topics with their match count and lineage.
         """
 
         all_broaders = dict()
@@ -180,19 +190,22 @@ class Ontology:
         return inferred_topics
 
 
-    def get_broader_of_topics(self, found_topics, all_broaders=dict()):
+    def get_broader_of_topics(self, found_topics: List[str], all_broaders: Optional[Dict[str, Set[str]]] = None) -> Dict[str, Set[str]]:
         """ Function that returns all the broader topics for a given set of topics.
             It analyses the broader topics of both the topics initially found in the paper, and the broader topics
             found at the previous iteration.
             It incrementally provides a more comprehensive set of broader topics.
 
         Args:
-            found_topics (list): It contains the topics found with string similarity.
-            all_broaders (dictionary): It contains the broader topics found in the previous run. Otherwise an empty object.
+            found_topics (List[str]): It contains the topics found with string similarity.
+            all_broaders (Optional[Dict[str, Set[str]]]): It contains the broader topics found in the previous run. Otherwise an empty object.
 
         Returns:
-            all_broaders (dictionary): contains all the broaders found so far, including the previous iterations.
+            Dict[str, Set[str]]: contains all the broaders found so far, including the previous iterations.
         """
+        if all_broaders is None:
+            all_broaders = dict()
+
         topics = list(found_topics) + list(all_broaders.keys())
         for topic in topics:
             try:
@@ -210,14 +223,14 @@ class Ontology:
         return all_broaders
 
 
-    def get_all_broaders_of_topic(self, topic):
+    def get_all_broaders_of_topic(self, topic: str) -> List[str]:
         """ Function that returns all the broader topics up to the root.
 
         Args:
-            topic (string): the input topic.
+            topic (str): the input topic.
 
         Returns:
-            all_broaders (list): contains all the broaders topics of topic within CSO.
+            List[str]: contains all the broaders topics of topic within CSO.
         """
         all_broaders = list()
         try:
@@ -227,23 +240,23 @@ class Ontology:
 
         return all_broaders
     
-    def get_all_descendants_of_topics(self, topics):
+    def get_all_descendants_of_topics(self, topics: Union[List[str], Set[str], str]) -> Set[str]:
         """
         Finds all the descendants of a given list (or set) of topics. 
 
         Parameters
         ----------
-        topics : list (or set)
+        topics : Union[List[str], Set[str], str]
             List of topics of which identifying the descendants.
 
         Raises
         ------
-        ValueError
+        TypeError
             Error is raised when a different type of datase.
 
         Returns
         -------
-        set
+        Set[str]
             The unique list of all descendants of the input topics.
 
         """
@@ -259,7 +272,7 @@ class Ontology:
             raise TypeError("Error: The type of 'topics' must be either list or set.")
     
     
-    def get_all_descendants_of_topic(self, topic):
+    def get_all_descendants_of_topic(self, topic: str) -> Set[str]:
         """
         Identifies all the descendants of a given topic of CSO
 
@@ -272,10 +285,12 @@ class Ontology:
         ------
         TypeError
             raises the error if the topic is not a string.
+        ValueError
+            raises the error if the topic is not in the ontology.
 
         Returns
         -------
-        set
+        Set[str]
             the list of descendant topics of 'topic'.
 
         """
@@ -302,10 +317,16 @@ class Ontology:
         return set_of_descendants
 
 
-    def find_closest_matches(self, word):
+    def find_closest_matches(self, word: str) -> List[str]:
         """ Function that finds the closest match of a given topic (by looking at the topic stems)
+
+        Args:
+            word (str): The word to match.
+
+        Returns:
+            List[str]: A list of matching topics.
         """
-        list_of_topics = list()
+        list_of_topics: List[str] = list()
         if word[:4] in self.topic_stems:
             list_of_topics =  self.topic_stems[word[:4]]
 
@@ -316,8 +337,11 @@ class Ontology:
 #     CSO GRAPH
 # =============================================================================
 
-    def get_ontology_graph(self):
+    def get_ontology_graph(self) -> Graph:
         """ Function that returns the graph representation of the CSO Ontology
+
+        Returns:
+            Graph: The igraph object representing the ontology.
         """
         if self.graph is None:
             self.read_ontology_graph_version()
@@ -325,9 +349,16 @@ class Ontology:
         return self.graph
 
 
-    def get_graph_distance_in_topics(self, first_topic, second_topic):
+    def get_graph_distance_in_topics(self, first_topic: str, second_topic: str) -> int:
         """ Function that returns the distance between two topics in a graph.
         The distance is computed using the DIJKSTRA algorithm.
+
+        Args:
+            first_topic (str): The starting topic.
+            second_topic (str): The target topic.
+
+        Returns:
+            int: The distance (number of edges). Returns 99 if unreachable or error.
         """
         try:
             this_dist = self.graph.shortest_paths_dijkstra(first_topic, second_topic)
@@ -338,7 +369,7 @@ class Ontology:
         return this_dist
 
 
-    def read_ontology_graph_version(self):
+    def read_ontology_graph_version(self) -> None:
         """ Function that reads the graph representation of the CSO Ontology
         """
         if not os.path.isfile(self.config.get_cso_graph_path()):
@@ -353,7 +384,7 @@ class Ontology:
 # =============================================================================
 
 
-    def check_ontology(self):
+    def check_ontology(self) -> None:
         """ Function that checks if the ontology is available.
         If not, it will check if a csv version exists and then it will create the pickle file.
         """
@@ -368,7 +399,7 @@ class Ontology:
 
 
 
-    def __load_cso_from_csv(self):
+    def __load_cso_from_csv(self) -> None:
         """Function that loads the CSO from the file in a dictionary.
            In particular, it load all the relationships organised in boxes:
                - topics, the list of topics
@@ -423,7 +454,7 @@ class Ontology:
             self.__create_graph_from_cso()
 
 
-    def __generate_topic_stems(self):
+    def __generate_topic_stems(self) -> None:
         """ Function that generates all topics stems which will be useful in the syntactic module
         """
         for topic, _ in self.topics.items():
@@ -432,7 +463,7 @@ class Ontology:
             self.topic_stems[topic[:4]].append(topic)
 
 
-    def __get_all_branches(self):
+    def __get_all_branches(self) -> None:
         """ Function that identifies all broaders of a given topic.
         """
         for topic, _ in self.topics.items():
@@ -449,7 +480,7 @@ class Ontology:
             self.all_broaders[topic] = list(set(this_topic_broaders))
 
 
-    def __create_graph_from_cso(self):
+    def __create_graph_from_cso(self) -> None:
         """ Function that generates the graph version of the ontology. It will be used by the postprocessing module
         """
         print("Creating graph representation of the ontology.")
@@ -467,9 +498,12 @@ class Ontology:
         self.graph.write_pickle(self.config.get_cso_graph_path())
 
 
-    def __download_ontology(self):
+    def __download_ontology(self) -> bool:
         """ Function that allows to download the latest version of the ontology.
             If older versions of the ontology (both csv and pickle) are available they will be deleted.
+
+        Returns:
+            bool: True if download was successful, False otherwise.
         """
         try:
             os.remove(self.config.get_cso_pickle_path())
@@ -488,11 +522,11 @@ class Ontology:
         return task_completed
 
 
-    def update(self, force = False):
+    def update(self, force: bool = False) -> None:
         """ This funciton updates the ontology.
 
         Args:
-            force (boolean): If false, it checks if a newer version is available.
+            force (bool, optional): If false, it checks if a newer version is available.
                 If false, it will delete all files and download the most recent version.
         """
         print_header("ONTOLOGY")
@@ -511,7 +545,7 @@ class Ontology:
                 print("The ontology is already up to date.")
 
 
-    def setup(self):
+    def setup(self) -> None:
         """ Function that sets up the ontology.
         """
         print_header("ONTOLOGY")
@@ -536,8 +570,11 @@ class Ontology:
             print("Nothing to do. The ontology file is already available.")
 
 
-    def retrieve_url_of_latest_version_available(self):
+    def retrieve_url_of_latest_version_available(self) -> Tuple[str, str]:
         """ Function that retireves the version number of the latest ontology.
+
+        Returns:
+            Tuple[str, str]: The URL and the version string.
         """
         version = self.retrieve_latest_version_available()
         composite_url = "{0}/version-{1}/cso_v{1}.csv".format(self.config.get_cso_remote_url(),version)
@@ -549,8 +586,11 @@ class Ontology:
         return composite_url, version
 
 
-    def retrieve_latest_version_available(self):
+    def retrieve_latest_version_available(self) -> str:
         """ Function that retireves the version number of the latest ontology.
+
+        Returns:
+            str: The version string.
         """
         version = "0.0"
         with urllib.request.urlopen(self.config.get_cso_version_logger_url()) as url:
@@ -561,7 +601,7 @@ class Ontology:
         return version
 
 
-    def version(self):
+    def version(self) -> None:
         """ Function that returns the current version of the ontology available in this classifier
             It also checks whether there is a more up-to-date version.
         """
