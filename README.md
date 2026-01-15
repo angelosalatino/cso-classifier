@@ -628,6 +628,7 @@ cc = CSOClassifier(modules = "both", enhancement = "first", explanation = True)
 cc.get_croissant_specification(filename="metadata.json", print_output=True)
 ```
 
+A speciment of Croissant 🥐 specification can be found [https://cso.kmi.open.ac.uk/download/resources/croissant_base.json](https://cso.kmi.open.ac.uk/download/resources/croissant_base.json).
 
 ## Releases
 
