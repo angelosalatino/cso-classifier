@@ -4,7 +4,7 @@ from multiprocessing.pool import Pool
 from typing import Any, Dict, List, Union
 from update_checker import UpdateChecker
 
-from .misc import chunks, download_language_model, print_header
+from .misc import chunks, download_language_model, print_header, download_croissant_specification
 from .semanticmodule import Semantic as sema
 from .syntacticmodule import Syntactic as synt
 from .postprocmodule import PostProcess as post
@@ -300,6 +300,8 @@ class CSOClassifier:
         """
         download_language_model()
 
+        download_croissant_specification()
+
         cso = CSO(load_ontology = False)
         cso.setup()
 
@@ -314,6 +316,8 @@ class CSOClassifier:
         Args:
             force (bool, optional): If True, forces the update even if the version matches. Defaults to False.
         """
+        download_croissant_specification(notification=True, force=force)
+
         cso = CSO(load_ontology = False)
         cso.update(force = force)
 

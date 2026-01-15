@@ -5,7 +5,6 @@ import os
 from hurry.filesize import size
 import requests
 
-
 def download_file(url: str, filename: str) -> bool:
     """Downloads a file from a given URL with a progress bar.
 
@@ -130,6 +129,33 @@ def download_language_model(notification: bool = True) -> None:
     except Exception as e:
         print(f"Failed to download NLTK resources: {e}")
         raise
+
+
+def download_croissant_specification(notification: bool = True, force: bool = False) -> None:
+    """Downloads the Croissant base specification file.
+
+    This function checks if the Croissant base specification file exists locally.
+    If it is missing or if `force` is set to True, it downloads the file from
+    the remote URL specified in the configuration.
+
+    Args:
+        notification (bool, optional): If True, prints status messages to stdout.
+            Defaults to True.
+        force (bool, optional): If True, forces the download even if the file
+            already exists locally. Defaults to False.
+    """
+    from .config import Config
+    config = Config()
+    if notification:
+        print_header("CROISSANT SPECIFICATION")
+
+    local_path = config.get_croissant_base_specification_path()
+    if not os.path.exists(local_path) or force:
+        if notification:
+            print('[*] Beginning download of cached model from', config.get_croissant_base_specification_remote_path())
+        download_file(config.get_croissant_base_specification_remote_path(), local_path)
+    else:
+        print(f"File {local_path} alredy exists.")
 
 
 def print_header(header: str) -> None:
