@@ -783,6 +783,7 @@ Download from:
     * **cso_graph.p** :page_facing_up: file containing the Computer Science Ontology as an iGraph object
     * **model.p**: :page_facing_up: the trained word2vec model (pickled)
     * **token-to-cso-combined.json**: :page_facing_up: file containing the cached word2vec model. This json file contains a dictionary in which each token of the corpus vocabulary, has been mapped with the corresponding CSO topics. Below we explain how this file has been generated.
+    * **croissant_base.json**: :page_facing_up: file containing the base structure for the Croissant metadata specification. It is used to generate a JSON-LD file that describes the dataset produced by the classifier, adhering to the Croissant format for ML-ready datasets.
 
 ## Word2vec model and token-to-cso-combined file generation
 
