@@ -57,7 +57,7 @@ Read more: [https://skm.kmi.open.ac.uk/cso-classifier/](https://skm.kmi.open.ac.
   - [List of Files](#list-of-files)
   - [Word2vec model and token-to-cso-combined file generation](#word2vec-model-and-token-to-cso-combined-file-generation)
     - [Word Embedding generation](#word-embedding-generation)
-    - [token-to-cso-combined file](#token-to-cso-combined-file)
+    - [Cached semantic mapping (token-to-cso-combined.json)](#cached-semantic-mapping-token-to-cso-combinedjson)
   - [Use the CSO Classifier in other domains of Science](#use-the-cso-classifier-in-other-domains-of-science)
   - [How to Cite CSO Classifier](#how-to-cite-cso-classifier)
   - [License](#license)
@@ -788,37 +788,41 @@ Download from:
 
 In this section, we describe how we generated the word2vec model used within the CSO Classifier and what is the token-to-cso-combined file.
 
+
 ### Word Embedding generation
 
-We applied the word2vec approach [[2,3]](#references) to a collection of text from the Microsoft Academic Graph (MAG) for generating word embeddings. MAG is a scientific knowledge base and a heterogeneous graph containing scientific publication records, citation relationships, authors, institutions, journals, conferences, and fields of study. It is the largest dataset of scholarly data publicly available, and, as of April 2021, it contains more than 250 million publications.
+To support semantic topic inference at scale, we trained a Word2Vec model on a large collection of scholarly metadata from the **Semantic Scholar dataset** (≈ **100M papers**). The training corpus consists of **titles and abstracts** (English-only after filtering and cleaning). In our main training run, we processed a dataset containing **~264M text lines**.
 
-We first downloaded titles, and abstracts of 4,654,062 English papers in the field of Computer Science. Then we pre-processed the data by replacing spaces with underscores in all n-grams matching the CSO topic labels (e.g., “digital libraries” became “digital_libraries”) and for frequent bigrams and trigrams (e.g., “highest_accuracies”, “highly_cited_journals”). These frequent n-grams were identified by analysing combinations of words that co-occur together, as suggested in [[2]](#references) and using the parameters showed in Table 2. Indeed, while it is possible to obtain the vector of an n-gram by averaging the embedding vectors of all its words, the resulting representation usually is not as good as the one obtained by considering the n-gram as a single word during the training phase.
+A key design goal is to preserve ontology concepts and frequent multi-word expressions as single semantic units. We therefore pre-processed the corpus by (i) injecting CSO concept labels into the text and (ii) normalizing multi-word terms into underscore-connected tokens (e.g., “computer science” → `computer_science`, “large language models” → `large_language_models`). This ensures that Word2Vec learns dedicated embeddings for ontology concepts rather than distributing their meaning across individual words. In addition, we build bigrams and trigrams from the corpus to stabilize other frequent phrases that are not explicitly present in the ontology but are common in scholarly writing.
 
-Finally, we trained the word2vec model using the parameters provided in Table 3. The parameters were set to these values after testing several combinations.
+We train Word2Vec using the latest **Gensim 4.x** implementation with the following hyperparameters:
 
-| min-count  |  threshold |
-|---|---|
-| 5  | 10  |
+| parameter | value |
+|---|---:|
+| architecture | skip-gram |
+| vector size | 256 |
+| window size | 10 |
+| min count | 10 |
 
-**Table 2**: Parameters used during the collocation words analysis
+Upon completion of training, we generated a **gensim.models.keyedvectors.KeyedVectors** object with a file size of approximately 2GB. We serialized (pickled) this model to ensure it loads significantly faster than using the standard loading method, making it efficient for use in any Python workspace. You can download this model [from here](https://cso.kmi.open.ac.uk/download/resources/model.v2.p).
 
-
-| method  |  emb. size | window size | min count cutoff |
-|---|---|---|---|
-| skipgram  | 128  |  10 |  10 |
-
-**Table 3**: Parameters used for training the word2vec model.
+For CSO Classifier versions before 4.0.0, we employed a **gensim.models.keyedvectors.Word2VecKeyedVectors** object weighing **366MB**, which can be downloaded [from here](https://cso.kmi.open.ac.uk/download/model.p).
 
 
-After training the model, we obtained a **gensim.models.keyedvectors.Word2VecKeyedVectors** object weighing **366MB**. You can download the model [from here](https://cso.kmi.open.ac.uk/download/model.p).
+### Cached semantic mapping (token-to-cso-combined.json)
 
-The size of the model hindered the performance of the classifier in two ways. Firstly, it required several seconds to be loaded into memory. This was partially fixed by serialising the model file (using python pickle, see version v2.0 of CSO Classifier, ~4.5x faster). Secondly, while processing a document, the classifier needs to retrieve the top 10 similar words for all tokens, and compare them with CSO topics. In performing such an operation, the model would require several seconds, becoming a bottleneck for the classification process.
+Direct semantic inference can be expensive at inference time because it requires repeatedly querying the embedding model (e.g., retrieving nearest neighbors) and matching results back to ontology concepts. To eliminate this bottleneck, from the original model we precomputed a cached mapping file named **token-to-cso-combined.json**.
 
-To this end, we decided to create a cached model (**token-to-cso-combined.json**) which is a dictionary that directly connects all token available in the vocabulary of the model with the CSO topics. This strategy allows to quickly retrieve all CSO topics that can be inferred by a particular token.
+The cache is a dictionary that links each token in the Word2Vec vocabulary to the CSO concepts it can trigger. The cached mapping is generated as follows:
 
-### token-to-cso-combined file
+1. Collect all tokens in the Word2Vec vocabulary.
+2. For each token, retrieve its **top-N** nearest neighbors using `most_similar()` (default `top_n = 10`) and keep only neighbors above a cosine similarity threshold (`word_similarity = 0.7`).
+3. Compare each retrieved neighbor term against the normalized CSO concept labels using Levenshtein string similarity.
+4. If the similarity exceeds a strict threshold (`min_similarity = 0.90`), store a mapping from the original token to the matching CSO concept(s).
 
-To generate this file, we collected all the set of words available within the vocabulary of the model. Then iterating on each word, we retrieved its top 10 similar words from the model, and we computed their Levenshtein similarity against all CSO topics. If the similarity was above 0.7, we created a record that stored all CSO topics triggered by the initial word.
+This cached model allows the classifier to infer ontology topics in near-constant time per token, avoiding repeated nearest-neighbor searches and repeated ontology matching during document classification. As a result, the runtime bottleneck shifts from semantic lookup to lightweight text preprocessing, significantly improving throughput for large-scale annotation.
+
+The code for pre-processing data, training the model, and generating the cached mapping file can be found in this [GitHub repository](https://github.com/angelosalatino/w2v_model_for_cso_classifier). We are thankful to Faisal Ramzan (PhD student at the University of Cagliari) for his support.
 
 ## Use the CSO Classifier in other domains of Science
 
