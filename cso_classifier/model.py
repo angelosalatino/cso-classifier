@@ -59,7 +59,7 @@ class Model:
         local_path = self.config.get_cached_model()
         if not os.path.exists(local_path):
             if not self.silent:
-                print('[*] Beginning download of cached model from', self.config.get_cahed_model_remote_url())
+                print('Beginning download of cached model from', self.config.get_cahed_model_remote_url())
             download_file(self.config.get_cahed_model_remote_url(), local_path)
 
     def __load_cached_model(self) -> None:
@@ -112,7 +112,7 @@ class Model:
         local_path = self.config.get_model_pickle_path()
         if not os.path.exists(local_path):
             if not self.silent:
-                print('[*] Beginning model download from', self.config.get_model_pickle_remote_url())
+                print('Beginning model download from', self.config.get_model_pickle_remote_url())
             download_file(self.config.get_model_pickle_remote_url(), local_path)
 
     def __load_word2vec_model(self) -> None:
@@ -240,7 +240,7 @@ class Model:
 
         # Cached JSON
         if not os.path.exists(config.get_cached_model()):
-            print('[*] Beginning download of cached model from', config.get_cahed_model_remote_url())
+            print('Beginning download of cached model from', config.get_cahed_model_remote_url())
             task_completed = download_file(config.get_cahed_model_remote_url(), config.get_cached_model())
             print("Cached model downloaded successfully." if task_completed else "Failed to download cached model.")
         else:
@@ -248,7 +248,7 @@ class Model:
 
         # Full model (may be .bin or pickle)
         if not os.path.exists(config.get_model_pickle_path()):
-            print('[*] Beginning download of word2vec model from', config.get_model_pickle_remote_url())
+            print('Beginning download of word2vec model from', config.get_model_pickle_remote_url())
             task_completed = download_file(config.get_model_pickle_remote_url(), config.get_model_pickle_path())
             print("Word2Vec model downloaded successfully." if task_completed else "Failed to download word2vec model.")
         else:

@@ -43,7 +43,7 @@ def download_file(url: str, filename: str) -> bool:
                     sys.stdout.write('\r[{}{}] {}/{}'.format('█' * done, '.' * (50 - done), size(downloaded), size(total)))
                     sys.stdout.flush()
             sys.stdout.write('\n')
-            print('[*] Done!')
+            print('Done!')
             return True
     except requests.RequestException as e:
         sys.stdout.write('\n')
@@ -152,7 +152,7 @@ def download_croissant_specification(notification: bool = True, force: bool = Fa
     local_path = config.get_croissant_base_specification_path()
     if not os.path.exists(local_path) or force:
         if notification:
-            print('[*] Beginning download of cached model from', config.get_croissant_base_specification_remote_path())
+            print('Beginning download of cached model from', config.get_croissant_base_specification_remote_path())
         download_file(config.get_croissant_base_specification_remote_path(), local_path)
     else:
         print(f"File {local_path} alredy exists.")
