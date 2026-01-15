@@ -40,6 +40,7 @@ Read more: [https://skm.kmi.open.ac.uk/cso-classifier/](https://skm.kmi.open.ac.
       - [Run (BM)](#run-bm)
       - [Sample Output (BM)](#sample-output-bm)
     - [Parameters](#parameters)
+    - [Croissant Specification](#croissant-specification)
   - [Releases](#releases)
     - [v4.0.0](#v400)
     - [v3.3](#v33)
@@ -613,6 +614,20 @@ Beside the paper(s), the function running the CSO Classifier accepts seven addit
 
 **Table 1**: Parameters availability when using CSO Classifier
 
+### Croissant Specification
+
+From CSO Classifier [v4.0.0](#v400) it is possible to retrieve the [croissant specifications](https://github.com/mlcommons/croissant) of the performed classifications. This will generate a metadata file in ```json``` format containing the description of the dataset produced by the classifier. This feature is particularly useful for organising the data and the metadata of the newly produced dataset using the CSO Classifier, adhering to the Croissant format for ML-ready datasets.
+
+The structure of the generated specification depends on the parameters used during the initialization of the classifier (e.g., ```explanation```, ```get_weights```). For instance, if ```explanation``` is set to ```True```, the metadata will include the field description for the explanation.
+
+To generate the Croissant specification, you can use the ```get_croissant_specification``` method:
+
+```python
+from cso_classifier import CSOClassifier
+cc = CSOClassifier(modules = "both", enhancement = "first", explanation = True)
+cc.get_croissant_specification(filename="metadata.json", print_output=True)
+```
+
 
 ## Releases
 
@@ -622,7 +637,8 @@ Here we list the available releases for the CSO Classifier. These releases are a
 
 This major release marks a significant milestone for the CSO Classifier, bringing it up to speed with the latest Python standards and enhancing its core capabilities. Key updates include:
 * **Python 3.11 and 3.12 support**: The classifier now officially supports Python versions 3.11 and 3.12.
-* **Updated Word2vec Model**: The underlying Word2vec model has been updated with papers up to 2025, enhancing its semantic understanding.
+* **Updated Word2vec Model**: The underlying Word2vec model has been updated with papers up to 2025, enhancing its semantic understanding. See [here](#word2vec-model-and-token-to-cso-combined-file-generation).
+* **Croissant Specification**: The classifier now supports the generation of Croissant metadata for the classification results. See [here](#croissant-specification).
 * **Extended Documentation**: The documentation has been expanded to provide more comprehensive guidance and examples.
 * **Improved Codebase**: General code improvements have been implemented for better performance and maintainability.
 
