@@ -304,53 +304,126 @@ class Semantic:
         #sort_t = sorted(found_topics.items(), key=lambda k: k[1]['score'], reverse=True)
 
 
-        # perform
+        # perform the elbow method
         vals = []
         for t_p in sort_t:
             vals.append(t_p[1]) #in 0, there is the topic, in 1 there is the info
 
+        
+        try: 
+            while True:
+                
+                # cleaning the histogram for better calculation performance
+                # If there are multiple topics with the same maximum score (a plateau at the top),
+                # the knee locator might get confused. We remove the initial plateau to find the
+                # actual drop in scores.
+                if vals.count(max(vals)) > 1:
+                    # Retain elements after the last occurrence of the maximum count
+                    
+                    # elegant version
+                    # vals = vals[len(vals)-1-vals[::-1].index(max(vals)):] 
+                    
+                    
+                    # efficient version (and certainly less elegant)
+                    # This loop finds the index of the last element that equals the maximum value.
+                    max_val = vals[0]
+                    last_idx = 0
+                    
+                    for i in range(1, len(vals)):
+                        if vals[i] < max_val:
+                            break
+                        last_idx = i
+                    
+                    # Slice the list to keep only the part starting from the drop.
+                    vals = vals[last_idx:]
+                    
+                
+                # Initialize KneeLocator to find the point of maximum curvature (the "elbow").
+                # curve="convex" and direction="decreasing" are appropriate for a sorted score distribution.
+                t_kn = KneeLocator(range(0,len(vals)), vals, S=1.0, curve="convex", direction="decreasing")
+                try:
+                    # If a valid knee is found (index > 0), we accept it.
+                    if t_kn.knee > 0:
+                        kneex = t_kn.knee
+                        kneey = t_kn.knee_y
+                        # print(f"Knee found at {kneex}, and it will select topics with score higher than {kneey}")
+                        break
+                    else:
+                        # If knee is 0, it means the drop is immediate or the shape isn't ideal.
+                        # We attempt to clean the histogram by removing the first element and recalculating.
+                        # This acts as a retry mechanism to find a better knee point further down.
+                        # Retain elements after the maximum count - 1
+                        vals = vals[1:]
+                        # print("Cleaning by decreasing of 1")
+                except:
+                    # Fallback in case of error (e.g., list is too short or empty).
+                    # We default to selecting everything (kneey = 0) or the first element.
+                    kneex = 0
+                    kneey = vals[0] if vals else 0
+                    # print("ended in this exception")
+                    print(f"Knee found at {kneex}, and it will select topics with score higher than {kneey}")
+                    break
 
-        #### suppressing some warnings that can be raised by the kneed library
-        warnings.filterwarnings("ignore")
-        try:
-            x_vals = range(1,len(vals)+1)
-            t_kn = KneeLocator(x_vals, vals, direction='decreasing')
-            if t_kn.knee is None:
-                #print("I performed a different identification of knee")
-                t_kn = KneeLocator(x_vals, vals, curve='convex', direction='decreasing')
-        except ValueError:
-            pass
+        except:
+            kneex = 0
+            kneey = 0
+            print(f"ERROR: Knee x:{kneex}; y:{kneey}; on an array of length: {len(sort_t)}")
+            
 
         ##################### Pruning
-
-        try:
-            knee = int(t_kn.knee)
-        except TypeError:
-            knee = 0
-        except UnboundLocalError:
-            knee = 0
-
-        if knee > 5:
-            try:
-                knee += 0
-            except TypeError:
-                print("ERROR: ",t_kn.knee," ",knee, " ", len(sort_t))
-
-        else:
-            try:
-                if sort_t[0][1] == sort_t[4][1]:
-                    top = sort_t[0][1]
-                    test_topics = [item[1] for item in sort_t if item[1]==top]
-                    knee = len(test_topics)
-
-                else:
-                    knee = 5
-            except IndexError:
-                knee = len(sort_t)
-
-
-        final_topics = {self.cso.get_topic_wu(sort_t[i][0]):(sort_t[i][1]/max_value) for i in range(0,knee)}
+        final_topics = {self.cso.get_topic_wu(sort_t[i][0]):(sort_t[i][1]/max_value) for i in range(len(sort_t)) if sort_t[i][1] >= kneey}
         self.reset_explanation()
-        self.explanation = {self.cso.topics_wu[sort_t[i][0]]: explanation[sort_t[i][0]] for i in range(0,knee)}
+        self.explanation = {self.cso.topics_wu[sort_t[i][0]]: explanation[sort_t[i][0]] for i in range(len(sort_t)) if sort_t[i][1] >= kneey}
+            
+
+            
 
         return final_topics
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
