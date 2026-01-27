@@ -53,7 +53,7 @@ requirements_to_install = [
     'gensim==4.3.3',
     'click==7.1.2',
     'hurry.filesize==0.9',
-    'kneed==0.3.1',
+    'kneed==0.8.5',
     'nltk==3.6.2',
     'rapidfuzz==2.11.1',
     'numpy>=1.19.5',
