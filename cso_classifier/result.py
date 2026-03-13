@@ -30,6 +30,15 @@ class Result:
             self.syntactic_weights = dict()
             self.semantic_weights = dict()
             self.result_attr += ('syntactic_weights','semantic_weights',)
+        
+        self.filter_output = False
+        if filter_output:
+            self.filter_output = True
+            self.filtered_syntactic = list()
+            self.filtered_semantic = list()
+            self.filtered_union = list()
+            self.filtered_enhanced = list()
+            self.result_attr += ('filtered_syntactic', 'filtered_semantic', 'filtered_union', 'filtered_enhanced',)
 
 
     def get_dict(self) -> Dict[str, Any]:
