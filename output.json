@@ -213,32 +213,5 @@
         "topology": 1.0,
         "network topology": 1.0,
         "graph theory": 1.0
-    },
-    "filtered_syntactic": [
-        "anonymization",
-        "data privacy",
-        "privacy",
-        "anonymity",
-        "sensitive informations"
-    ],
-    "filtered_semantic": [
-        "anonymization",
-        "data privacy",
-        "privacy",
-        "anonymity"
-    ],
-    "filtered_union": [
-        "anonymization",
-        "data privacy",
-        "privacy",
-        "anonymity",
-        "sensitive informations"
-    ],
-    "filtered_enhanced": [
-        "privacy preserving",
-        "computer security",
-        "authentication",
-        "network security",
-        "access control"
-    ]
+    }
 }

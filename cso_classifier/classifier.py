@@ -49,12 +49,8 @@ class CSOClassifier:
         self.explanation         = parameters["explanation"] if "explanation" in parameters else False
         self.delete_outliers     = parameters["delete_outliers"] if "delete_outliers" in parameters else True
         self.fast_classification = parameters["fast_classification"] if "fast_classification" in parameters else True
-        self.get_weights         = parameters["get_weights"] if "get_weights" in parameters else False
         self.silent              = parameters["silent"] if "silent" in parameters else False
-        
-        self.filter_output       = True if "filter_by" in parameters else False
-        self.filter_by           = parameters["filter_by"] if "filter_by" in parameters else []
-        
+        self.get_weights         = parameters["get_weights"] if "get_weights" in parameters else False
 
         self.__check_parameters(parameters)
 
@@ -91,10 +87,7 @@ class CSOClassifier:
             self.models_loaded = True
 
         t_paper = Paper(paper, self.modules)
-        result = Result(self.explanation, self.get_weights, self.filter_output)
-        
-
-            
+        result = Result(self.explanation, self.get_weights)
 
 
         # Passing parameters to the two classes (synt and sema) and actioning classifiers
@@ -116,14 +109,8 @@ class CSOClassifier:
                 result.dump_temporary_explanation(sema_module.get_explanation())
 
 
-        postprocess = post(self.model, 
-                           self.cso, 
-                           enhancement=self.enhancement, 
-                           result=result, 
-                           delete_outliers=self.delete_outliers, 
-                           get_weights=self.get_weights,
-                           filter_by=self.filter_by)
-        result = postprocess.process()
+        postprocess = post(self.model, self.cso, enhancement=self.enhancement, result=result, delete_outliers=self.delete_outliers, get_weights=self.get_weights)
+        result = postprocess.filtering_outliers()
 
         return result.get_dict()
 
@@ -191,12 +178,7 @@ class CSOClassifier:
         # Passing parameters to the two classes (synt and sema)
         synt_module = synt(cso)
         sema_module = sema(model, cso, self.fast_classification)
-        postprocess = post(model, 
-                           cso, 
-                           enhancement=self.enhancement, 
-                           delete_outliers=self.delete_outliers, 
-                           get_weights=self.get_weights, 
-                           filter_by=self.filter_by)
+        postprocess = post(model, cso, enhancement=self.enhancement, delete_outliers=self.delete_outliers, get_weights=self.get_weights)
 
 
         # initializing variable that will contain output
@@ -207,7 +189,7 @@ class CSOClassifier:
                 print("Processing:", paper_id)
 
             paper.set_paper(paper_value)
-            result = Result(self.explanation, self.get_weights, self.filter_output)
+            result = Result(self.explanation, self.get_weights)
 
             # Passing paper and actioning the classifier
             if self.modules in ('syntactic','both'):
@@ -226,7 +208,7 @@ class CSOClassifier:
                     result.dump_temporary_explanation(sema_module.get_explanation())
 
             postprocess.set_result(result)
-            result = postprocess.process()
+            result = postprocess.filtering_outliers()
 
             class_res[paper_id] = result.get_dict()
         return class_res
@@ -262,18 +244,10 @@ class CSOClassifier:
         if "fast_classification" in parameters:
             if not isinstance(parameters["fast_classification"], bool):
                 raise TypeError("Field fast_classification must be set to either True or False. Got %s instead." % type(parameters["fast_classification"]).__name__)
-        
-        if "get_weights" in parameters:
-            if not isinstance(parameters["get_weights"], bool):
-                raise TypeError("Field get_weights must be set to either True or False. Got %s instead." % type(parameters["get_weights"]).__name__)
-        
+
         if "silent" in parameters:
             if not isinstance(parameters["silent"], bool):
                 raise TypeError("Field silent must be set to either True or False. Got %s instead." % type(parameters["silent"]).__name__)
-        
-        if "filter_by" in parameters:
-            if not isinstance(parameters["filter_by"], list):
-                raise TypeError("Field filter_by must be a list of strings. Got %s instead." % type(parameters["filter_by"]).__name__)
 
 
     def get_croissant_specification(self, filename: str = "metadata.json", print_output: bool = False) -> None:
