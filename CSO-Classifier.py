@@ -52,7 +52,9 @@ result = cc.run(paper)
 
 # In[Metadata Specifications]
 
-# cc = CSOClassifier(explanation=False, get_weights=False)
+cc = CSOClassifier(explanation=False, get_weights=False)
+
+cc.get_croissant_specification("my-definition.json")
 
 # In[Printing and Saving]:
 
