@@ -33,6 +33,8 @@ Read more: [https://skm.kmi.open.ac.uk/cso-classifier/](https://skm.kmi.open.ac.
       - [Sample Input (SP)](#sample-input-sp)
       - [Run (SP)](#run-sp)
       - [Sample Output (SP)](#sample-output-sp)
+      - [Run on Single Paper with filter\_by](#run-on-single-paper-with-filter_by)
+      - [Sample Output when using the filter\_by parameter](#sample-output-when-using-the-filter_by-parameter)
     - [Classifying in batch mode (BM)](#classifying-in-batch-mode-bm)
       - [Sample Input (BM)](#sample-input-bm)
       - [Run (BM)](#run-bm)
@@ -354,6 +356,140 @@ Below you can find an example. The keys syntactic and semantic respectively cont
 }
 ```
 
+#### Run on Single Paper with filter_by
+
+In this example, we will run the CSO Classifier by filtering topics in *computer security* (look at how the ```filter_by``` parameter is set).
+
+```python
+from cso_classifier import CSOClassifier
+cc = CSOClassifier(modules = "both", enhancement = "first", explanation = True, filter_by=["computer security"])
+result = cc.run(paper)
+print(result)
+```
+
+#### Sample Output when using the filter_by parameter
+
+The JSON below it the produced output, and as you can see there 4 additional keys (*filtered_XXXX*) at the bottom containing only a subset of topics within the field of **computer security**.
+
+```json
+{
+    "syntactic": [
+        "real-world networks",
+        "anonymization",
+        "network topology",
+        "data privacy",
+        "social networks",
+        "privacy",
+        "twitter",
+        "graph theory",
+        "online social networks",
+        "anonymity",
+        "data mining",
+        "micro-blog",
+        "sensitive informations"
+    ],
+    "semantic": [
+        "anonymization",
+        "network topology",
+        "topology",
+        "data privacy",
+        "social networks",
+        "privacy",
+        "twitter",
+        "graph theory",
+        "online social networks",
+        "anonymity",
+        "data mining",
+        "micro-blog"
+    ],
+    "union": [
+        "real-world networks",
+        "anonymization",
+        "network topology",
+        "topology",
+        "data privacy",
+        "social networks",
+        "privacy",
+        "twitter",
+        "graph theory",
+        "online social networks",
+        "anonymity",
+        "data mining",
+        "micro-blog",
+        "sensitive informations"
+    ],
+    "enhanced": [
+        "complex networks",
+        "privacy preserving",
+        "computer networks",
+        "world wide web",
+        "computer security",
+        "social media",
+        "theoretical computer science",
+        "online systems",
+        "authentication",
+        "network security",
+        "computer science",
+        "access control"
+    ],
+    "explanation": {
+        "social networks": ["real-world networks", "social networks", "twitter", "social-network", "online social networks", "social network", "microblogging", "social networking"],
+        "online social networks": ["online social networks", "social networks", "social network"],
+        "sensitive informations": ["sensitive information"],
+        "data mining": ["data mining", "mining", "data-mining"],
+        "privacy": ["anonymous", "anonymity", "sensitive information", "data privacy", "privacy"],
+        "anonymization": ["anonymization"],
+        "anonymity": ["anonymous", "anonymity"],
+        "real-world networks": ["real-world networks"],
+        "twitter": ["twitter graph", "anonymous twitter", "microblogging", "microblogging service", "twitter"],
+        "micro-blog": ["twitter graph", "anonymous twitter", "microblogging", "microblogging service", "twitter"],
+        "network topology": ["network topology", "topology"],
+        "data privacy": ["data privacy", "privacy"],
+        "graph theory": ["graph theory"],
+        "topology": ["network topology", "topology"],
+        "complex networks": ["real-world networks"],
+        "privacy preserving": ["anonymization"],
+        "computer networks": ["network topology", "topology"],
+        "world wide web": ["real-world networks", "social networks", "twitter", "social-network", "online social networks", "social network", "microblogging", "social networking"],
+        "computer security": ["anonymous", "anonymity", "sensitive information", "data privacy", "privacy"],
+        "social media": ["microblogging", "twitter"],
+        "theoretical computer science": ["graph theory"],
+        "online systems": ["online social networks", "social networks", "social network"],
+        "authentication": ["anonymous", "anonymity"],
+        "network security": ["anonymous", "anonymity", "sensitive information"],
+        "computer science": ["data mining", "mining", "data-mining"],
+        "access control": ["sensitive information"]
+    },
+    "filtered_syntactic": [
+        "anonymization",
+        "data privacy",
+        "privacy",
+        "anonymity",
+        "sensitive informations"
+    ],
+    "filtered_semantic": [
+        "anonymization",
+        "data privacy",
+        "privacy",
+        "anonymity"
+    ],
+    "filtered_union": [
+        "anonymization",
+        "data privacy",
+        "privacy",
+        "anonymity",
+        "sensitive informations"
+    ],
+    "filtered_enhanced": [
+        "privacy preserving",
+        "computer security",
+        "authentication",
+        "network security",
+        "access control"
+    ]
+}
+```
+
 ### Classifying in batch mode (BM)
 
 #### Sample Input (BM)
@@ -397,38 +533,38 @@ Below you can find an example. The keys syntactic and semantic respectively cont
 ```json
 {
     "id1": {
-	"syntactic": ["network topology", "online social networks", "real-world networks", "anonymization", "privacy", "social networks", "data privacy", "graph theory", "data mining", "sensitive informations", "anonymity", "micro-blog", "twitter"],
-	"semantic": ["network topology", "online social networks", "topology", "data privacy", "social networks", "privacy", "anonymization", "graph theory", "data mining", "anonymity", "micro-blog", "twitter"],
-	"union": ["network topology", "online social networks", "topology", "real-world networks", "anonymization", "privacy", "social networks", "data privacy", "graph theory", "data mining", "sensitive informations", "anonymity", "micro-blog", "twitter"],
-	"enhanced": ["computer networks", "online systems", "complex networks", "privacy preserving", "computer security", "world wide web", "theoretical computer science", "computer science", "access control", "network security", "authentication", "social media"],
-	"explanation": {
-		"social networks": ["social network", "online social networks", "microblogging service", "real-world networks", "social networks", "microblogging", "social networking", "twitter graph", "anonymous twitter", "twitter"],
-		"online social networks": ["online social networks", "social network", "social networks"],
-		"sensitive informations": ["sensitive information"],
-		"privacy": ["sensitive information", "anonymity", "anonymous", "data privacy", "privacy"],
-		"anonymization": ["anonymization"],
-		"anonymity": ["anonymity", "anonymous"],
-		"real-world networks": ["real-world networks"],
-		"twitter": ["twitter graph", "twitter", "microblogging service", "anonymous twitter", "microblogging"],
-		"micro-blog": ["twitter graph", "twitter", "microblogging service", "anonymous twitter", "microblogging"],
-		"network topology": ["topology", "network topology"],
-		"data mining": ["data mining", "mining"],
-		"data privacy": ["data privacy", "privacy"],
-		"graph theory": ["graph theory"],
-		"topology": ["topology", "network topology"],
-		"computer networks": ["topology", "network topology"],
-		"online systems": ["online social networks", "social network", "social networks"],
-		"complex networks": ["real-world networks"],
-		"privacy preserving": ["anonymization"],
-		"computer security": ["anonymity", "data privacy", "privacy"],
-		"world wide web": ["social network", "online social networks", "microblogging service", "real-world networks", "social networks", "microblogging", "social networking", "twitter graph", "anonymous twitter", "twitter"],
-		"theoretical computer science": ["graph theory"],
-		"computer science": ["data mining", "mining"],
-		"access control": ["sensitive information"],
-		"network security": ["anonymity", "sensitive information", "anonymous"],
-		"authentication": ["anonymity", "anonymous"],
-		"social media": ["microblogging service", "microblogging", "twitter graph", "anonymous twitter", "twitter"]
-	    }
+    "syntactic": ["network topology", "online social networks", "real-world networks", "anonymization", "privacy", "social networks", "data privacy", "graph theory", "data mining", "sensitive informations", "anonymity", "micro-blog", "twitter"],
+    "semantic": ["network topology", "online social networks", "topology", "data privacy", "social networks", "privacy", "anonymization", "graph theory", "data mining", "anonymity", "micro-blog", "twitter"],
+    "union": ["network topology", "online social networks", "topology", "real-world networks", "anonymization", "privacy", "social networks", "data privacy", "graph theory", "data mining", "sensitive informations", "anonymity", "micro-blog", "twitter"],
+    "enhanced": ["computer networks", "online systems", "complex networks", "privacy preserving", "computer security", "world wide web", "theoretical computer science", "computer science", "access control", "network security", "authentication", "social media"],
+    "explanation": {
+        "social networks": ["social network", "online social networks", "microblogging service", "real-world networks", "social networks", "microblogging", "social networking", "twitter graph", "anonymous twitter", "twitter"],
+        "online social networks": ["online social networks", "social network", "social networks"],
+        "sensitive informations": ["sensitive information"],
+        "privacy": ["sensitive information", "anonymity", "anonymous", "data privacy", "privacy"],
+        "anonymization": ["anonymization"],
+        "anonymity": ["anonymity", "anonymous"],
+        "real-world networks": ["real-world networks"],
+        "twitter": ["twitter graph", "twitter", "microblogging service", "anonymous twitter", "microblogging"],
+        "micro-blog": ["twitter graph", "twitter", "microblogging service", "anonymous twitter", "microblogging"],
+        "network topology": ["topology", "network topology"],
+        "data mining": ["data mining", "mining"],
+        "data privacy": ["data privacy", "privacy"],
+        "graph theory": ["graph theory"],
+        "topology": ["topology", "network topology"],
+        "computer networks": ["topology", "network topology"],
+        "online systems": ["online social networks", "social network", "social networks"],
+        "complex networks": ["real-world networks"],
+        "privacy preserving": ["anonymization"],
+        "computer security": ["anonymity", "data privacy", "privacy"],
+        "world wide web": ["social network", "online social networks", "microblogging service", "real-world networks", "social networks", "microblogging", "social networking", "twitter graph", "anonymous twitter", "twitter"],
+        "theoretical computer science": ["graph theory"],
+        "computer science": ["data mining", "mining"],
+        "access control": ["sensitive information"],
+        "network security": ["anonymity", "sensitive information", "anonymous"],
+        "authentication": ["anonymity", "anonymous"],
+        "social media": ["microblogging service", "microblogging", "twitter graph", "anonymous twitter", "twitter"]
+        }
     },
     "id2": {
         "syntactic": [...],
@@ -441,7 +577,7 @@ Below you can find an example. The keys syntactic and semantic respectively cont
 ```
 
 ### Parameters
-Beside the paper(s), the function running the CSO Classifier accepts seven additional parameters: (i) **workers**, (ii) **modules**, (iii) **enhancement**, (iv) **explanation**, (v) **delete_outliers**, (vi) **fast_classification**, and (vii) **silent**. There is no particular order on how to specify these paramaters. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier. The explanation, delete_outliers, fast_classification, and silent parameters are booleans.
+Beside the paper(s), the function running the CSO Classifier accepts seven additional parameters: (i) **workers**, (ii) **modules**, (iii) **enhancement**, (iv) **explanation**, (v) **delete_outliers**, (vi) **fast_classification**, (vii) **silent**, and (ix) **filter_by**. There is no particular order on how to specify these paramaters. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier. The explanation, delete_outliers, fast_classification, and silent parameters are booleans. Finally, filter_by is a list 
 
 (i) The parameter *workers* defines the number of threads to run for classifying the input corpus. For instance, if ```workers = 4```, there will be 4 instances of the CSO Classifier, each one receiving a chunk (equally split) of the corpus to process. Once all processes are completed, the results will be aggregated and returned. The default value for *workers* is *1*. This parameter is available only when running the classifier in *batch mode*.
 
@@ -459,6 +595,8 @@ Beside the paper(s), the function running the CSO Classifier accepts seven addit
 
 (viii) The parameter *silent* can be either *True* or *False*. This determines whether the classifier prints its progress in the console. If set to True, the classifier will be silent and will not print any output while classifying. The default value for *silent* is *False*.
 
+(ix) The parameter *filter_by* is a list, containing CSO topic, and lets you focus the classification on specific sub-branches of CSO. For instance, to narrow down the results to subtopics within **artificial intelligence** and **semantic web** you can set ```filter_by = ["artificial intelligence", "semantic web"]```. This will produce four extra outputs (*syntactic_filtered*, *semantic_filtered*, *union_filtered*, *enhanced_filtered*) containing only the CSO topics that fall under the hierarchical structure of the specified areas. By default this parameter is an empty list, and therefore the classifier will consider all CSO topics as usual. You can check [Run on Single Paper with filter\_by](#run-on-single-paper-with-filter_by) to see how it works.
+
 
 
 |# | Parameter  |  Single Paper | Batch Mode |
@@ -471,6 +609,7 @@ Beside the paper(s), the function running the CSO Classifier accepts seven addit
 |vi | fast_classification| :white_check_mark:  | :white_check_mark: |
 |vii| get_weights       | :white_check_mark:  | :white_check_mark: |
 |viii| silent       | :white_check_mark:  | :white_check_mark: |
+|ix| filter_by       | :white_check_mark:  | :white_check_mark: |
 
 
 **Table 1**: Parameters availability when using CSO Classifier
