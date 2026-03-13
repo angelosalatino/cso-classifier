@@ -309,7 +309,8 @@ class Semantic:
         for t_p in sort_t:
             vals.append(t_p[1]) #in 0, there is the topic, in 1 there is the info
 
-        
+        #### suppressing some warnings that can be raised by the kneed library
+        warnings.filterwarnings("ignore")
         try: 
             while True:
                 
@@ -336,16 +337,15 @@ class Semantic:
                     
                     # Slice the list to keep only the part starting from the drop.
                     vals = vals[last_idx:]
-                    
-                
+
                 # Initialize KneeLocator to find the point of maximum curvature (the "elbow").
                 # curve="convex" and direction="decreasing" are appropriate for a sorted score distribution.
                 t_kn = KneeLocator(range(0,len(vals)), vals, S=1.0, curve="convex", direction="decreasing")
                 try:
+                    kneex = t_kn.knee
+                    kneey = t_kn.knee_y
                     # If a valid knee is found (index > 0), we accept it.
-                    if t_kn.knee > 0:
-                        kneex = t_kn.knee
-                        kneey = t_kn.knee_y
+                    if kneex > 0:
                         # print(f"Knee found at {kneex}, and it will select topics with score higher than {kneey}")
                         break
                     else:
@@ -360,70 +360,28 @@ class Semantic:
                     # We default to selecting everything (kneey = 0) or the first element.
                     kneex = 0
                     kneey = vals[0] if vals else 0
-                    # print("ended in this exception")
-                    print(f"Knee found at {kneex}, and it will select topics with score higher than {kneey}")
                     break
 
         except:
             kneex = 0
             kneey = 0
-            print(f"ERROR: Knee x:{kneex}; y:{kneey}; on an array of length: {len(sort_t)}")
-            
+            # print(f"ERROR: Knee x:{kneex}; y:{kneey}; on an array of length: {len(sort_t)}")
+        
+        
+        
+        ##################### Pruning  
 
-        ##################### Pruning
-        final_topics = {self.cso.get_topic_wu(sort_t[i][0]):(sort_t[i][1]/max_value) for i in range(len(sort_t)) if sort_t[i][1] >= kneey}
+        # selecting final topics
+        final_topics = {}
         self.reset_explanation()
-        self.explanation = {self.cso.topics_wu[sort_t[i][0]]: explanation[sort_t[i][0]] for i in range(len(sort_t)) if sort_t[i][1] >= kneey}
-            
+        
+        for this_topic, this_score in sort_t:
+            if this_score > kneey:
+                final_topics[self.cso.get_topic_wu(this_topic)] = this_score / max_value
+                self.explanation[self.cso.topics_wu[this_topic]] = explanation[this_topic]
+            else:
+                break
 
-            
+        
 
         return final_topics
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
