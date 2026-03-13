@@ -118,7 +118,7 @@ class Semantic:
                 list_of_matched_topics = []
 
                 if self.fast_classification:
-                    list_of_matched_topics = self.__get_similar_words_from_cached_model(gram,grams)
+                    list_of_matched_topics = self.__get_similar_words_from_cached_model(gram, grams)
                 else:
                     list_of_matched_topics = self.__get_similar_words_from_full_model(gram, grams)
 
@@ -229,17 +229,20 @@ class Semantic:
     def __get_similar_words_from_full_model(self, gram: str, grams: List[str]) -> List[Dict[str, Any]]:
         """ Getting similar words from the full model
         Args:
-            gram (str): the n-gram found (joined)
+            gram (str): the n-gram found (joined with the underscore)
             grams (List[str]): list of tokens to be analysed and found in the model
 
         Returns:
             List[Dict[str, Any]]: containing of all found topics
         """
+        similar_words = []
+        
+
         if self.model.check_word_in_full_model(gram):
             similar_words = self.model.get_top_similar_words_from_full_model(gram)
 
         else:
-            similar_words = self.model.get_top_similar_words_from_full_model(grams)
+            similar_words = self.model.get_top_similar_words_from_full_model(list(grams)) # need to convert them from tuple to list
 
         similar_words.append((gram,1))
         list_of_matched_topics = self.__refine_found_words(similar_words)
