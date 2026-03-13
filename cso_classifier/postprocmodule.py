@@ -35,6 +35,9 @@ class PostProcess:
         self.enhancement = parameters["enhancement"] if "enhancement" in parameters else "first"  #defines the type of enhancement
         self.delete_outliers = parameters["delete_outliers"] if "delete_outliers" in parameters else True
         self.get_weights = parameters["get_weights"] if "get_weights" in parameters else False
+        
+        self.filter_output       = True if "filter_by" in parameters else False
+        self.filter_by           = parameters["filter_by"] if "filter_by" in parameters else []
 
         if "result" in parameters:
             self.result = parameters["result"]            # the result object
