@@ -4,16 +4,21 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 import re
 import itertools
+from typing import Dict, List, Optional, Tuple, Union, Iterator
+from spacy.tokens import Doc
 
 
 GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<HYPH>*<JJ.*>*<HYPH>*<NN.*>*<HYPH>*<NN.*>+}" #good for syntactic
-#GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<NN.*>+}" #good for semantic (or at least for what we know)
 
 class Paper:
     """ A simple abstraction layer for working on the paper object"""
 
-    def __init__(self, paper = None, modules = None):
-        """ Initialising the ontology class
+    def __init__(self, paper: Optional[Union[Dict[str, str], str]] = None, modules: Optional[str] = None):
+        """ Initialising the Paper class.
+
+        Args:
+            paper (Optional[Union[Dict[str, str], str]], optional): The paper data. Defaults to None.
+            modules (Optional[str], optional): The modules to run ("syntactic", "semantic", "both"). Defaults to None.
         """
         self.title = None
         self.abstract = None
@@ -31,14 +36,13 @@ class Paper:
 
 
 
-    def set_paper(self, paper):
+    def set_paper(self, paper: Union[Dict[str, str], str]) -> None:
         """Function that initializes the paper variable in the class.
 
         Args:
-            paper (either string or dictionary): The paper to analyse. It can be
-            a full string in which the content
-            is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
-
+            paper (Union[Dict[str, str], str]): The paper to analyse. It can be
+                a full string in which the content is already merged or a dictionary 
+                {"title": "","abstract": "","keywords": ""}.
         """
         self.title = None
         self.abstract = None
@@ -70,37 +74,50 @@ class Paper:
             pass
 
 
-    def get_text(self):
+    def get_text(self) -> Optional[str]:
         """Returns the text of the paper
+
+        Returns:
+            Optional[str]: The full text of the paper.
         """
         return self._text
 
 
-    def get_semantic_chunks(self):
+    def get_semantic_chunks(self) -> Optional[List[str]]:
         """Returns the chunks extracted from the paper (used by the semantic module)
+
+        Returns:
+            Optional[List[str]]: List of semantic chunks.
         """
         return self.semantic_chunks
 
 
-    def get_syntactic_chunks(self):
+    def get_syntactic_chunks(self) -> Optional[List[str]]:
         """Returns the chunks extracted from the paper (used by the syntactic module)
+
+        Returns:
+            Optional[List[str]]: List of syntactic chunks.
         """
         return self.syntactic_chunks
 
 
-    def set_modules(self, modules):
-        """Setter for the modules variable"""
+    def set_modules(self, modules: str) -> None:
+        """Setter for the modules variable
+
+        Args:
+            modules (str): The modules configuration ("syntactic", "semantic", "both").
+        """
         self.modules = modules
 
 
-    def __text(self):
+    def __text(self) -> None:
         """ Text aggregator
         """
         attr_text = [getattr(self, attr) for attr in self.text_attr]
         self._text = '. '.join((s.rstrip('.') for s in attr_text if s is not None))
 
 
-    def __treat_keywords(self):
+    def __treat_keywords(self) -> None:
         """ Function that handles different version of keyword field
         """
         if self.keywords is None:
@@ -109,18 +126,26 @@ class Paper:
             self.keywords = ', '.join(self.keywords)
 
 
-    def __part_of_speech_tagger(self, doc):
+    def __part_of_speech_tagger(self, doc: Doc) -> Iterator[Tuple[str, str]]:
         """ Part of speech tagger
-        Returns:
-            text (string): single token
-            tag_ (string): POS tag
+        Args:
+            doc (Doc): The spaCy document.
+
+        Yields:
+            Iterator[Tuple[str, str]]: A tuple containing (text, tag).
         """
         for token in doc:
             if token.tag_:
                 yield token.text, token.tag_
 
-    def __remove_root_verb(self, doc):
+    def __remove_root_verb(self, doc: Doc) -> str:
         """ Creates a string in which it removes verbs that are also root of the tree
+
+        Args:
+            doc (Doc): The spaCy document.
+
+        Returns:
+            str: The modified text with root verbs removed/replaced.
         """
         new_document = doc.text
         items_to_remove = [(token.text,token.dep_,token.pos_,token.idx, token.idx+len(token.text)) for token in doc if (token.pos_ == "VERB" and token.dep_ == "ROOT")]
@@ -129,11 +154,15 @@ class Paper:
         return new_document
 
 
-    def __extraxt_semantic_chuncks(self, pos_tags):
+    def __extraxt_semantic_chuncks(self, pos_tags: List[Tuple[str, str]]) -> List[str]:
         """ Extract chunks of text from the paper taking advantage of the parts of speech previously extracted.
         It uses a grammar
+
+        Args:
+            pos_tags (List[Tuple[str, str]]): List of (word, tag) tuples.
+
         Returns:
-            chunks (list): list of all chunks of text
+            List[str]: list of all chunks of text
         """
         grammar_parser = RegexpParser(GRAMMAR)
         chunks = list()
@@ -154,11 +183,15 @@ class Paper:
         return chunks
 
 
-    def __extraxt_syntactic_chuncks(self, document):
+    def __extraxt_syntactic_chuncks(self, document: str) -> List[str]:
         """ Extract chunks of text from the paper, using stopwords as delimiter.
         It uses a grammar
+
+        Args:
+            document (str): The input text.
+
         Returns:
-            chunks (list): list of all chunks of text
+            List[str]: list of all chunks of text
         """
         tokenizer = RegexpTokenizer(r'[\w\-\(\)]*')
         tokens = tokenizer.tokenize(document)
@@ -167,7 +200,7 @@ class Paper:
         return [" ".join(row).lower() for row in matrix_of_tokens]
 
 
-    def __pre_process(self):
+    def __pre_process(self) -> None:
         """ Pre-processes the paper: identifies the parts of speech and then extracts chunks using a grammar
         """
         ##################### Tagger with spaCy.io

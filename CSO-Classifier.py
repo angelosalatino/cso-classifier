@@ -50,9 +50,9 @@ cc = CSOClassifier(explanation=True, get_weights=True)
 
 result = cc.run(paper)
 
-# In[Metadata Specification]
+# In[Metadata Specifications]
 
-cc.get_croissant_specification("metadata.json", print_output=True)
+# cc = CSOClassifier(explanation=False, get_weights=False)
 
 # In[Printing and Saving]:
 

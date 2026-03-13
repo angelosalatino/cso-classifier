@@ -1,21 +1,24 @@
+from typing import Any, Dict, List, Optional, Set, Union, Generator
 from nltk import ngrams
 from nltk.tokenize import word_tokenize
 from rapidfuzz.distance import Levenshtein
+
+from .ontology import Ontology
+from .paper import Paper
 
 
 class Syntactic:
     """ A simple abstraction layer for using the Syntactic module of the CSO classifier """
 
-    def __init__(self, cso = None, paper = None):
+    def __init__(self, cso: Optional[Ontology] = None, paper: Optional[Paper] = None):
         """Function that initialises an object of class CSOClassifierSyntactic and all its members.
 
         Args:
-            cso (Ontology class): Computer Science Ontology
-            paper (Paper class): object containing the paper.
-
+            cso (Optional[Ontology], optional): Computer Science Ontology. Defaults to None.
+            paper (Optional[Paper], optional): object containing the paper. Defaults to None.
         """
         # Initialise variables to store CSO data - loads into memory
-        self.cso = cso                  # the ontologo object
+        self.cso = cso                  # the ontology object
         self.min_similarity = 0.90      # Value of minimum similarity
         self.paper = paper              # the paper object
         self.explanation = dict()       # the explanation dictionary
@@ -23,41 +26,42 @@ class Syntactic:
 
 
 
-    def set_paper(self, paper):
+    def set_paper(self, paper: Paper) -> None:
         """Function that initializes the paper variable in the class.
 
         Args:
-            paper (either string or dictionary): The paper to analyse. It can be a full string in which the content
-            is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
-
+            paper (Paper): The paper object to analyse.
         """
 
         self.paper = paper
         self.explanation = dict() #resets the dictionary (this is important if we work in batch mode)
 
 
-    def set_min_similarity(self, msm):
+    def set_min_similarity(self, msm: float) -> None:
         """Function that sets a different value for the similarity.
 
         Args:
-            msm (integer): similairity value.
+            msm (float): similarity value.
         """
         self.min_similarity = msm
 
 
-    def reset_explanation(self):
+    def reset_explanation(self) -> None:
         """ Resetting the explanation
         """
         self.explanation = dict()
 
 
-    def get_explanation(self):
+    def get_explanation(self) -> Dict[str, Set[str]]:
         """ Returns the explanation
+
+        Returns:
+            Dict[str, Set[str]]: The explanation dictionary.
         """
         return self.explanation
 
 
-    def classify_syntactic(self):
+    def classify_syntactic(self) -> List[str]:
         """Function that classifies a single paper. If you have a collection of papers,
             you must call this function for each paper and organise the result.
            Initially, it cleans the paper file, removing stopwords (English ones) and punctuation.
@@ -66,11 +70,8 @@ class Syntactic:
            Next, it climbs the ontology, by selecting either the first broader topic or the whole set of
            broader topics until root is reached.
 
-        Args:
-
-
         Returns:
-            final_topics (list): containing the list of final topics.
+            List[str]: containing the list of final topics.
         """
 
         final_topics = list()
@@ -81,14 +82,11 @@ class Syntactic:
         return final_topics
 
 
-    def get_syntactic_topics_weights(self):
+    def get_syntactic_topics_weights(self) -> Dict[str, float]:
         """Function that returns the full set of topics with the similarity measure (weights)
 
-        Args:
-
-
         Returns:
-            weights (dictionary): containing the found topics with their similarity and the n-gram analysed.
+            Dict[str, float]: containing the found topics with their similarity.
         """
         weights = dict()
         for topic, sim_values in self.extracted_topics.items():
@@ -100,11 +98,11 @@ class Syntactic:
         return weights
 
 
-    def __statistic_similarity(self):
+    def __statistic_similarity(self) -> Dict[str, List[Dict[str, Union[str, float]]]]:
         """Function that finds the similarity between the previously extracted concepts and topics in the ontology
 
         Returns:
-            found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
+            Dict[str, List[Dict[str, Union[str, float]]]]: containing the found topics with their similarity and the n-gram analysed.
         """
 
         found_topics = dict()
@@ -159,8 +157,14 @@ class Syntactic:
         return found_topics
 
 
-    def __get_ngrams(self, concept):
+    def __get_ngrams(self, concept: str) -> Generator[Dict[str, Any], None, None]:
         """ Function that returns n-grams of concept in reverse order (3,2, and 1)
+        
+        Args:
+            concept (str): The concept string to analyze.
+
+        Yields:
+            Generator[Dict[str, Any], None, None]: A dictionary containing position, size, and the ngram tuple.
         """
         for n_size in range(3, 0, -1):
             pos = 0
@@ -169,15 +173,15 @@ class Syntactic:
                 pos += 1
 
 
-    def __strip_service_fields(self, found_topics):
+    def __strip_service_fields(self, found_topics: Dict[str, Any]) -> List[str]:
         """Function that removes statistical values from the dictionary containing the found topics.
             It returns only the topics. It removes the same as, picking the longest string in alphabetical order.
 
         Args:
-            found_topics (dictionary): It contains the topics found with string similarity.
+            found_topics (Dict[str, Any]): It contains the topics found with string similarity.
 
         Returns:
-            topics (array): array containing the list of topics.
+            List[str]: array containing the list of topics.
         """
         topics = list(set(found_topics.keys()))  # Takes only the keys
         return topics

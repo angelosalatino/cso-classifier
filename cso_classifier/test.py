@@ -2,10 +2,10 @@ import json
 
 from .classifier import CSOClassifier
 
-def test_classifier_single_paper():
+def test_classifier_single_paper() -> None:
     """ Functionality that tests the classifier with a single paper.
-    It loads two papers, it calls the classifier with certain parameters and then
-    it prints the results over the console.
+    It defines a sample paper, calls the classifier with explanation enabled, 
+    and prints the results to the console.
     """
 
     paper = {
@@ -37,9 +37,10 @@ def test_classifier_single_paper():
     print(json.dumps(result))
 
 
-def test_classifier_batch_mode():
+def test_classifier_batch_mode() -> None:
     """ Functionality that tests the classifier in batch mode.
-    It loads two papers, it calls the classifier with certain parameters and then it prints the results over the console.
+    It defines a dictionary of sample papers, calls the classifier in batch mode 
+    with multiprocessing (workers=2), and prints the results to the console.
     """
 
     papers = dict()

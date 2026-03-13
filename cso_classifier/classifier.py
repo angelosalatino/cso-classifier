@@ -1,9 +1,10 @@
 import math
 from functools import partial
 from multiprocessing.pool import Pool
+from typing import Any, Dict, List, Union
 from update_checker import UpdateChecker
 
-from .misc import chunks, download_language_model, print_header
+from .misc import chunks, download_language_model, print_header, download_croissant_specification
 from .semanticmodule import Semantic as sema
 from .syntacticmodule import Syntactic as synt
 from .postprocmodule import PostProcess as post
@@ -18,27 +19,29 @@ from .config import Config
 class CSOClassifier:
     """ A simple abstraction layer implementing the CSO Classifier """
 
-    def __init__(self, **parameters):
+    def __init__(self, **parameters: Any):
         """ Initialising the classifier class
 
 
         Args:
-            - modules (string): either "syntactic", "semantic" or "both" to determine which modules to use when
+            modules (str): either "syntactic", "semantic" or "both" to determine which modules to use when
                     classifying. "syntactic" enables only the syntactic module. "semantic" enables only the semantic module.
                     Finally, with "both" the classifier takes advantage of both the syntactic and semantic modules. Default =
                     "both".
-            - enhancement (string): either "first", "all" or "no". With "first" the CSO classifier returns only the topics
+            enhancement (str): either "first", "all" or "no". With "first" the CSO classifier returns only the topics
                     one level above. With "all" it returns all topics above the resulting topics. With "no" the CSO Classifier
                     does not provide any enhancement.
-            - explanation (boolean): if true it returns the chunks of text that allowed to infer a particular topic. This feature
+            explanation (bool): if true it returns the chunks of text that allowed to infer a particular topic. This feature
                     of the classifier is useful as it allows users to asses the result.
-            - delete_outliers (boolean): if True it runs the outlier detection approach in the postprocessing
-            - fast_classification (boolen): if True it runs the fast version of the classifier (cached model).
+            delete_outliers (bool): if True it runs the outlier detection approach in the postprocessing
+            fast_classification (bool): if True it runs the fast version of the classifier (cached model).
                     If False the classifier uses the word2vec model which has higher computational complexity
-            - get_weights (boolean): determines whether to return the weights associated to the syntactic and semantic topics.
+            get_weights (bool): determines whether to return the weights associated to the syntactic and semantic topics.
                     True to return weights. Default value is False
-            - silent (boolean): determines whether to print the progress. If true goes in silent mode.
+            silent (bool): determines whether to print the progress. If true goes in silent mode.
                     Instead, if false does not print anything in standard output.
+            filter_by (List[str]): determines whether the output should be filtered accoring to certain branches of CSO. Please note, 
+                    this will not filter the regular result set, but rather return an additional key with filtered topics
 
         """
         self.modules             = parameters["modules"] if "modules" in parameters else "both"
@@ -59,7 +62,7 @@ class CSOClassifier:
 
 
 
-    def run(self, paper):
+    def run(self, paper: Union[Dict[str, str], str]) -> Dict[str, Any]:
         """Run the CSO Classifier.
 
         It takes as input the text from abstract, title, and keywords of a research paper and outputs a list of relevant
@@ -71,10 +74,10 @@ class CSOClassifier:
             super-topics or the whole set of topics up until root.
 
         Args:
-            paper (dictionary): contains the metadata of the paper, e.g., title, abstract and keywords {"title": "",
-                        "abstract": "","keywords": ""}.
+            paper (Union[Dict[str, str], str]): contains the metadata of the paper, e.g., title, abstract and keywords {"title": "",
+                        "abstract": "","keywords": ""} or a string representation.
         Returns:
-            class_res (dictionary): containing teh result of each classification
+            class_res (Dict[str, Any]): containing the result of each classification
         """
 
         if not self.models_loaded:
@@ -112,7 +115,7 @@ class CSOClassifier:
         return result.get_dict()
 
 
-    def batch_run(self, papers, workers=1):
+    def batch_run(self, papers: Dict[str, Any], workers: int = 1) -> Dict[str, Any]:
         """Run the CSO Classifier in *BATCH MODE* and with multiprocessing.
 
         It takes as input a set of papers, which include abstract, title, and keywords and for each one of them returns a
@@ -122,11 +125,11 @@ class CSOClassifier:
         i.e., their first direct super-topics or the whole set of topics up until root.
 
         Args:
-            - papers (dictionary): contains the metadata of the papers, e.g., for each paper, there is title, abstract and
+            papers (Dict[str, Any]): contains the metadata of the papers, e.g., for each paper, there is title, abstract and
                     keywords {"id1":{"title": "","abstract": "","keywords": ""},"id2":{"title": "","abstract": "","keywords": ""}}.
-
+            workers (int, optional): Number of workers for multiprocessing. Defaults to 1.
         Returns:
-            class_res (dictionary): containing teh result of each classification
+            class_res (Dict[str, Any]): containing the result of each classification
         """
 
         if not isinstance(workers, int):
@@ -149,7 +152,7 @@ class CSOClassifier:
         return class_res
 
 
-    def _batch_run_single_worker(self, papers):
+    def _batch_run_single_worker(self, papers: Dict[str, Any]) -> Dict[str, Any]:
         """Run the CSO Classifier in *BATCH MODE*.
 
         It takes as input a set of papers, which include abstract, title, and keywords and for each one of them returns a
@@ -161,10 +164,10 @@ class CSOClassifier:
 
 
         Args:
-            - papers (dictionary): contains the metadata of the papers, e.g., for each paper, there is title, abstract and
+            papers (Dict[str, Any]): contains the metadata of the papers, e.g., for each paper, there is title, abstract and
                     keywords {"id1":{"title": "","abstract": "","keywords": ""},"id2":{"title": "","abstract": "","keywords": ""}}.
         Returns:
-            class_res (dictionary): containing teh result of each classification
+            class_res (Dict[str, Any]): containing the result of each classification
         """
 
         cso = CSO(silent = self.silent)
@@ -211,7 +214,16 @@ class CSOClassifier:
         return class_res
 
 
-    def __check_parameters(self, parameters):
+    def __check_parameters(self, parameters: Dict[str, Any]) -> None:
+        """Validates the input parameters.
+
+        Args:
+            parameters (Dict[str, Any]): The dictionary of parameters passed to the constructor.
+        
+        Raises:
+            ValueError: If an invalid value is provided for a parameter.
+            TypeError: If a parameter has an incorrect type.
+        """
 
         if "modules" in parameters:
             if parameters["modules"] not in ["syntactic", "semantic", "both"]:
@@ -238,11 +250,31 @@ class CSOClassifier:
                 raise TypeError("Field silent must be set to either True or False. Got %s instead." % type(parameters["silent"]).__name__)
 
 
+    def get_croissant_specification(self, filename: str = "metadata.json", print_output: bool = False) -> None:
+        """Generates a Croissant JSON-LD specification for the classification results.
+
+        This method creates a Croissant specification based on the attributes of the
+        Result object, which reflects the classifier's output configuration (e.g.,
+        whether explanations or weights are included). The specification can be saved
+        to a file and optionally printed to the console.
+
+        Args:
+            filename (str, optional): The name of the file to save the Croissant specification.
+                                      Defaults to "metadata.json".
+            print_output (bool, optional): If True, prints the Croissant specification to stdout.
+                                           Defaults to False.
+        """
+        result = Result(self.explanation, self.get_weights, self.filter_output)
+        result.get_croissant_specification(filename,print_output)
+
+
     @staticmethod
-    def setup():
+    def setup() -> None:
         """ Setting up the classifier: language model, ontology and word2vec model
         """
         download_language_model()
+
+        download_croissant_specification()
 
         cso = CSO(load_ontology = False)
         cso.setup()
@@ -252,9 +284,14 @@ class CSOClassifier:
 
 
     @staticmethod
-    def update(force = False):
+    def update(force: bool = False) -> None:
         """ Update the ontology and the word2vec model
+        
+        Args:
+            force (bool, optional): If True, forces the update even if the version matches. Defaults to False.
         """
+        download_croissant_specification(notification=True, force=force)
+
         cso = CSO(load_ontology = False)
         cso.update(force = force)
 
@@ -263,7 +300,7 @@ class CSOClassifier:
 
 
     @staticmethod
-    def version():
+    def version() -> None:
         """ Function that returns the version number of different components: classifier and ontology
         """
         config = Config()

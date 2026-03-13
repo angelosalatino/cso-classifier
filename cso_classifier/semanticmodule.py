@@ -1,18 +1,24 @@
 import warnings
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from kneed import KneeLocator
 from rapidfuzz.distance import Levenshtein
 from nltk import everygrams
 
+from .model import Model
+from .ontology import Ontology
+from .paper import Paper
+
 class Semantic:
     """ A simple abstraction layer for using the Semantic module of the CSO classifier """
 
-    def __init__(self, model = None, cso = None, fast_classification = True, paper = None):
+    def __init__(self, model: Optional[Model] = None, cso: Optional[Ontology] = None, fast_classification: bool = True, paper: Optional[Paper] = None):
         """Function that initialises an object of class CSOClassifierSemantic and all its members.
 
         Args:
-            model (dictionary): word2vec model.
-            cso (dictionary): Computer Science Ontology
-            paper (dictionary): paper{"title":"...","abstract":"...","keywords":"..."} the paper.
+            model (Optional[Model], optional): word2vec model. Defaults to None.
+            cso (Optional[Ontology], optional): Computer Science Ontology. Defaults to None.
+            fast_classification (bool, optional): Determines if the cached model should be used. Defaults to True.
+            paper (Optional[Paper], optional): The paper object. Defaults to None.
         """
         self.cso = cso                  #Stores the CSO Ontology
         self.paper = paper              #Paper to analyse
@@ -23,52 +29,49 @@ class Semantic:
         self.extracted_topics = dict()  # dictionary with the extract topics (including similarity measures)
 
 
-    def set_paper(self, paper):
+    def set_paper(self, paper: Paper) -> None:
         """Function that initializes the paper variable in the class.
 
         Args:
-            paper (either string or dictionary): The paper to analyse. It can be a full string in which the content
-            is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
-
+            paper (Paper): The paper to analyse.
         """
         self.paper = paper
         self.reset_explanation()
 
 
-    def set_min_similarity(self, min_similarity):
+    def set_min_similarity(self, min_similarity: float) -> None:
         """Function that initializes the minimum similarity variable.
 
         Args:
             min_similarity (float): value of min_similarity between 0 and 1.
-
         """
         self.min_similarity = min_similarity
 
 
-    def reset_explanation(self):
+    def reset_explanation(self) -> None:
         """ Resetting the explanation
         """
         self.explanation = dict()
 
 
-    def get_explanation(self):
+    def get_explanation(self) -> Dict[str, Set[str]]:
         """ Returns the explanation
+
+        Returns:
+            Dict[str, Set[str]]: The explanation dictionary.
         """
         return self.explanation
 
 
-    def classify_semantic(self):
+    def classify_semantic(self) -> List[str]:
         """Function that classifies the paper on a semantic level. This semantic module follows four steps:
             (i) entity extraction,
             (ii) CSO concept identification,
             (iii) concept ranking, and
             (iv) concept selection.
 
-        Args:
-            processed_embeddings (dictionary): This dictionary saves the matches between word embeddings and terms in CSO. It is useful when processing in batch mode.
-
         Returns:
-            final_topics (list): list of identified topics.
+            List[str]: list of identified topics.
         """
 
         ##################### Core analysis
@@ -81,26 +84,23 @@ class Semantic:
 
         return final_topics
 
-    def get_semantic_topics_weights(self):
+    def get_semantic_topics_weights(self) -> Dict[str, float]:
         """Function that returns the full set of topics with the similarity measure
 
-        Args:
-
-
         Returns:
-            extracted_topics (dictionary): containing the found topics with their metric.
+            Dict[str, float]: containing the found topics with their metric.
         """
         return self.extracted_topics #they are already in the correct format.
 
 
-    def __find_topics(self, concepts):
+    def __find_topics(self, concepts: List[str]) -> Tuple[Dict[str, Any], Dict[str, Set[str]]]:
         """Function that identifies topics starting from the ngram forund in the paper
 
         Args:
-            concepts (list): Chuncks of text to analyse.
+            concepts (List[str]): Chunks of text to analyse.
 
         Returns:
-            found_topics (dict): cdictionary containing the identified topics.
+            Tuple[Dict[str, Any], Dict[str, Set[str]]]: A tuple containing the identified topics and the explanation.
         """
 
         # Set up
@@ -176,14 +176,14 @@ class Semantic:
         return found_topics, explanation
 
 
-    def __get_similar_words_from_cached_model(self, gram, grams):
+    def __get_similar_words_from_cached_model(self, gram: str, grams: List[str]) -> List[Dict[str, Any]]:
         """ Getting similar words from the cached model
         Args:
-            gram (string): the n-gram found (joined)
-            grams (list): list of tokens to be analysed and founf in the model
+            gram (str): the n-gram found (joined)
+            grams (List[str]): list of tokens to be analysed and found in the model
 
         Returns:
-            list_of_matched_topics (list): containing of all found topics
+            List[Dict[str, Any]]: containing of all found topics
         """
         if self.model.check_word_in_model(gram):
             list_of_matched_topics = self.model.get_words_from_model(gram)
@@ -192,14 +192,14 @@ class Semantic:
         return list_of_matched_topics
 
 
-    def __match_ngram(self, grams, merge=True):
+    def __match_ngram(self, grams: List[str], merge: bool = True) -> List[Dict[str, Any]]:
         """
         Args:
-            grams (list): list of tokens to be analysed and founf in the model
-            merge (boolean): #Allows to combine the topics of mutiple tokens, when analysing 2-grams or 3-grams
+            grams (List[str]): list of tokens to be analysed and found in the model
+            merge (bool): Allows to combine the topics of multiple tokens, when analysing 2-grams or 3-grams. Defaults to True.
 
         Returns:
-            list_of_matched_topics (list): containing of all found topics
+            List[Dict[str, Any]]: containing of all found topics
         """
 
         list_of_matched_topics = list()
@@ -226,14 +226,14 @@ class Semantic:
         return list_of_matched_topics
 
 
-    def __get_similar_words_from_full_model(self, gram, grams):
+    def __get_similar_words_from_full_model(self, gram: str, grams: List[str]) -> List[Dict[str, Any]]:
         """ Getting similar words from the full model
         Args:
-            gram (string): the n-gram found (joined)
-            grams (list): list of tokens to be analysed and founf in the model
+            gram (str): the n-gram found (joined)
+            grams (List[str]): list of tokens to be analysed and found in the model
 
         Returns:
-            list_of_matched_topics (list): containing of all found topics
+            List[Dict[str, Any]]: containing of all found topics
         """
         if self.model.check_word_in_full_model(gram):
             similar_words = self.model.get_top_similar_words_from_full_model(gram)
@@ -246,14 +246,13 @@ class Semantic:
 
         return list_of_matched_topics
 
-    def __refine_found_words(self,similar_words):
+    def __refine_found_words(self, similar_words: List[Tuple[str, float]]) -> List[Dict[str, Any]]:
         """
         Args:
-            gram (string): the n-gram found (joined)
-            grams (list): list of tokens to be analysed and founf in the model
+            similar_words (List[Tuple[str, float]]): list of tuples (word, similarity)
 
         Returns:
-            list_of_matched_topics (list): containing of all found topics
+            List[Dict[str, Any]]: containing of all found topics
         """
         identified_topics = list()
         for word, sim in similar_words:
@@ -265,15 +264,15 @@ class Semantic:
         return identified_topics
 
 
-    def __rank_topics(self, found_topics, explanation):
+    def __rank_topics(self, found_topics: Dict[str, Any], explanation: Dict[str, Set[str]]) -> Dict[str, float]:
         """ Function that ranks the list of found topics. It also cleans the explanation accordingly
 
         Args:
-            found_topics (dictionary): contains all information about the found topics
-            explanation (dictionary): contains information about the explanation of topics
+            found_topics (Dict[str, Any]): contains all information about the found topics
+            explanation (Dict[str, Set[str]]): contains information about the explanation of topics
 
         Returns:
-            final_topics (dictionary): dictionary of final topics
+            Dict[str, float]: dictionary of final topics with their scores
         """
         max_value = 0
         scores = []
@@ -305,53 +304,84 @@ class Semantic:
         #sort_t = sorted(found_topics.items(), key=lambda k: k[1]['score'], reverse=True)
 
 
-        # perform
+        # perform the elbow method
         vals = []
         for t_p in sort_t:
             vals.append(t_p[1]) #in 0, there is the topic, in 1 there is the info
 
-
         #### suppressing some warnings that can be raised by the kneed library
         warnings.filterwarnings("ignore")
-        try:
-            x_vals = range(1,len(vals)+1)
-            t_kn = KneeLocator(x_vals, vals, direction='decreasing')
-            if t_kn.knee is None:
-                #print("I performed a different identification of knee")
-                t_kn = KneeLocator(x_vals, vals, curve='convex', direction='decreasing')
-        except ValueError:
-            pass
+        try: 
+            while True:
+                
+                # cleaning the histogram for better calculation performance
+                # If there are multiple topics with the same maximum score (a plateau at the top),
+                # the knee locator might get confused. We remove the initial plateau to find the
+                # actual drop in scores.
+                if vals.count(max(vals)) > 1:
+                    # Retain elements after the last occurrence of the maximum count
+                    
+                    # elegant version
+                    # vals = vals[len(vals)-1-vals[::-1].index(max(vals)):] 
+                    
+                    
+                    # efficient version (and certainly less elegant)
+                    # This loop finds the index of the last element that equals the maximum value.
+                    max_val = vals[0]
+                    last_idx = 0
+                    
+                    for i in range(1, len(vals)):
+                        if vals[i] < max_val:
+                            break
+                        last_idx = i
+                    
+                    # Slice the list to keep only the part starting from the drop.
+                    vals = vals[last_idx:]
 
-        ##################### Pruning
+                # Initialize KneeLocator to find the point of maximum curvature (the "elbow").
+                # curve="convex" and direction="decreasing" are appropriate for a sorted score distribution.
+                t_kn = KneeLocator(range(0,len(vals)), vals, S=1.0, curve="convex", direction="decreasing")
+                try:
+                    kneex = t_kn.knee
+                    kneey = t_kn.knee_y
+                    # If a valid knee is found (index > 0), we accept it.
+                    if kneex > 0:
+                        # print(f"Knee found at {kneex}, and it will select topics with score higher than {kneey}")
+                        break
+                    else:
+                        # If knee is 0, it means the drop is immediate or the shape isn't ideal.
+                        # We attempt to clean the histogram by removing the first element and recalculating.
+                        # This acts as a retry mechanism to find a better knee point further down.
+                        # Retain elements after the maximum count - 1
+                        vals = vals[1:]
+                        # print("Cleaning by decreasing of 1")
+                except:
+                    # Fallback in case of error (e.g., list is too short or empty).
+                    # We default to selecting everything (kneey = 0) or the first element.
+                    kneex = 0
+                    kneey = vals[0] if vals else 0
+                    break
 
-        try:
-            knee = int(t_kn.knee)
-        except TypeError:
-            knee = 0
-        except UnboundLocalError:
-            knee = 0
+        except:
+            kneex = 0
+            kneey = 0
+            # print(f"ERROR: Knee x:{kneex}; y:{kneey}; on an array of length: {len(sort_t)}")
+        
+        
+        
+        ##################### Pruning  
 
-        if knee > 5:
-            try:
-                knee += 0
-            except TypeError:
-                print("ERROR: ",t_kn.knee," ",knee, " ", len(sort_t))
-
-        else:
-            try:
-                if sort_t[0][1] == sort_t[4][1]:
-                    top = sort_t[0][1]
-                    test_topics = [item[1] for item in sort_t if item[1]==top]
-                    knee = len(test_topics)
-
-                else:
-                    knee = 5
-            except IndexError:
-                knee = len(sort_t)
-
-
-        final_topics = {self.cso.get_topic_wu(sort_t[i][0]):(sort_t[i][1]/max_value) for i in range(0,knee)}
+        # selecting final topics
+        final_topics = {}
         self.reset_explanation()
-        self.explanation = {self.cso.topics_wu[sort_t[i][0]]: explanation[sort_t[i][0]] for i in range(0,knee)}
+        
+        for this_topic, this_score in sort_t:
+            if this_score > kneey:
+                final_topics[self.cso.get_topic_wu(this_topic)] = this_score / max_value
+                self.explanation[self.cso.topics_wu[this_topic]] = explanation[this_topic]
+            else:
+                break
+
+        
 
         return final_topics

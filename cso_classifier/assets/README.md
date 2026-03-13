@@ -8,6 +8,7 @@ In particular, after installing the classifier, this folder will contain:
 * **cso_graph.p**
 * **token-to-cso-combined.json**
 * **model.p**
+* **croissant_base.json**
 
 
 ## cso.csv
@@ -24,7 +25,10 @@ This file contains a dictionary that matches all tokens with the CSO topics. Thi
 
 ## model.p
 This serialized file contains the word2vec model. It will be loaded and used only within the outlier detection component in the post-processing module.
- 
+
+## croissant_base.json
+This file contains the base structure for the Croissant metadata specification. It is used to generate a JSON-LD file that describes the dataset produced by the classifier, adhering to the Croissant format for ML-ready datasets. 
+
 
 ## In case of ERROR
 If by any chance, this folder is still empty after the setup, please run:

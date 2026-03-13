@@ -1,0 +1,123 @@
+{
+  "@context": {
+    "@language": "en",
+    "@vocab": "https://schema.org/",
+    "ml": "http://mlcommons.org/schema/",
+    "sc": "https://schema.org/",
+    "extract": "ml:extract",
+    "field": "ml:field",
+    "jsonPath": "ml:jsonPath",
+    "recordSet": "ml:recordSet",
+    "source": "ml:source",
+    "repeated": "ml:repeated"
+  },
+  "@type": "Dataset",
+  "name": "paper_classification_output",
+  "description": "A comprehensive dataset of research paper classifications generated via the CSO Classifier, featuring 11 distinct levels of syntactic, semantic, and enhanced ontological mapping.",
+  "conformsTo": "http://mlcommons.org/croissant/1.0",
+  "distribution": [
+    {
+      "@type": "FileObject",
+      "@id": "json-file",
+      "name": "paper_data.json",
+      "contentUrl": "path/to/your/data/paper_classification.json",
+      "encodingFormat": "application/json"
+    }
+  ],
+  "recordSet": [
+    {
+      "@type": "RecordSet",
+      "@id": "paper-classification-results",
+      "name": "paper_classification",
+      "field": [
+        {
+          "@type": "Field",
+          "@id": "paper_classification/syntactic",
+          "name": "syntactic",
+          "dataType": "sc:Text",
+          "repeated": true,
+          "source": { "fileObject": "json-file", "extract": { "jsonPath": "$.syntactic[*]" } }
+        },
+        {
+          "@type": "Field",
+          "@id": "paper_classification/semantic",
+          "name": "semantic",
+          "dataType": "sc:Text",
+          "repeated": true,
+          "source": { "fileObject": "json-file", "extract": { "jsonPath": "$.semantic[*]" } }
+        },
+        {
+          "@type": "Field",
+          "@id": "paper_classification/union",
+          "name": "union",
+          "dataType": "sc:Text",
+          "repeated": true,
+          "source": { "fileObject": "json-file", "extract": { "jsonPath": "$.union[*]" } }
+        },
+        {
+          "@type": "Field",
+          "@id": "paper_classification/enhanced",
+          "name": "enhanced",
+          "dataType": "sc:Text",
+          "repeated": true,
+          "source": { "fileObject": "json-file", "extract": { "jsonPath": "$.enhanced[*]" } }
+        },
+        {
+          "@type": "Field",
+          "@id": "paper_classification/explanation",
+          "name": "explanation",
+          "dataType": "sc:Text",
+          "source": { "fileObject": "json-file", "extract": { "jsonPath": "$.explanation" } }
+        },
+        {
+          "@type": "Field",
+          "@id": "paper_classification/syntactic_weights",
+          "name": "syntactic_weights",
+          "dataType": "sc:Float",
+          "repeated": true,
+          "source": { "fileObject": "json-file", "extract": { "jsonPath": "$.syntactic_weights[*]" } }
+        },
+        {
+          "@type": "Field",
+          "@id": "paper_classification/semantic_weights",
+          "name": "semantic_weights",
+          "dataType": "sc:Float",
+          "repeated": true,
+          "source": { "fileObject": "json-file", "extract": { "jsonPath": "$.semantic_weights[*]" } }
+        },
+        {
+          "@type": "Field",
+          "@id": "paper_classification/filtered_syntactic",
+          "name": "filtered_syntactic",
+          "dataType": "sc:Text",
+          "repeated": true,
+          "source": { "fileObject": "json-file", "extract": { "jsonPath": "$.filtered_syntactic[*]" } }
+        },
+        {
+          "@type": "Field",
+          "@id": "paper_classification/filtered_semantic",
+          "name": "filtered_semantic",
+          "dataType": "sc:Text",
+          "repeated": true,
+          "source": { "fileObject": "json-file", "extract": { "jsonPath": "$.filtered_semantic[*]" } }
+        },
+        {
+          "@type": "Field",
+          "@id": "paper_classification/filtered_union",
+          "name": "filtered_union",
+          "dataType": "sc:Text",
+          "repeated": true,
+          "source": { "fileObject": "json-file", "extract": { "jsonPath": "$.filtered_union[*]" } }
+        },
+        {
+          "@type": "Field",
+          "@id": "paper_classification/filtered_enhanced",
+          "name": "filtered_enhanced",
+          "dataType": "sc:Text",
+          "repeated": true,
+          "source": { "fileObject": "json-file", "extract": { "jsonPath": "$.filtered_enhanced[*]" } }
+        }
+      ]
+    }
+  ]
+}

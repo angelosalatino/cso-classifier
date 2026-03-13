@@ -1,7 +1,7 @@
 # CSO-Classifier
 
 [![PyPI version](https://badge.fury.io/py/cso-classifier.svg)](https://badge.fury.io/py/cso-classifier) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2660819.svg)](https://doi.org/10.5281/zenodo.2660819)
-[![Python 3.6+](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Abstract
@@ -38,7 +38,10 @@ Read more: [https://skm.kmi.open.ac.uk/cso-classifier/](https://skm.kmi.open.ac.
       - [Run (BM)](#run-bm)
       - [Sample Output (BM)](#sample-output-bm)
     - [Parameters](#parameters)
+    - [Croissant Specification](#croissant-specification)
   - [Releases](#releases)
+    - [v4.0.0](#v400)
+    - [v3.3](#v33)
     - [v3.2](#v32)
     - [v3.1](#v31)
     - [v3.0](#v30)
@@ -52,7 +55,7 @@ Read more: [https://skm.kmi.open.ac.uk/cso-classifier/](https://skm.kmi.open.ac.
   - [List of Files](#list-of-files)
   - [Word2vec model and token-to-cso-combined file generation](#word2vec-model-and-token-to-cso-combined-file-generation)
     - [Word Embedding generation](#word-embedding-generation)
-    - [token-to-cso-combined file](#token-to-cso-combined-file)
+    - [Cached semantic mapping (token-to-cso-combined.json)](#cached-semantic-mapping-token-to-cso-combinedjson)
   - [Use the CSO Classifier in other domains of Science](#use-the-cso-classifier-in-other-domains-of-science)
   - [How to Cite CSO Classifier](#how-to-cite-cso-classifier)
   - [License](#license)
@@ -70,13 +73,13 @@ The CSO Classifier is a novel application that takes as input the text from the 
 
 ### Installation using PIP
 
-1. Ensure you have **Python 3.6**, **3.7**, or **3.8**. Download them [from here](https://www.python.org/downloads/). Perhaps, you may want to use a virtual environment. Here is how to [create and activate](https://docs.python.org/3/tutorial/venv.html) a virtual environment.
+1. Ensure you have **Python 3.11**, or **3.12**. Download them [from here](https://www.python.org/downloads/). Perhaps, you may want to use a virtual environment. Here is how to [create and activate](https://docs.python.org/3/tutorial/venv.html) a virtual environment.
 2. Use pip to install the classifier: ```pip install cso-classifier```
 3. Setting up the classifier. Go to [Setup](#setup) for finalising the installation.
 
 ### Installation using Github
 
-1. Ensure you have **Python 3.6**, **3.7**, or **3.8**. Download them [from here](https://www.python.org/downloads/). Perhaps, you may want to use a virtual environment. Here is how to [create and activate](https://docs.python.org/3/tutorial/venv.html) a virtual environment.
+1. Ensure you have **Python 3.11**, or **3.12**. Download them [from here](https://www.python.org/downloads/). Perhaps, you may want to use a virtual environment. Here is how to [create and activate](https://docs.python.org/3/tutorial/venv.html) a virtual environment.
 2. Download this repository using: ```git clone https://github.com/angelosalatino/cso-classifier.git```
 3. Install the package by running the following command: ```pip install ./cso-classifier```
 4. Setting up the classifier. Go to [Setup](#setup) for finalising the installation.
@@ -109,8 +112,14 @@ cc.setup()
 exit() # it is important to close the current console, to make those changes effective
 ```
 
-This function downloads the English package of spaCy, which is equivalent to run ```python -m spacy download en_core_web_sm```.
-Then, it downloads the latest version of Computer Science Ontology and the latest version of the word2vec model, which will be used across all modules.
+This function downloads the latest version of Computer Science Ontology and the latest version of the word2vec model, which will be used across all modules.
+Then, in the background, it will also downloads the English package of *spaCy*, which is equivalent to run ```python -m spacy download en_core_web_sm```, and the stopwords from *nltk*, which is equivalent to run: 
+```
+>>> import nltk
+>>> nltk.download()
+```
+
+
 
 ### Update
 
@@ -466,10 +475,47 @@ Beside the paper(s), the function running the CSO Classifier accepts seven addit
 
 **Table 1**: Parameters availability when using CSO Classifier
 
+### Croissant Specification
+
+From CSO Classifier [v4.0.0](#v400) it is possible to retrieve the [croissant specifications](https://github.com/mlcommons/croissant) of the performed classifications. This will generate a metadata file in ```json``` format containing the description of the dataset produced by the classifier. This feature is particularly useful for organising the data and the metadata of the newly produced dataset using the CSO Classifier, adhering to the Croissant format for ML-ready datasets.
+
+The structure of the generated specification depends on the parameters used during the initialization of the classifier (e.g., ```explanation```, ```get_weights```). For instance, if ```explanation``` is set to ```True```, the metadata will include the field description for the explanation.
+
+To generate the Croissant specification, you can use the ```get_croissant_specification``` method:
+
+```python
+from cso_classifier import CSOClassifier
+cc = CSOClassifier(modules = "both", enhancement = "first", explanation = True)
+cc.get_croissant_specification(filename="metadata.json", print_output=True)
+```
+
+A speciment of Croissant 🥐 specification can be found [https://cso.kmi.open.ac.uk/download/resources/croissant_base.json](https://cso.kmi.open.ac.uk/download/resources/croissant_base.json).
 
 ## Releases
 
-Here we list the available releases for the CSO Classifier. These releases are available for download both from [Github](https://github.com/angelosalatino/cso-classifier/releases) and [Zenodo](10.5281/zenodo.2660819).
+Here we list the available releases for the CSO Classifier. These releases are available for download both from [Github](https://github.com/angelosalatino/cso-classifier/releases) and [Zenodo](http://doi.org/10.5281/zenodo.2660819).
+
+### v4.0.0
+
+This major release marks a significant milestone for the CSO Classifier, bringing it up to speed with the latest Python standards and enhancing its core capabilities. Key updates include:
+* **Python 3.11 and 3.12 support**: The classifier now officially supports Python versions 3.11 and 3.12.
+* **Updated Word2vec Model**: The underlying Word2vec model has been updated with papers up to 2025, enhancing its semantic understanding. See [here](#word2vec-model-and-token-to-cso-combined-file-generation).
+* **Croissant Specification**: The classifier now supports the generation of Croissant metadata for the classification results. See [here](#croissant-specification).
+* **Extended Documentation**: The documentation has been expanded to provide more comprehensive guidance and examples.
+* **Improved Codebase**: General code improvements have been implemented for better performance and maintainability.
+
+For the development of this version, we would like to thank Faisal Ramzan, PhD Student at the University of Cagliari for supporting the development of this new version and the deployment of the recent word2vec model.
+
+### v3.3
+
+This release extends version 3.2 with a new feature that lets you refine the classification process by focusing on specific areas within the Computer Science Ontology. Specifically, providing one or more topics within the parameter *filter_by* (type list), the classifier will extract the sub-branches of such CSO topics, and when classifying will narrow down the output to the only sub-topics available in those areas. This is especially helpful when you are interested in exploring specific branches of the CSO, such as identifying only the concepts related to **artificial intelligence** and **semantic web** within a given paper, and can be achieved by setting ```filter_by = ["artificial intelligence", "semantic web"]``` (see [Parameters](#parameters)). If this parameter is set, the classifier will return the standard classification results, with four extra sets of results (*syntactic_filtered*, *semantic_filtered*, *union_filtered*, *enhanced_filtered*) containing only the filtered topics. This gives users the full picture and a focused view within the chosen areas.
+
+Download from:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14547947.svg)](https://doi.org/10.5281/zenodo.14547947)
+
+We would like to express our gratitude to Stanford University, specifically Dr. Loredana Fattorini and Dr. Nestor Maslej, for their financial support in developing this version. Their application of the CSO Classifier in the [2025 AI Index report](https://hai.stanford.edu/ai-index/2025-ai-index-report) was instrumental to this project. Additional details can be found: [https://www.salatino.org/wp/artificial-intelligence-index-report-2025/](https://www.salatino.org/wp/artificial-intelligence-index-report-2025/).
+
 
 ### v3.2
 
@@ -598,42 +644,47 @@ Download from:
     * **cso_graph.p** :page_facing_up: file containing the Computer Science Ontology as an iGraph object
     * **model.p**: :page_facing_up: the trained word2vec model (pickled)
     * **token-to-cso-combined.json**: :page_facing_up: file containing the cached word2vec model. This json file contains a dictionary in which each token of the corpus vocabulary, has been mapped with the corresponding CSO topics. Below we explain how this file has been generated.
+    * **croissant_base.json**: :page_facing_up: file containing the base structure for the Croissant metadata specification. It is used to generate a JSON-LD file that describes the dataset produced by the classifier, adhering to the Croissant format for ML-ready datasets.
 
 ## Word2vec model and token-to-cso-combined file generation
 
 In this section, we describe how we generated the word2vec model used within the CSO Classifier and what is the token-to-cso-combined file.
 
+
 ### Word Embedding generation
 
-We applied the word2vec approach [[2,3]](#references) to a collection of text from the Microsoft Academic Graph (MAG) for generating word embeddings. MAG is a scientific knowledge base and a heterogeneous graph containing scientific publication records, citation relationships, authors, institutions, journals, conferences, and fields of study. It is the largest dataset of scholarly data publicly available, and, as of April 2021, it contains more than 250 million publications.
+To support semantic topic inference at scale, we trained a Word2Vec model on a large collection of scholarly metadata from the **Semantic Scholar dataset** (≈ **100M papers**). The training corpus consists of **titles and abstracts** (English-only after filtering and cleaning). In our main training run, we processed a dataset containing **~264M text lines**.
 
-We first downloaded titles, and abstracts of 4,654,062 English papers in the field of Computer Science. Then we pre-processed the data by replacing spaces with underscores in all n-grams matching the CSO topic labels (e.g., “digital libraries” became “digital_libraries”) and for frequent bigrams and trigrams (e.g., “highest_accuracies”, “highly_cited_journals”). These frequent n-grams were identified by analysing combinations of words that co-occur together, as suggested in [[2]](#references) and using the parameters showed in Table 2. Indeed, while it is possible to obtain the vector of an n-gram by averaging the embedding vectors of all its words, the resulting representation usually is not as good as the one obtained by considering the n-gram as a single word during the training phase.
+A key design goal is to preserve ontology concepts and frequent multi-word expressions as single semantic units. We therefore pre-processed the corpus by (i) injecting CSO concept labels into the text and (ii) normalizing multi-word terms into underscore-connected tokens (e.g., “computer science” → `computer_science`, “large language models” → `large_language_models`). This ensures that Word2Vec learns dedicated embeddings for ontology concepts rather than distributing their meaning across individual words. In addition, we build bigrams and trigrams from the corpus to stabilize other frequent phrases that are not explicitly present in the ontology but are common in scholarly writing.
 
-Finally, we trained the word2vec model using the parameters provided in Table 3. The parameters were set to these values after testing several combinations.
+We train Word2Vec using the latest **Gensim 4.x** implementation with the following hyperparameters:
 
-| min-count  |  threshold |
-|---|---|
-| 5  | 10  |
+| parameter | value |
+|---|---:|
+| architecture | skip-gram |
+| vector size | 256 |
+| window size | 10 |
+| min count | 10 |
 
-**Table 2**: Parameters used during the collocation words analysis
+Upon completion of training, we generated a **gensim.models.keyedvectors.KeyedVectors** object with a file size of approximately 2GB. We serialized (pickled) this model to ensure it loads significantly faster than using the standard loading method, making it efficient for use in any Python workspace. You can download this model [from here](https://cso.kmi.open.ac.uk/download/resources/model.v2.p).
 
-
-| method  |  emb. size | window size | min count cutoff |
-|---|---|---|---|
-| skipgram  | 128  |  10 |  10 |
-
-**Table 3**: Parameters used for training the word2vec model.
+For CSO Classifier versions before 4.0.0, we employed a **gensim.models.keyedvectors.Word2VecKeyedVectors** object weighing **366MB**, which can be downloaded [from here](https://cso.kmi.open.ac.uk/download/model.p).
 
 
-After training the model, we obtained a **gensim.models.keyedvectors.Word2VecKeyedVectors** object weighing **366MB**. You can download the model [from here](https://cso.kmi.open.ac.uk/download/model.p).
+### Cached semantic mapping (token-to-cso-combined.json)
 
-The size of the model hindered the performance of the classifier in two ways. Firstly, it required several seconds to be loaded into memory. This was partially fixed by serialising the model file (using python pickle, see version v2.0 of CSO Classifier, ~4.5x faster). Secondly, while processing a document, the classifier needs to retrieve the top 10 similar words for all tokens, and compare them with CSO topics. In performing such an operation, the model would require several seconds, becoming a bottleneck for the classification process.
+Direct semantic inference can be expensive at inference time because it requires repeatedly querying the embedding model (e.g., retrieving nearest neighbors) and matching results back to ontology concepts. To eliminate this bottleneck, from the original model we precomputed a cached mapping file named **token-to-cso-combined.json**.
 
-To this end, we decided to create a cached model (**token-to-cso-combined.json**) which is a dictionary that directly connects all token available in the vocabulary of the model with the CSO topics. This strategy allows to quickly retrieve all CSO topics that can be inferred by a particular token.
+The cache is a dictionary that links each token in the Word2Vec vocabulary to the CSO concepts it can trigger. The cached mapping is generated as follows:
 
-### token-to-cso-combined file
+1. Collect all tokens in the Word2Vec vocabulary.
+2. For each token, retrieve its **top-N** nearest neighbors using `most_similar()` (default `top_n = 10`) and keep only neighbors above a cosine similarity threshold (`word_similarity = 0.7`).
+3. Compare each retrieved neighbor term against the normalized CSO concept labels using Levenshtein string similarity.
+4. If the similarity exceeds a strict threshold (`min_similarity = 0.90`), store a mapping from the original token to the matching CSO concept(s).
 
-To generate this file, we collected all the set of words available within the vocabulary of the model. Then iterating on each word, we retrieved its top 10 similar words from the model, and we computed their Levenshtein similarity against all CSO topics. If the similarity was above 0.7, we created a record that stored all CSO topics triggered by the initial word.
+This cached model allows the classifier to infer ontology topics in near-constant time per token, avoiding repeated nearest-neighbor searches and repeated ontology matching during document classification. As a result, the runtime bottleneck shifts from semantic lookup to lightweight text preprocessing, significantly improving throughput for large-scale annotation.
+
+The code for pre-processing data, training the model, and generating the cached mapping file can be found in this [GitHub repository](https://github.com/angelosalatino/w2v_model_for_cso_classifier). We are thankful to Faisal Ramzan (PhD student at the University of Cagliari) for his support.
 
 ## Use the CSO Classifier in other domains of Science
 
