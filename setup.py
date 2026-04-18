@@ -51,7 +51,6 @@ requirements_to_install = [
     # Note: Versions are pinned to ensure stability and reproducibility.
     'igraph==0.10.4',
     'gensim==4.3.3',
-    'click==7.1.2',
     'hurry.filesize==0.9',
     'kneed==0.8.5',
     'nltk==3.6.2',
