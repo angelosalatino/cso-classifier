@@ -42,6 +42,7 @@ Read more: [https://skm.kmi.open.ac.uk/cso-classifier/](https://skm.kmi.open.ac.
     - [Parameters](#parameters)
     - [Croissant Specification](#croissant-specification)
   - [Releases](#releases)
+    - [v4.0.1](#v401)
     - [v4.0.0](#v400)
     - [v3.3](#v33)
     - [v3.2](#v32)
@@ -633,6 +634,10 @@ A speciment of Croissant 🥐 specification can be found [https://cso.kmi.open.a
 ## Releases
 
 Here we list the available releases for the CSO Classifier. These releases are available for download both from [Github](https://github.com/angelosalatino/cso-classifier/releases) and [Zenodo](http://doi.org/10.5281/zenodo.2660819).
+
+### v4.0.1
+
+This minor release introduces a bug fix related to package dependencies. In particular, we removed the `click` requirement, which was causing conflicts with `nltk` and other packages. This change ensures a smoother installation process and better compatibility across different environments.
 
 ### v4.0.0
 
